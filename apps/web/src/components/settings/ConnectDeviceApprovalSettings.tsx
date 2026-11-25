@@ -1,9 +1,9 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
-import type { AuthConnectDevice, EnvironmentId } from "@t3tools/contracts";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
+import type { AuthConnectDevice, EnvironmentId } from "@fcode/contracts";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@fcode/client-runtime/state/runtime";
 import * as DateTime from "effect/DateTime";
 import { msg, T, useGT, useMessages, Var } from "gt-react";
 import { useState } from "react";
@@ -65,7 +65,7 @@ export function ConnectDeviceApprovalSettings({
   };
 
   return (
-    <SettingsSection id="connect-devices" title={gt("T3 Connect devices")}>
+    <SettingsSection id="connect-devices" title={gt("fcode Connect devices")}>
       {requests.map((request) => {
         const connectRequest = request.connectDeviceRequest;
         if (!connectRequest) return null;
@@ -173,7 +173,7 @@ export function ConnectDeviceApprovalSettings({
       {devices.length === 0 && requests.length === 0 ? (
         <div className={ITEM_ROW_CLASSNAME}>
           <p className="text-xs text-muted-foreground/60">
-            <T>No device has connected through T3 Connect yet.</T>
+            <T>No device has connected through fcode Connect yet.</T>
           </p>
         </div>
       ) : null}

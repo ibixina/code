@@ -1,4 +1,4 @@
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@fcode/contracts";
 import { Atom } from "effect/reactivity";
 import { expect, it, vi } from "vite-plus/test";
 import { appAtomRegistry } from "../../state/atom-registry";

@@ -18,8 +18,8 @@ import {
   type OrchestrationV2ExecutionNode,
   type OrchestrationV2RunAttempt,
   type OrchestrationV2TurnItem,
-} from "@t3tools/contracts";
-import type { ThreadRuntimeSummary } from "@t3tools/client-runtime/state/shell";
+} from "@fcode/contracts";
+import type { ThreadRuntimeSummary } from "@fcode/client-runtime/state/shell";
 import { deriveMessagesTimelineRows } from "./components/chat/MessagesTimeline.logic";
 import * as DateTime from "effect/DateTime";
 import { describe, expect, it } from "vite-plus/test";
@@ -439,7 +439,7 @@ describe("V2 session presentation", () => {
         parentCheckpointId: null,
         ordinalWithinScope: ordinal,
         appRunOrdinal,
-        ref: CheckpointRef.make(`refs/t3/${id}`),
+        ref: CheckpointRef.make(`refs/fcode/${id}`),
         status: "ready" as const,
         files: [],
         capturedAt: now,

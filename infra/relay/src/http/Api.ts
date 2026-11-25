@@ -20,8 +20,8 @@ import * as HttpServerResponse from "effect/http/HttpServerResponse";
 import * as HttpTraceContext from "effect/http/HttpTraceContext";
 import * as HttpApiBuilder from "effect/http-api/HttpApiBuilder";
 import * as HttpApiError from "effect/http-api/HttpApiError";
-import { encodeOAuthScope } from "@t3tools/shared/oauthScope";
-import * as HttpObservability from "@t3tools/shared/httpObservability";
+import { encodeOAuthScope } from "@fcode/shared/oauthScope";
+import * as HttpObservability from "@fcode/shared/httpObservability";
 
 import {
   RelayApi,
@@ -52,12 +52,12 @@ import {
   RelayManagedEndpointRecoveryProofPayload,
   type RelayDpopAccessTokenScope,
   RelayInternalError,
-} from "@t3tools/contracts/relay";
+} from "@fcode/contracts/relay";
 import {
   normalizeRelayIssuer,
   RELAY_MANAGED_TUNNEL_RECOVERY_TYP,
   verifyRelayJwt,
-} from "@t3tools/shared/relayJwt";
+} from "@fcode/shared/relayJwt";
 
 import * as DeliveryAttempts from "../agentActivity/DeliveryAttempts.ts";
 import * as AgentActivityRows from "../agentActivity/AgentActivityRows.ts";
@@ -98,7 +98,7 @@ const appendRelayCredentialResponseHeaders = HttpEffect.appendPreResponseHandler
     ),
 );
 
-// T3 Code hosts never retry sooner than Retry-After, so during a Cloudflare
+// fcode hosts never retry sooner than Retry-After, so during a Cloudflare
 // rate limit they wait out the pause instead of retrying into it.
 const appendCloudflareRetryAfter = (error: unknown) => {
   const retryAfterMillis = ManagedEndpointProvider.cloudflareRetryAfterMillis(error);
@@ -586,7 +586,7 @@ export const verifyEnvironmentTunnelRecoveryProof = Effect.fn(
     publicKey: input.environmentPublicKey,
     token: input.proof,
     typ: RELAY_MANAGED_TUNNEL_RECOVERY_TYP,
-    issuer: `t3-env:${input.environmentId}`,
+    issuer: `fcode-env:${input.environmentId}`,
     audience: normalizeRelayIssuer(config.relayIssuer),
   }).pipe(Effect.mapError(() => new HttpApiError.Unauthorized({})));
 
@@ -814,7 +814,7 @@ export const layerClientApi = HttpApiBuilder.group(
     const links = yield* EnvironmentLinks.EnvironmentLinks;
     const managedEndpointProvider = yield* ManagedEndpointProvider.ManagedEndpointProvider;
     const devices = yield* Devices.Devices;
-    const t3Chat = yield* T3ChatAccounts.T3ChatAccounts;
+    const fcodeChat = yield* T3ChatAccounts.T3ChatAccounts;
     const tunnelLimits = yield* ManagedTunnelLimits.ManagedTunnelLimits;
     return handlers
       .handle(
@@ -992,8 +992,8 @@ export const layerClientApi = HttpApiBuilder.group(
         Effect.fn("relay.api.client.getT3ChatLink")(function* () {
           yield* appendRelayCredentialResponseHeaders;
           const { userId } = yield* RelayClientPrincipal;
-          const link = t3Chat.available
-            ? yield* t3Chat
+          const link = fcodeChat.available
+            ? yield* fcodeChat
                 .getLink({ userId })
                 .pipe(Effect.catch(() => relayInternalErrorResponse("upstream_unavailable")))
             : null;
@@ -1001,7 +1001,7 @@ export const layerClientApi = HttpApiBuilder.group(
             .getOverride({ userId })
             .pipe(Effect.catch(() => relayInternalErrorResponse("internal_error")));
           return {
-            available: t3Chat.available,
+            available: fcodeChat.available,
             link,
             ...(maxTunnelsOverride === null ? {} : { maxTunnelsOverride }),
           };
@@ -1011,7 +1011,7 @@ export const layerClientApi = HttpApiBuilder.group(
         "createT3ChatLinkRequest",
         Effect.fn("relay.api.client.createT3ChatLinkRequest")(function* () {
           const { userId } = yield* RelayClientPrincipal;
-          const url = yield* t3Chat.createLinkUrl({ userId }).pipe(
+          const url = yield* fcodeChat.createLinkUrl({ userId }).pipe(
             Effect.catchTags({
               T3ChatNotConfigured: () => relayInternalErrorResponse("internal_error"),
               ClerkUserLookupFailed: () => relayInternalErrorResponse("upstream_unavailable"),
@@ -1024,7 +1024,7 @@ export const layerClientApi = HttpApiBuilder.group(
         "unlinkT3Chat",
         Effect.fn("relay.api.client.unlinkT3Chat")(function* () {
           const { userId } = yield* RelayClientPrincipal;
-          yield* t3Chat
+          yield* fcodeChat
             .unlink({ userId })
             .pipe(Effect.catch(() => relayInternalErrorResponse("upstream_unavailable")));
           return { ok: true };

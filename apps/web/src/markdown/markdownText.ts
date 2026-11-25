@@ -2,12 +2,12 @@ import { decodeHTMLStrict } from "entities";
 import {
   codexArtifactTemplatePresentationLabel,
   resolveCodexArtifactTemplate,
-} from "@t3tools/shared/codexArtifactTemplates";
+} from "@fcode/shared/codexArtifactTemplates";
 import {
   codexFileCitationMarkdown,
   resolveCodexFileCitationLink,
-} from "@t3tools/shared/codexFileCitations";
-import { isWindowsAbsolutePath } from "@t3tools/shared/path";
+} from "@fcode/shared/codexFileCitations";
+import { isWindowsAbsolutePath } from "@fcode/shared/path";
 
 import { codexDirectiveSources, type CodexDirectiveSource } from "./wordsHast";
 

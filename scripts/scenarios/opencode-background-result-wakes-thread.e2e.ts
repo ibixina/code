@@ -6,11 +6,11 @@ import * as NodePath from "node:path";
 
 import { expect } from "e2e";
 
-import { T3_HOME } from "../e2e.config.ts";
-import { makeState, runPromise, test, WEB } from "./t3.ts";
+import { FCODE_HOME } from "../e2e.config.ts";
+import { makeState, runPromise, test, WEB } from "./fcode.ts";
 
 // An OpenCode 1.19.5 server with background subagents on (OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS,
-// which T3 never sets). Frames follow v1.19.5 source: tool/task.ts injects a finished background
+// which fcode never sets). Frames follow v1.19.5 source: tool/task.ts injects a finished background
 // task's result as a synthetic prompt on the parent session; session/prompt.ts saves it, then
 // reports busy; session/status.ts reports idle, then session.idle.
 const ROOT = "ses_scenario_root";
@@ -180,12 +180,12 @@ function fakeOpenCode() {
 test(
   "An OpenCode 1.x background task's result wakes its settled thread",
   WEB,
-  async ({ t3, app, screen }) => {
+  async ({ fcode, app, screen }) => {
     const opencode = fakeOpenCode();
     await new Promise<void>((resolve) => opencode.server.listen(0, "127.0.0.1", resolve));
     try {
       const { port } = opencode.server.address() as NodeNet.AddressInfo;
-      const settingsPath = NodePath.join(T3_HOME, "userdata/settings.json");
+      const settingsPath = NodePath.join(FCODE_HOME, "userdata/settings.json");
       const settings = JSON.parse(await NodeFSP.readFile(settingsPath, "utf8"));
       settings.providerInstances.opencode = {
         driver: "opencode",
@@ -194,8 +194,8 @@ test(
       };
       await NodeFSP.writeFile(settingsPath, JSON.stringify(settings));
 
-      const project = await t3.project("demo");
-      const { cli } = makeState(T3_HOME);
+      const project = await fcode.project("demo");
+      const { cli } = makeState(FCODE_HOME);
       const start = [
         "thread",
         "start",
@@ -222,7 +222,7 @@ test(
         )
         .toBe(true);
       const { threadId } = JSON.parse(started) as { threadId: string };
-      await t3.open({ threadId });
+      await fcode.open({ threadId });
 
       await expect(screen.getByText("PARENT_OK")).toBeVisible({ timeout: 60_000 });
       opencode.finishBackgroundTask();

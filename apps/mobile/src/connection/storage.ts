@@ -8,15 +8,15 @@ import {
   replaceCatalogValue,
   Persistence,
   ThreadTriageOutboxStore,
-} from "@t3tools/client-runtime/platform";
-import { TokenStore } from "@t3tools/client-runtime/authorization";
+} from "@fcode/client-runtime/platform";
+import { TokenStore } from "@fcode/client-runtime/authorization";
 import {
   ConnectionTransientError,
   CredentialStore,
   ProfileStore,
   PullRequestRoutingPermissions,
   makePullRequestRoutingPermissions,
-} from "@t3tools/client-runtime/connection";
+} from "@fcode/client-runtime/connection";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";

@@ -1,9 +1,9 @@
-import { ComposerContextId, EnvironmentId } from "@t3tools/contracts";
+import { ComposerContextId, EnvironmentId } from "@fcode/contracts";
 import {
   COMPOSER_CONTEXT_CLIPBOARD_MIME,
   decodeComposerContextClipboardHtml,
   encodeComposerContextFragment,
-} from "@t3tools/shared/composerContextClipboard";
+} from "@fcode/shared/composerContextClipboard";
 import { expect, it } from "vite-plus/test";
 
 import { copySnapshot } from "./copySnapshot";

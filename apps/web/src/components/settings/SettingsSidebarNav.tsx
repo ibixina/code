@@ -33,7 +33,7 @@ import {
   WrenchIcon,
   XIcon,
 } from "lucide-react";
-import { resolveEventKeys } from "@t3tools/shared/keybindings";
+import { resolveEventKeys } from "@fcode/shared/keybindings";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { T, useGT, useMessages } from "gt-react";
 
@@ -78,14 +78,14 @@ const SnapShotIcon = createLucideIcon("snap-shot", [
   ["circle", { cx: "12", cy: "12", r: "1.5", key: "lens" }],
 ]);
 
-const T3ConnectSidebarSignIn = lazy(() =>
-  import("../clerk/T3ConnectSidebarSignIn").then((module) => ({
-    default: module.T3ConnectSidebarSignIn,
+const FcodeConnectSidebarSignIn = lazy(() =>
+  import("../clerk/FcodeConnectSidebarSignIn").then((module) => ({
+    default: module.FcodeConnectSidebarSignIn,
   })),
 );
-const T3ConnectSidebarAvatar = lazy(() =>
-  import("../clerk/T3ConnectSidebarSignIn").then((module) => ({
-    default: module.T3ConnectSidebarAvatar,
+const FcodeConnectSidebarAvatar = lazy(() =>
+  import("../clerk/FcodeConnectSidebarSignIn").then((module) => ({
+    default: module.FcodeConnectSidebarAvatar,
   })),
 );
 
@@ -156,7 +156,7 @@ export function SettingsSidebarNav({ pathname }: { pathname: string }) {
     setActiveResultIndex(maxResultIndex);
   }
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- window keydown listener for the find and slash search shortcuts
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- window keydown listener for the find and slash search shortcuts
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing) return;
@@ -196,7 +196,7 @@ export function SettingsSidebarNav({ pathname }: { pathname: string }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- focuses the search input DOM node after the compact search opens
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- focuses the search input DOM node after the compact search opens
   useEffect(() => {
     if (compactSearchOpen) searchInputRef.current?.focus();
   }, [compactSearchOpen]);
@@ -436,10 +436,10 @@ export function SettingsSidebarNav({ pathname }: { pathname: string }) {
       </SidebarContent>
       <SidebarFooter className="max-md:hidden">
         <Suspense fallback={null}>
-          <T3ConnectSidebarSignIn />
+          <FcodeConnectSidebarSignIn />
         </Suspense>
         <Suspense fallback={null}>
-          <T3ConnectSidebarAvatar />
+          <FcodeConnectSidebarAvatar />
         </Suspense>
       </SidebarFooter>
     </nav>

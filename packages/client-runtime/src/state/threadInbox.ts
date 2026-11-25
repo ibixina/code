@@ -121,6 +121,7 @@ type TrackedInboxThread = WorkingThreadInput &
       | "snoozedUntil"
       | "activeOrderKey"
       | "pendingGuestMessageCount"
+      | "updatedAt"
     >
   >;
 
@@ -149,9 +150,14 @@ export function createInboxReturnTracker() {
   const keyOf = (thread: ThreadKeyInput) => `${thread.environmentId}:${thread.id}`;
   const states = new Map<
     string,
-    { working: boolean; deadline: number | null; placement: string | null }
+    {
+      working: boolean;
+      deadline: number | null;
+      placement: string | null;
+      updatedAt?: string | undefined;
+    }
   >();
-  const returns = new Map<string, number>();
+  const returns = new Map<string, { observedAt: number; updatedAt: string | undefined }>();
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let version = 0;
@@ -174,7 +180,7 @@ export function createInboxReturnTracker() {
           if (state.deadline !== null && state.deadline <= at) {
             state.working = false;
             state.deadline = null;
-            returns.set(key, at);
+            returns.set(key, { observedAt: at, updatedAt: state.updatedAt });
           }
         }
         schedule();
@@ -195,13 +201,18 @@ export function createInboxReturnTracker() {
     observe(threads: readonly TrackedInboxThread[] | null): {
       readonly isWorking: (thread: WorkingThreadInput & ThreadKeyInput) => boolean;
       readonly returnedAt: (thread: ThreadKeyInput) => number | undefined;
+      readonly returnedUpdatedAt: (thread: ThreadKeyInput) => string | undefined;
     } {
       if (threads === null) {
         clearTimeout(timer);
         timer = undefined;
         states.clear();
         returns.clear();
-        return { isWorking: isThreadWorking, returnedAt: () => undefined };
+        return {
+          isWorking: isThreadWorking,
+          returnedAt: () => undefined,
+          returnedUpdatedAt: () => undefined,
+        };
       }
       const present = new Set<string>();
       const at = now();
@@ -248,8 +259,16 @@ export function createInboxReturnTracker() {
             ? (previous.deadline ?? at + WORKING_EXIT_GRACE_MS)
             : null;
         const working = actual || (deadline !== null && deadline > at);
-        if (previous?.working && !working) returns.set(key, at);
-        states.set(key, { working, deadline: working ? deadline : null, placement });
+        if (actual) returns.delete(key);
+        if (previous?.working && !working) {
+          returns.set(key, { observedAt: at, updatedAt: thread.updatedAt });
+        }
+        states.set(key, {
+          working,
+          deadline: working ? deadline : null,
+          placement,
+          updatedAt: thread.updatedAt,
+        });
       }
       for (const key of states.keys()) {
         if (!present.has(key)) {
@@ -263,11 +282,12 @@ export function createInboxReturnTracker() {
       const observedReturns = new Map(returns);
       return {
         isWorking: (thread) => observedWorking.get(keyOf(thread)) ?? isThreadWorking(thread),
-        returnedAt: (thread) => observedReturns.get(keyOf(thread)),
+        returnedAt: (thread) => observedReturns.get(keyOf(thread))?.observedAt,
+        returnedUpdatedAt: (thread) => observedReturns.get(keyOf(thread))?.updatedAt,
       };
     },
     isWorking: (thread: WorkingThreadInput & ThreadKeyInput) =>
       states.get(keyOf(thread))?.working ?? isThreadWorking(thread),
-    returnedAt: (thread: ThreadKeyInput) => returns.get(keyOf(thread)),
+    returnedAt: (thread: ThreadKeyInput) => returns.get(keyOf(thread))?.observedAt,
   };
 }

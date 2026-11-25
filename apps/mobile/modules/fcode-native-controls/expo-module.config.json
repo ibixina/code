@@ -1,0 +1,20 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["FcodeNativeControlsModule", "FcodeKeyboardCommandsModule"],
+    "appDelegateSubscribers": [
+      "FcodeWorkspaceOrientationSubscriber",
+      "FcodeMenuDismissTouchGateSubscriber",
+      "FcodeBackgroundGraceSubscriber"
+    ]
+  },
+  "android": {
+    "modules": [
+      "expo.modules.t3nativecontrols.FcodeNativeControlsModule",
+      "expo.modules.t3nativecontrols.FcodeWorkspaceNavigationModule",
+      "expo.modules.t3nativecontrols.FcodeKeyboardCommandsModule",
+      "expo.modules.t3nativecontrols.FcodeFoldPostureModule",
+      "expo.modules.t3nativecontrols.FcodeSecretInputModule"
+    ]
+  }
+}

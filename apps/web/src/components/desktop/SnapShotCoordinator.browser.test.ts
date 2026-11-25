@@ -1,5 +1,5 @@
-import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { type DesktopBridge, EnvironmentId, ProjectId, ThreadId } from "@t3tools/contracts";
+import { scopeProjectRef, scopeThreadRef } from "@fcode/client-runtime/environment";
+import { type DesktopBridge, EnvironmentId, ProjectId, ThreadId } from "@fcode/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import {

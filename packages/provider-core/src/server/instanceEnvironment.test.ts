@@ -1,9 +1,9 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { describe, expect, it } from "@effect/vitest";
-import { SecretProviderId } from "@t3tools/contracts";
+import { SecretProviderId } from "@fcode/contracts";
 import * as Effect from "effect/Effect";
 import * as Path from "effect/Path";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@fcode/shared/HostProcess";
 
 import { mergeProviderInstanceEnvironment } from "./instanceEnvironment.ts";
 
@@ -86,7 +86,7 @@ describe("mergeProviderInstanceEnvironment", () => {
     }),
   );
 
-  const appDir = "/tmp/.mount_T3-CodXXXX";
+  const appDir = "/tmp/.mount_fcode-CodXXXX";
   const systemLibraryPath = "/home/ada/lib:/home/ada/.local/lib";
   it.effect.each([
     {
@@ -112,9 +112,9 @@ describe("mergeProviderInstanceEnvironment", () => {
     ({ environment, libraryPath, keptLibraryPath }) =>
       Effect.gen(function* () {
         const merged = yield* mergeProviderInstanceEnvironment(environment, {
-          APPIMAGE: "/home/ada/T3-Code.AppImage",
+          APPIMAGE: "/home/ada/fcode-Code.AppImage",
           APPDIR: appDir,
-          ARGV0: "/home/ada/T3-Code.AppImage",
+          ARGV0: "/home/ada/fcode-Code.AppImage",
           OWD: "/home/ada",
           PATH: `${appDir}:${appDir}/usr/sbin::/usr/bin`,
           LD_LIBRARY_PATH: libraryPath,

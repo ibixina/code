@@ -2,16 +2,16 @@ import { useAtomValue } from "@effect/atom-react";
 import {
   deriveWorkflowGroups,
   projectedSubagentsToRuntime,
-} from "@t3tools/client-runtime/state/subagentRuntime";
-import type { ThreadTurnSubagents } from "@t3tools/client-runtime/state/thread-subagents";
+} from "@fcode/client-runtime/state/subagentRuntime";
+import type { ThreadTurnSubagents } from "@fcode/client-runtime/state/thread-subagents";
 import {
   isOrchestrationV2WorkActive,
   type EnvironmentId,
   type OrchestrationV2Subagent,
   type ThreadId,
-} from "@t3tools/contracts";
-import { deriveSubagentElapsedMs } from "@t3tools/shared/orchestrationTiming";
-import { formatDuration } from "@t3tools/shared/orchestrationTimingCopy";
+} from "@fcode/contracts";
+import { deriveSubagentElapsedMs } from "@fcode/shared/orchestrationTiming";
+import { formatDuration } from "@fcode/shared/orchestrationTimingCopy";
 import { StackActions, useNavigation, type StaticScreenProps } from "@react-navigation/native";
 import * as DateTime from "effect/DateTime";
 import { Atom } from "effect/reactivity";

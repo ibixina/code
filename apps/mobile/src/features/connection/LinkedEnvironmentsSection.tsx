@@ -1,9 +1,9 @@
 import { useGT } from "gt-react-native";
 import { RegistryContext } from "@effect/atom-react";
-import { offersLinkedEnvironments } from "@t3tools/client-runtime/link-request";
-import { peerLinkHealth } from "@t3tools/client-runtime/state/peerLinks";
+import { offersLinkedEnvironments } from "@fcode/client-runtime/link-request";
+import { peerLinkHealth } from "@fcode/client-runtime/state/peerLinks";
 import { useFocusEffect } from "@react-navigation/native";
-import { AuthAccessReadScope, type EnvironmentId } from "@t3tools/contracts";
+import { AuthAccessReadScope, type EnvironmentId } from "@fcode/contracts";
 import * as DateTime from "effect/DateTime";
 import { useCallback, useContext, useState } from "react";
 import { AppState, View } from "react-native";
@@ -84,7 +84,7 @@ export function LinkedEnvironmentsSection(props: {
                     : gt("Reachable");
           return (
             <View key={link.environmentId} className="gap-0.5 p-4">
-              <Text className="text-base font-t3-bold text-foreground">{link.label}</Text>
+              <Text className="text-base font-fcode-bold text-foreground">{link.label}</Text>
               <Text
                 className={
                   health.kind === "reachable" && health.expiresInDays === null

@@ -13,7 +13,7 @@ import {
   ThreadId,
   TurnItemId,
   type OrchestrationV2ThreadProjection,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -21,7 +21,7 @@ import * as Layer from "effect/Layer";
 import * as EffectWorker from "./EffectWorker.ts";
 import * as EffectOutbox from "./EffectOutbox.ts";
 import * as EventSink from "./EventSink.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
 import * as ProjectionStore from "./ProjectionStore.ts";
 import * as ProviderRuntimeRecovery from "./ProviderRuntimeRecoveryService.ts";
 import * as ServerSettings from "../serverSettings.ts";
@@ -470,15 +470,6 @@ it.effect(
           reason: "Run the suite there.",
         },
         {
-          id: "turn-item:feedback-request:recovery",
-          threadId,
-          runId,
-          nodeId: null,
-          type: "feedback_request",
-          status: "waiting",
-          feedbackStatus: "pending",
-        },
-        {
           id: "turn-item:steer:recovery",
           threadId,
           runId,
@@ -524,15 +515,10 @@ it.effect(
       const secret = cards.find((card) => card.type === "secret_request");
       assert.equal(secret?.status, "cancelled");
       assert.equal(secret?.type === "secret_request" ? secret.secretStatus : null, "cancelled");
-      // Nothing in memory waits on a link or feedback card; the user can still answer it.
+      // Nothing in memory waits on a link card; the user can still answer it.
       // Claude never reported reading the steer, so the orchestrator queues it.
       assert.deepEqual(
-        cards.filter(
-          (card) =>
-            card.type === "link_request" ||
-            card.type === "feedback_request" ||
-            card.type === "user_message",
-        ),
+        cards.filter((card) => card.type === "link_request" || card.type === "user_message"),
         [],
       );
     }).pipe(Effect.provide(layer));
@@ -1332,7 +1318,7 @@ it.effect(
           providerThreadId,
           type: "dynamic_tool",
           status: "running",
-          toolName: "t3-code.t3_thread_wait",
+          toolName: "fcode.fcode_thread_wait",
           input: {
             threadId:
               "thread:delegated-task:command%3Amcp%3Aaafffab1-e811-458a-ae83-558e542c61ff%3Adelegate-task%3Areview-mobile-reconnect-opus-20260815",

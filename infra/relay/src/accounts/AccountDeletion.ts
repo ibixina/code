@@ -1,4 +1,4 @@
-import { RelayApi } from "@t3tools/contracts/relay";
+import { RelayApi } from "@fcode/contracts/relay";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
@@ -91,13 +91,13 @@ export class AccountDeletion extends Context.Service<
       AccountDeletionQueueFailed
     >;
   }
->()("t3code-relay/accounts/AccountDeletion") {}
+>()("fcode-relay/accounts/AccountDeletion") {}
 
 const make = Effect.gen(function* () {
   const db = yield* RelayDb.RelayDb;
   const transactions = yield* RelayDb.RelayTransactions;
   const config = yield* RelayConfiguration.RelayConfiguration;
-  const t3Chat = yield* T3ChatAccounts.T3ChatAccounts;
+  const fcodeChat = yield* T3ChatAccounts.T3ChatAccounts;
   const inbox = yield* HookInbox.HookInbox;
   // unlinkEnvironmentRecord reads these from context; capture them once for the service.
   const unlinkContext =
@@ -240,10 +240,10 @@ const make = Effect.gen(function* () {
         ),
       );
 
-    if (t3Chat.available) {
+    if (fcodeChat.available) {
       // T3 Chat owns the link; only ask it to drop one that exists.
-      yield* t3Chat.getLink({ userId }).pipe(
-        Effect.flatMap((link) => (link === null ? Effect.void : t3Chat.unlink({ userId }))),
+      yield* fcodeChat.getLink({ userId }).pipe(
+        Effect.flatMap((link) => (link === null ? Effect.void : fcodeChat.unlink({ userId }))),
         Effect.mapError(fail("unlink-t3chat")),
       );
     }

@@ -8,9 +8,9 @@ import {
   EnvironmentThemeFile,
   EnvironmentThemeId,
   environmentThemeFileHasColors,
-} from "@t3tools/contracts";
-import { fromJsonStringPretty, fromLenientJson } from "@t3tools/shared/schemaJson";
-import { BUILT_IN_THEME_IDS, UNPUBLISHABLE_THEME_IDS } from "@t3tools/shared/themePalettes";
+} from "@fcode/contracts";
+import { fromJsonStringPretty, fromLenientJson } from "@fcode/shared/schemaJson";
+import { BUILT_IN_THEME_IDS, UNPUBLISHABLE_THEME_IDS } from "@fcode/shared/themePalettes";
 import * as Config from "effect/Config";
 import * as Console from "effect/Console";
 import * as DateTime from "effect/DateTime";
@@ -21,8 +21,8 @@ import * as Path from "effect/Path";
 import * as Schema from "effect/Schema";
 import { Argument, Command, Flag } from "effect/cli";
 
-import { writeFileStringAtomically } from "@t3tools/shared/atomicWrite";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { writeFileStringAtomically } from "@fcode/shared/atomicWrite";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import * as ServerConfig from "../config.ts";
 import {
   MAX_THEME_FILE_BYTES,
@@ -92,7 +92,7 @@ export class ThemeFileInvalidError extends Schema.TaggedError<ThemeFileInvalidEr
   { filePath: Schema.String, cause: Schema.Defect() },
 ) {
   override get message(): string {
-    return `${this.filePath} is not a valid theme file. Use a theme exported from T3 Code, or a seeded file with name, appearance, canvas, and accent.`;
+    return `${this.filePath} is not a valid theme file. Use a theme exported from fcode, or a seeded file with name, appearance, canvas, and accent.`;
   }
 }
 
@@ -169,11 +169,11 @@ export class ThemeTargetMissingError extends Schema.TaggedError<ThemeTargetMissi
   {},
 ) {
   override get message(): string {
-    return "Provide a theme id or file, or run `t3 theme clear` to remove the theme.";
+    return "Provide a theme id or file, or run `fcode theme clear` to remove the theme.";
   }
 }
 
-const envT3Home = Config.String("T3CODE_HOME").pipe(Config.option);
+const envFcodeHome = Config.String("FCODE_HOME").pipe(Config.option);
 const DEV_STATE_PLACEHOLDER_URL = new URL("http://localhost");
 
 const hasLiveServer = (statePath: string) =>
@@ -183,14 +183,14 @@ const hasLiveServer = (statePath: string) =>
   );
 
 const resolveThemePaths = Effect.fn(function* (explicitBaseDir: Option.Option<string>) {
-  const envHome = Option.filter(yield* envT3Home, (value) => value.trim().length > 0);
+  const envHome = Option.filter(yield* envFcodeHome, (value) => value.trim().length > 0);
   const configuredBaseDir = Option.orElse(explicitBaseDir, () => envHome);
   const baseDir = yield* resolveBaseDir(Option.getOrUndefined(configuredBaseDir));
   const userdataPaths = yield* ServerConfig.deriveServerPaths(baseDir, undefined, {
     baseDirIsExplicit: Option.isSome(configuredBaseDir),
   });
   // A dev server with an implicit home keeps its state in `dev`; follow it unless a
-  // `userdata` server is running too, the same order `t3 pair` checks.
+  // `userdata` server is running too, the same order `fcode pair` checks.
   let derivedPaths = userdataPaths;
   if (
     Option.isNone(configuredBaseDir) &&

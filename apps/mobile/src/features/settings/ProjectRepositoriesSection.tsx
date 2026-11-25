@@ -1,19 +1,19 @@
 import {
   appendTrackedFolders,
   suggestedTrackedFolders,
-} from "@t3tools/client-runtime/state/projects";
+} from "@fcode/client-runtime/state/projects";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+} from "@fcode/client-runtime/state/runtime";
+import type { EnvironmentProject } from "@fcode/client-runtime/state/shell";
 import {
   AuthFilesystemReadScope,
   AuthOrchestrationOperateScope,
   PROJECT_TRACKED_FOLDERS_MAX,
   type ProjectTrackedFolder,
   type WorkspaceFolderState,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { msg, T, useGT, useMessages } from "gt-react-native";
 import { useState } from "react";
 import { Pressable } from "react-native";
@@ -168,7 +168,7 @@ export function ProjectRepositoriesSection(props: {
                 onPress={() => remove(folder)}
                 className="rounded-full border border-border bg-card px-3 py-1.5 disabled:opacity-40"
               >
-                <Text className="font-t3-medium text-xs text-danger-foreground">
+                <Text className="font-fcode-medium text-xs text-danger-foreground">
                   <T context="verb, removes a folder from the project">Remove</T>
                 </Text>
               </Pressable>

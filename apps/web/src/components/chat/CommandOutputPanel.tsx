@@ -1,6 +1,6 @@
-import type { CommandOutputView } from "@t3tools/client-runtime/state/command-output";
-import type { EnvironmentId, ThreadId, TurnItemId } from "@t3tools/contracts";
-import { TERMINAL_PALETTES, terminalOutputSpans } from "@t3tools/shared/terminalOutput";
+import type { CommandOutputView } from "@fcode/client-runtime/state/command-output";
+import type { EnvironmentId, ThreadId, TurnItemId } from "@fcode/contracts";
+import { TERMINAL_PALETTES, terminalOutputSpans } from "@fcode/shared/terminalOutput";
 import { T, Var } from "gt-react";
 import { useLayoutEffect, useRef } from "react";
 
@@ -43,7 +43,7 @@ export function CommandOutputPanel(props: {
   const text = data?.output.text ?? "";
   const { resolvedTheme } = useTheme();
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- pins the output scroller's scrollTop to the bottom after each commit while the user follows
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- pins the output scroller's scrollTop to the bottom after each commit while the user follows
   useLayoutEffect(() => {
     const element = scrollRef.current;
     if (element && followRef.current) element.scrollTop = element.scrollHeight;

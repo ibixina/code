@@ -5,15 +5,15 @@ import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 
 import { run } from "./shell.ts";
-import { runPromise, test, WEB } from "./t3.ts";
+import { runPromise, test, WEB } from "./fcode.ts";
 
 const LINES = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`);
 
 test(
   "The diff expands unchanged lines beside a Git ident keyword",
   WEB,
-  async ({ t3, app, browser, screen }) => {
-    const project = await t3.project("demo", {
+  async ({ fcode, app, browser, screen }) => {
+    const project = await fcode.project("demo", {
       ".gitattributes": "notes.txt ident\n",
       "notes.txt": `$Id$\n${LINES.join("\n")}\n`,
     });
@@ -28,7 +28,7 @@ test(
         yield* fs.writeFileString(notes, smudged.replace("line 2\n", "edited 2\n"));
       }),
     );
-    const thread = await t3.thread({ project, title: "Ident", messages: ["first"] });
+    const thread = await fcode.thread({ project, title: "Ident", messages: ["first"] });
 
     // The diff renders in shadow roots that locators do not reach.
     const diffLines = () =>
@@ -52,7 +52,7 @@ test(
         return false;
       });
 
-    await t3.open(thread);
+    await fcode.open(thread);
     await expect(screen.getByText("first fixture turn complete", { exact: false })).toBeVisible();
     await screen.getByRole("button", "Toggle right panel").tap();
     await screen.getByText("Diff").tap();

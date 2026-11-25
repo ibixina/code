@@ -8,15 +8,15 @@ import * as Jwt from "effect/jose/Jwt";
 import * as Redacted from "effect/Redacted";
 import * as Schema from "effect/Schema";
 
-export const RELAY_LINK_PROOF_TYP = "t3-env-link+jwt";
-export const RELAY_MINT_REQUEST_TYP = "t3-cloud-mint+jwt";
-export const RELAY_HEALTH_REQUEST_TYP = "t3-cloud-health+jwt";
-export const RELAY_MINT_RESPONSE_TYP = "t3-env-mint+jwt";
-export const RELAY_HEALTH_RESPONSE_TYP = "t3-env-health+jwt";
-export const RELAY_ACTIVITY_PUBLISH_TYP = "t3-env-activity+jwt";
-export const RELAY_MANAGED_TUNNEL_RECOVERY_TYP = "t3-env-managed-tunnel-recovery+jwt";
-export const RELAY_HOOK_DELIVERY_TYP = "t3-relay-hook-delivery+jwt";
-export const RELAY_HOOK_DELIVERY_HEADER = "x-t3-relay-delivery";
+export const RELAY_LINK_PROOF_TYP = "fcode-env-link+jwt";
+export const RELAY_MINT_REQUEST_TYP = "fcode-cloud-mint+jwt";
+export const RELAY_HEALTH_REQUEST_TYP = "fcode-cloud-health+jwt";
+export const RELAY_MINT_RESPONSE_TYP = "fcode-env-mint+jwt";
+export const RELAY_HEALTH_RESPONSE_TYP = "fcode-env-health+jwt";
+export const RELAY_ACTIVITY_PUBLISH_TYP = "fcode-env-activity+jwt";
+export const RELAY_MANAGED_TUNNEL_RECOVERY_TYP = "fcode-env-managed-tunnel-recovery+jwt";
+export const RELAY_HOOK_DELIVERY_TYP = "fcode-relay-hook-delivery+jwt";
+export const RELAY_HOOK_DELIVERY_HEADER = "x-fcode-relay-delivery";
 
 export class RelayJwtError extends Schema.TaggedError<RelayJwtError>()("RelayJwtError", {
   operation: Schema.Literals(["sign", "verify", "decode"]),

@@ -1,16 +1,16 @@
-import { proposedPlanTitle, stripDisplayedPlanMarkdown } from "@t3tools/shared/proposedPlanText";
+import { proposedPlanTitle, stripDisplayedPlanMarkdown } from "@fcode/shared/proposedPlanText";
 import { msg, T, useGT, useMessages, Var } from "gt-react";
 import { memo, useState, useId } from "react";
 import { findRevealRef } from "./markdownFindContext";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@fcode/client-runtime/state/runtime";
 import {
   AuthFilesystemWriteScope,
   type EnvironmentId,
   type ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   buildCollapsedProposedPlanPreviewMarkdown,
   buildProposedPlanMarkdownFilename,

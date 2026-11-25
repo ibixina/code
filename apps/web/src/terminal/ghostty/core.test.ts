@@ -7,7 +7,7 @@ import {
   readTerminalOutputUpdate,
   terminalOutputText,
   type TerminalBufferState,
-} from "@t3tools/client-runtime/state/terminal";
+} from "@fcode/client-runtime/state/terminal";
 
 import {
   terminalPromptNavigationData,

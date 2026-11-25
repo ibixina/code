@@ -1,18 +1,24 @@
 import appCss from "../index.css?inline";
-import type { EnvironmentServerConfig } from "@t3tools/client-runtime/connection";
-import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
+import type { EnvironmentServerConfig } from "@fcode/client-runtime/connection";
+import {
+  scopedThreadKey,
+  scopeProjectRef,
+  scopeThreadRef,
+} from "@fcode/client-runtime/environment";
 import * as shelfHooks from "../state/olderSettledShelf";
 import { createWorkspaceFocusController, workspaceAreaProps } from "../lib/workspaceFocus";
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentThreadShell } from "@fcode/client-runtime/state/shell";
 import {
   DEFAULT_CLIENT_SETTINGS,
   EnvironmentId,
   type LocalApi,
   ProjectId,
+  ProviderInstanceId,
+  RunId,
   ThreadId,
   type ScopedThreadRef,
-} from "@t3tools/contracts";
-import { isMacPlatform } from "@t3tools/shared/keybindings";
+} from "@fcode/contracts";
+import { isMacPlatform } from "@fcode/shared/keybindings";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 
@@ -51,7 +57,7 @@ vi.mock("../state/use-orchestration-command", { spy: true });
 vi.mock("../localApi", { spy: true });
 vi.mock(import("../state/server"), async (original) => {
   const { Atom } = await import("effect/reactivity");
-  const { compileResolvedKeybindingsConfig } = await import("@t3tools/shared/keybindings");
+  const { compileResolvedKeybindingsConfig } = await import("@fcode/shared/keybindings");
   // The desktop defaults: holding Mod alone already matches a thread jump.
   const keybindings = compileResolvedKeybindingsConfig([
     { key: "mod+1", command: "thread.jump.1" },
@@ -263,6 +269,77 @@ function threadShell(projectId: ProjectId, index: number): EnvironmentThreadShel
     title: `Thread ${index}`,
   });
 }
+
+describe("sidebar Working shelf", () => {
+  it("shows working threads first and highlights a returned thread until visited", async () => {
+    const previousSettings = getClientSettings();
+    using settings = new DisposableStack();
+    settings.defer(() => __setClientSettingsForTests(previousSettings));
+    __setClientSettingsForTests(DEFAULT_CLIENT_SETTINGS);
+    const workspace = project("working-shelf");
+    const recent = { ...threadShell(workspace.id, 91), updatedAt: "2026-01-03T00:00:00Z" };
+    const older = { ...threadShell(workspace.id, 92), updatedAt: "2026-01-02T00:00:00Z" };
+    const runId = RunId.make("working-shelf-run");
+    const working: EnvironmentThreadShell = {
+      ...threadShell(workspace.id, 90),
+      updatedAt: "2026-01-01T00:00:00Z",
+      runtime: {
+        status: "running",
+        activeRunId: runId,
+        providerInstanceId: ProviderInstanceId.make("codex"),
+        providerName: null,
+        lastError: null,
+        updatedAt: "2026-01-01T00:00:00Z",
+      },
+    };
+    vi.mocked(useProjects).mockReturnValue([workspace]);
+    vi.mocked(useThreadRouteTarget).mockReturnValue(null);
+    vi.mocked(useQuietThreadShells).mockReturnValue([older, recent, working]);
+
+    const sidebar = () => (
+      <SidebarProvider>
+        <Sidebar routeReveal={{ observedKey: null, pendingKey: null }} />
+      </SidebarProvider>
+    );
+    await using screen = await render(sidebar());
+    const rows = screen.getByTestId("sidebar-row-card");
+    await expect
+      .element(rows.nth(0))
+      .toHaveAttribute(
+        "data-sidebar-row",
+        scopedThreadKey(scopeThreadRef(working.environmentId, working.id)),
+      );
+    await expect
+      .element(rows.nth(1))
+      .toHaveAttribute(
+        "data-sidebar-row",
+        scopedThreadKey(scopeThreadRef(recent.environmentId, recent.id)),
+      );
+    await expect
+      .element(rows.nth(2))
+      .toHaveAttribute(
+        "data-sidebar-row",
+        scopedThreadKey(scopeThreadRef(older.environmentId, older.id)),
+      );
+
+    const returned = {
+      ...working,
+      updatedAt: "2026-01-04T00:00:00Z",
+      hasPendingApprovals: true,
+    };
+    vi.mocked(useQuietThreadShells).mockReturnValue([older, recent, returned]);
+    await screen.rerender(sidebar());
+    await expect.element(rows.nth(0)).toHaveClass("bg-success/12");
+
+    vi.mocked(useQuietThreadShells).mockReturnValue([
+      older,
+      recent,
+      { ...returned, lastVisitedAt: returned.updatedAt },
+    ]);
+    await screen.rerender(sidebar());
+    await expect.element(rows.nth(0)).not.toHaveClass("bg-success/12");
+  });
+});
 
 describe("sidebar render isolation", () => {
   // regression: #33100 Cmd+J re-rendered every sidebar row, which took hundreds of ms with many threads

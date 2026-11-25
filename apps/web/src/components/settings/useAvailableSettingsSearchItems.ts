@@ -1,6 +1,6 @@
 import { useMessages } from "gt-react";
-import { hasFeatureFlag } from "@t3tools/client-runtime/state/server";
-import { AuthEnvironmentMaintainScope } from "@t3tools/contracts";
+import { hasFeatureFlag } from "@fcode/client-runtime/state/server";
+import { AuthEnvironmentMaintainScope } from "@fcode/contracts";
 
 import { usePrimaryCloudLinkState } from "~/cloud/cloudLinkState";
 import { hasCloudPublicConfig } from "~/cloud/publicConfig";
@@ -45,12 +45,6 @@ export function useAvailableSettingsSearchItems() {
         environment.connection.phase === "connected" &&
         environment.serverConfig?.environment.capabilities.fastWorktreeCheckout === true,
     ) === true;
-  const hasAgentFeedbackEnvironment =
-    environments.some(
-      (environment) =>
-        environment.connection.phase === "connected" &&
-        environment.serverConfig?.environment.capabilities.agentFeedback === true,
-    ) === true;
   const hasTextGeneratorsEnvironment =
     environments.some(
       (environment) =>
@@ -89,7 +83,6 @@ export function useAvailableSettingsSearchItems() {
     managedTunnelActive,
     hasPeerLinkHost,
     hasFastWorktreeCheckoutEnvironment,
-    hasAgentFeedbackEnvironment,
     hasTextGeneratorsEnvironment,
     hasPrimaryEnvironment: primaryEnvironmentId !== null,
     hasSecretProvidersEnvironment,

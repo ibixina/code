@@ -8,7 +8,7 @@ import {
   MessageId,
   ThreadId,
   type AssistantCitation,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   assistantCitationLabel,
   assistantCitationsToPlainText,

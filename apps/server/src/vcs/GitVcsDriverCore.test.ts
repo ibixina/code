@@ -6,7 +6,7 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import { assert, it, describe } from "@effect/vitest";
 import { afterAll, vi } from "vite-plus/test";
 import * as Cause from "effect/Cause";
@@ -42,8 +42,8 @@ import {
   type ReviewDiffFileContentsInput,
   type ReviewDiffPreviewResult,
   type WorktreeSubmodules,
-} from "@t3tools/contracts";
-import { symlinksSupported } from "@t3tools/shared/testing/symlinks";
+} from "@fcode/contracts";
+import { symlinksSupported } from "@fcode/shared/testing/symlinks";
 import * as ServerConfig from "../config.ts";
 import {
   isNonRepositoryGitStderr,
@@ -62,7 +62,7 @@ const decodeVcsRef = Schema.decodeUnknownSync(VcsRef);
 const decodeVcsListRefsResult = Schema.decodeUnknownSync(VcsListRefsResult);
 
 const layerServerConfig = ServerConfig.layerTest(process.cwd(), {
-  prefix: "t3-git-vcs-driver-test-",
+  prefix: "fcode-git-vcs-driver-test-",
 });
 const layerTest = GitVcsDriver.layer.pipe(
   Layer.provideMerge(layerServerConfig),
@@ -962,7 +962,7 @@ it.effect("resolves a branch's base once while its refs and branch config are un
       yield* git(cwd, ["commit", "-m", "feature"]);
       const lookups = () => {
         const count = spawnedArgs.filter((args) =>
-          args.includes("branch.feature/x.t3-merge-base-ref"),
+          args.includes("branch.feature/x.fcode-merge-base-ref"),
         ).length;
         spawnedArgs.length = 0;
         return count;
@@ -1012,7 +1012,7 @@ it.effect("resolves a branch's base once while its refs and branch config are un
       yield* driver.statusDetailsLocal(cwd);
       assert.equal(lookups(), 0);
 
-      yield* git(cwd, ["config", "branch.feature/x.t3-merge-base-ref", "refs/heads/main"]);
+      yield* git(cwd, ["config", "branch.feature/x.fcode-merge-base-ref", "refs/heads/main"]);
       yield* driver.statusDetailsLocal(cwd);
       assert.equal(lookups(), 1);
 
@@ -1025,7 +1025,7 @@ it.effect("resolves a branch's base once while its refs and branch config are un
         "config",
         "--file",
         includedConfig,
-        "branch.feature/x.t3-merge-base",
+        "branch.feature/x.fcode-merge-base",
         "main",
       ]);
       yield* driver.statusDetailsLocal(cwd);
@@ -1037,9 +1037,9 @@ it.effect("resolves a branch's base once while its refs and branch config are un
         "--file",
         includedConfig,
         "--unset",
-        "branch.feature/x.t3-merge-base",
+        "branch.feature/x.fcode-merge-base",
       ]);
-      yield* git(cwd, ["config", "--unset", "branch.feature/x.t3-merge-base-ref"]);
+      yield* git(cwd, ["config", "--unset", "branch.feature/x.fcode-merge-base-ref"]);
       failRemoteLookup = true;
       yield* driver.getReviewDiffPreview({ cwd });
       failRemoteLookup = false;
@@ -1079,7 +1079,7 @@ it.effect("keeps a branch's base cached while only other refs' commits move", ()
       yield* git(cwd, ["pack-refs", "--all"]);
       const lookups = () => {
         const count = spawnedArgs.filter((args) =>
-          args.includes("branch.feature/x.t3-merge-base-ref"),
+          args.includes("branch.feature/x.fcode-merge-base-ref"),
         ).length;
         spawnedArgs.length = 0;
         return count;
@@ -1107,7 +1107,7 @@ it.effect("keeps a branch's base cached while only other refs' commits move", ()
       yield* git(cwd, ["update-ref", "-d", "refs/remotes/origin/develop"]);
       yield* driver.statusDetailsLocal(cwd);
       assert.equal(lookups(), 1);
-      yield* git(cwd, ["config", "branch.feature/x.t3-merge-base", "other"]);
+      yield* git(cwd, ["config", "branch.feature/x.fcode-merge-base", "other"]);
       yield* driver.statusDetailsLocal(cwd);
       assert.equal(lookups(), 1);
     }),
@@ -1139,7 +1139,7 @@ it.effect("rereads the base after a nested remote's HEAD is retargeted", () =>
       yield* git(cwd, ["checkout", "-b", "feature/x"]);
       const lookups = () => {
         const count = spawnedArgs.filter((args) =>
-          args.includes("branch.feature/x.t3-merge-base-ref"),
+          args.includes("branch.feature/x.fcode-merge-base-ref"),
         ).length;
         spawnedArgs.length = 0;
         return count;
@@ -1181,7 +1181,7 @@ it.effect("keeps the base cached when a remote branch has a HEAD path component"
       yield* git(cwd, ["checkout", "-b", "feature/x"]);
       const lookups = () => {
         const count = spawnedArgs.filter((args) =>
-          args.includes("branch.feature/x.t3-merge-base-ref"),
+          args.includes("branch.feature/x.fcode-merge-base-ref"),
         ).length;
         spawnedArgs.length = 0;
         return count;
@@ -1202,7 +1202,7 @@ it.effect("keeps one cached base per branch however often its refs change", () =
       const spawner = ChildProcessSpawner.make((command) => {
         if (
           ChildProcess.isStandardCommand(command) &&
-          command.args.map(String).includes("branch.feature/x.t3-merge-base-ref")
+          command.args.map(String).includes("branch.feature/x.fcode-merge-base-ref")
         ) {
           lookupCount++;
         }
@@ -1224,7 +1224,7 @@ it.effect("keeps one cached base per branch however often its refs change", () =
         return { lookups: lookupCount, aheadCount: status.aheadCount };
       });
       const useBase = (base: string) =>
-        git(cwd, ["config", "branch.feature/x.t3-merge-base", base]);
+        git(cwd, ["config", "branch.feature/x.fcode-merge-base", base]);
 
       yield* useBase(initialBranch);
       assert.deepStrictEqual(yield* read(), { lookups: 1, aheadCount: 1 });
@@ -2112,7 +2112,7 @@ describe("pullCurrentBranch", () => {
   );
 });
 
-it.effect.each(["a T3 branch creation", "an external worktree addition"] as const)(
+it.effect.each(["a fcode branch creation", "an external worktree addition"] as const)(
   "refreshes an in-flight ref snapshot after %s",
   (mutation) =>
     Effect.scoped(
@@ -2132,7 +2132,7 @@ it.effect.each(["a T3 branch creation", "an external worktree addition"] as cons
               command.args.includes("for-each-ref") &&
               command.args.includes("refs/heads") &&
               command.args.includes("refs/remotes");
-            if (!isRefScan && (!isWorktreeScan || mutation === "a T3 branch creation")) {
+            if (!isRefScan && (!isWorktreeScan || mutation === "a fcode branch creation")) {
               return yield* delegate.spawn(command);
             }
             if (!(yield* Ref.getAndSet(firstScan, false))) {
@@ -2165,7 +2165,7 @@ it.effect.each(["a T3 branch creation", "an external worktree addition"] as cons
         const inFlight = yield* list.pipe(Effect.forkChild({ startImmediately: true }));
         yield* Deferred.await(firstScanCompleted);
 
-        if (mutation === "a T3 branch creation") {
+        if (mutation === "a fcode branch creation") {
           yield* driver.createRef({ cwd, refName });
           yield* Deferred.succeed(releaseOtherScans, undefined);
           assert.equal((yield* Fiber.join(inFlight)).refs[0]?.name, refName);
@@ -2858,7 +2858,7 @@ it.effect("lets a worktree checkout that is still working run past five minutes"
     const worktreePath = path.join(cwd, "worktree");
 
     const creation = yield* driver
-      .createWorktree({ cwd, refName: "main", newRefName: "t3/slow-checkout", path: worktreePath })
+      .createWorktree({ cwd, refName: "main", newRefName: "fcode/slow-checkout", path: worktreePath })
       .pipe(Effect.forkChild);
     yield* Deferred.await(checkoutStarted);
     yield* TestClock.adjust("6 minutes");
@@ -2866,7 +2866,7 @@ it.effect("lets a worktree checkout that is still working run past five minutes"
 
     const result = yield* Fiber.join(creation);
     assert.equal(result.worktree.path, worktreePath);
-    assert.equal(result.worktree.refName, "t3/slow-checkout");
+    assert.equal(result.worktree.refName, "fcode/slow-checkout");
   }).pipe(
     Effect.provide(
       layerServerConfig.pipe(
@@ -3300,7 +3300,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
                   .createWorktree({
                     cwd,
                     refName,
-                    ...(action === "worktree add -b" ? { newRefName: "t3/new-thread" } : {}),
+                    ...(action === "worktree add -b" ? { newRefName: "fcode/new-thread" } : {}),
                     path: path.join(cwd, "worktree"),
                   })
                   .pipe(Effect.flip);
@@ -5285,7 +5285,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         yield* git(cwd, ["commit", "-m", "upstream work"]);
         yield* git(cwd, ["push", "-u", "upstream", "main"]);
         yield* git(cwd, ["checkout", "-b", "feature/from-local-main"]);
-        yield* git(cwd, ["config", "branch.feature/from-local-main.t3-merge-base", "main"]);
+        yield* git(cwd, ["config", "branch.feature/from-local-main.fcode-merge-base", "main"]);
         yield* writeTextFile(cwd, "feature.txt", "intended branch change\n");
         yield* git(cwd, ["add", "feature.txt"]);
         yield* git(cwd, ["commit", "-m", "feature work"]);
@@ -5325,11 +5325,11 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         yield* git(cwd, ["push", "upstream", "main"]);
         yield* git(cwd, ["fetch", "origin"]);
         yield* git(cwd, ["fetch", "upstream"]);
-        yield* git(cwd, ["checkout", "-b", "t3/temporary"]);
-        yield* git(cwd, ["config", "branch.t3/temporary.t3-merge-base", "main"]);
+        yield* git(cwd, ["checkout", "-b", "fcode/temporary"]);
+        yield* git(cwd, ["config", "branch.fcode/temporary.fcode-merge-base", "main"]);
         yield* git(cwd, [
           "config",
-          "branch.t3/temporary.t3-merge-base-ref",
+          "branch.fcode/temporary.fcode-merge-base-ref",
           "refs/remotes/upstream/main",
         ]);
         yield* writeTextFile(cwd, "feature.txt", "thread work\n");
@@ -5348,7 +5348,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
               !command.args.includes("status.showUntrackedFiles")
             ) {
               if (!(yield* Ref.getAndSet(renameClaimed, true))) {
-                yield* git(cwd, ["branch", "-m", "t3/temporary", "feature/named"]).pipe(
+                yield* git(cwd, ["branch", "-m", "fcode/temporary", "feature/named"]).pipe(
                   Effect.provideService(GitVcsDriver.GitVcsDriver, outer),
                   Effect.orDie,
                 );
@@ -5366,7 +5366,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
 
         const status = yield* driver.statusDetailsLocal(cwd, { includeBranchChanges: true });
 
-        assert.strictEqual(status.branch, "t3/temporary");
+        assert.strictEqual(status.branch, "fcode/temporary");
         assert.deepStrictEqual(status.branchChanges, {
           baseRef: null,
           insertions: 1,
@@ -6680,7 +6680,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
             GIT_TERMINAL_PROMPT: "1",
             SSH_ASKPASS: "ssh-askpass",
             SSH_ASKPASS_REQUIRE: "force",
-            T3_TEST_SSH_ASKPASS_LOG: sshLogPath,
+            FCODE_TEST_SSH_ASKPASS_LOG: sshLogPath,
           }),
         );
       }),
@@ -6881,46 +6881,46 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
       }),
     );
 
-    it.effect.each(["t3", "T3"])("flattens a generated name when parent %s blocks it", (parent) =>
+    it.effect.each(["fcode", "fcode"])("flattens a generated name when parent %s blocks it", (parent) =>
       Effect.gen(function* () {
         const cwd = yield* makeTmpDir();
         yield* initRepoWithCommit(cwd);
         const driver = yield* GitVcsDriver.GitVcsDriver;
-        // A local `t3` branch is why launches start on the flat `t3-<hex>` temporary branch.
+        // A local `fcode` branch is why launches start on the flat `fcode-<hex>` temporary branch.
         yield* git(cwd, ["branch", parent]);
-        yield* git(cwd, ["checkout", "-b", "t3-abcd1234"]);
-        yield* git(cwd, ["branch", "t3-fix-login"]);
+        yield* git(cwd, ["checkout", "-b", "fcode-abcd1234"]);
+        yield* git(cwd, ["branch", "fcode-fix-login"]);
 
         const renamed = yield* driver.renameBranch({
           cwd,
-          oldBranch: "t3-abcd1234",
-          newBranch: "t3/fix-login",
+          oldBranch: "fcode-abcd1234",
+          newBranch: "fcode/fix-login",
         });
 
-        assert.equal(renamed.branch, "t3-fix-login-1");
-        assert.equal(yield* git(cwd, ["branch", "--show-current"]), "t3-fix-login-1");
+        assert.equal(renamed.branch, "fcode-fix-login-1");
+        assert.equal(yield* git(cwd, ["branch", "--show-current"]), "fcode-fix-login-1");
       }),
     );
 
-    it.effect.each(["t3-fix-login/child", "T3-Fix-Login/child", "T3-FIX-LOGIN"])(
+    it.effect.each(["fcode-fix-login/child", "fcode-Fix-Login/child", "fcode-FIX-LOGIN"])(
       "skips a flattened name blocked by %s",
       (occupied) =>
         Effect.gen(function* () {
           const cwd = yield* makeTmpDir();
           yield* initRepoWithCommit(cwd);
           const driver = yield* GitVcsDriver.GitVcsDriver;
-          yield* git(cwd, ["branch", "t3"]);
-          yield* git(cwd, ["checkout", "-b", "t3-abcd1234"]);
+          yield* git(cwd, ["branch", "fcode"]);
+          yield* git(cwd, ["checkout", "-b", "fcode-abcd1234"]);
           yield* git(cwd, ["branch", occupied]);
 
           const renamed = yield* driver.renameBranch({
             cwd,
-            oldBranch: "t3-abcd1234",
-            newBranch: "t3/fix-login",
+            oldBranch: "fcode-abcd1234",
+            newBranch: "fcode/fix-login",
           });
 
-          assert.equal(renamed.branch, "t3-fix-login-1");
-          assert.equal(yield* git(cwd, ["branch", "--show-current"]), "t3-fix-login-1");
+          assert.equal(renamed.branch, "fcode-fix-login-1");
+          assert.equal(yield* git(cwd, ["branch", "--show-current"]), "fcode-fix-login-1");
         }),
     );
 
@@ -7357,7 +7357,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
             cwd,
             path: worktreePath,
             refName: initialBranch,
-            newRefName: "t3/cancel",
+            newRefName: "fcode/cancel",
           };
           const worktrees = git(cwd, ["worktree", "list", "--porcelain"]);
 
@@ -7377,7 +7377,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
 
           assert.equal(claims, 0);
           assert.notInclude(yield* worktrees, worktreePath);
-          assert.equal(yield* git(cwd, ["branch", "--list", "t3/cancel"]), "");
+          assert.equal(yield* git(cwd, ["branch", "--list", "fcode/cancel"]), "");
           assert.isFalse(yield* fs.exists(worktreePath));
 
           // A retry gets the same path and branch, and a claimed worktree outlives a later cancel.
@@ -7392,7 +7392,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           yield* Fiber.interrupt(retry);
           assert.include(yield* worktrees, worktreePath);
           assert.notInclude(yield* worktrees, "locked");
-          assert.equal(yield* git(worktreePath, ["branch", "--show-current"]), "t3/cancel");
+          assert.equal(yield* git(worktreePath, ["branch", "--show-current"]), "fcode/cancel");
         }),
     );
 
@@ -7432,7 +7432,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           yield* git(cwd, ["rev-parse", "HEAD"]),
         );
         assert.equal(
-          yield* git(cwd, ["config", "branch.feature/parallel.t3-merge-base"]),
+          yield* git(cwd, ["config", "branch.feature/parallel.fcode-merge-base"]),
           initialBranch,
         );
         for (const [configured, expected] of [
@@ -7519,7 +7519,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
 
           const result = yield* driver
             .createWorktree(
-              { cwd, path: worktreePath, refName: initialBranch, newRefName: "t3/noisy" },
+              { cwd, path: worktreePath, refName: initialBranch, newRefName: "fcode/noisy" },
               withProgress ? { progress: { onCheckoutProgress: () => Effect.void } } : undefined,
             )
             .pipe(Effect.result);
@@ -7581,7 +7581,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           assert.equal(entrySeconds.length, 51);
           return entrySeconds.filter((seconds) => seconds >= indexSecond);
         });
-        while ((yield* racyEntries).length > 0 || (yield* fs.exists(`${indexPath}.t3-refresh`))) {
+        while ((yield* racyEntries).length > 0 || (yield* fs.exists(`${indexPath}.fcode-refresh`))) {
           yield* Queue.take(indexChanges);
         }
         assert.isFalse(yield* fs.exists(`${indexPath}.lock`));
@@ -7647,7 +7647,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
 
           assert.equal(yield* git(worktreePath, ["rev-parse", "HEAD"]), commit);
           assert.equal(
-            yield* driver.readConfigValue(cwd, "branch.feature/revision.t3-merge-base"),
+            yield* driver.readConfigValue(cwd, "branch.feature/revision.fcode-merge-base"),
             null,
           );
         }),
@@ -7690,20 +7690,20 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
             cwd,
             path: occupiedPath,
             refName: initialBranch,
-            newRefName: "t3/collide",
+            newRefName: "fcode/collide",
           })
           .pipe(Effect.result);
 
         assert.isTrue(Result.isFailure(failed));
-        assert.equal(yield* git(cwd, ["branch", "--list", "t3/collide"]), "");
+        assert.equal(yield* git(cwd, ["branch", "--list", "fcode/collide"]), "");
         const worktreePath = path.join(yield* makeTmpDir("git-worktrees-"), "retry");
         yield* driver.createWorktree({
           cwd,
           path: worktreePath,
           refName: initialBranch,
-          newRefName: "t3/collide",
+          newRefName: "fcode/collide",
         });
-        assert.equal(yield* git(worktreePath, ["branch", "--show-current"]), "t3/collide");
+        assert.equal(yield* git(worktreePath, ["branch", "--show-current"]), "fcode/collide");
       }),
     );
 
@@ -7779,7 +7779,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           const renamed = `${branch}-renamed`;
           assert.equal(yield* git(cwd, ["config", `branch.${renamed}.remote`]), "origin");
           assert.equal(
-            yield* git(cwd, ["config", `branch.${renamed}.t3-merge-base-ref`]),
+            yield* git(cwd, ["config", `branch.${renamed}.fcode-merge-base-ref`]),
             `refs/remotes/origin/${initialBranch}`,
           );
         }
@@ -7795,7 +7795,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         const driver = yield* GitVcsDriver.GitVcsDriver;
         // A multi-model send launches one worktree per model with the same message, so their
         // generated names often match and the renames can land together.
-        const temporaryBranches = ["t3/aaaa1111", "t3/bbbb2222", "t3/cccc3333"];
+        const temporaryBranches = ["fcode/aaaa1111", "fcode/bbbb2222", "fcode/cccc3333"];
         yield* Effect.forEach(temporaryBranches, (branch) =>
           driver.createWorktree({
             cwd,
@@ -7843,7 +7843,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           });
 
           assert.equal(
-            yield* driver.readConfigValue(cwd, "branch.feature/branch.t3-merge-base"),
+            yield* driver.readConfigValue(cwd, "branch.feature/branch.fcode-merge-base"),
             baseBranch,
           );
         }),
@@ -7876,7 +7876,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         });
 
         assert.equal(
-          yield* driver.readConfigValue(cwd, "branch.feature/remote.t3-merge-base"),
+          yield* driver.readConfigValue(cwd, "branch.feature/remote.fcode-merge-base"),
           branch,
         );
         const preview = yield* driver.getReviewDiffPreview({ cwd: worktreePath });
@@ -8032,7 +8032,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
       }).pipe(withGitFileProtocol),
     );
 
-    it.effect("sparse worktrees read .gitmodules and t3.json from HEAD", () =>
+    it.effect("sparse worktrees read .gitmodules and fcode.json from HEAD", () =>
       Effect.gen(function* () {
         const fileSystem = yield* FileSystem.FileSystem;
         const pathService = yield* Path.Path;
@@ -8049,7 +8049,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         const worktrees = yield* makeTmpDir("git-worktrees-");
 
         const createSparse = Effect.fn(function* (projectFile: string, branch: string) {
-          yield* writeTextFile(cwd, "t3.json", projectFile);
+          yield* writeTextFile(cwd, "fcode.json", projectFile);
           yield* git(cwd, ["add", "."]);
           yield* git(cwd, ["commit", "-m", branch]);
           const sparsePath = pathService.join(worktrees, branch);
@@ -8061,7 +8061,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
             newRefName: branch,
           });
           assert.isFalse(yield* fileSystem.exists(pathService.join(sparsePath, ".gitmodules")));
-          assert.isFalse(yield* fileSystem.exists(pathService.join(sparsePath, "t3.json")));
+          assert.isFalse(yield* fileSystem.exists(pathService.join(sparsePath, "fcode.json")));
           return yield* fileSystem.exists(pathService.join(sparsePath, "shared", "SHARED.md"));
         });
 
@@ -8250,7 +8250,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
       }),
     );
 
-    it.effect("resolves the submodule mode from the option, then t3.json", () =>
+    it.effect("resolves the submodule mode from the option, then fcode.json", () =>
       Effect.gen(function* () {
         const fileSystem = yield* FileSystem.FileSystem;
         const pathService = yield* Path.Path;
@@ -8279,11 +8279,11 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           branch: string,
           submodules: WorktreeSubmodules | null = null,
         ) {
-          yield* writeTextFile(cwd, "t3.json", `{ "worktreeSubmodules": "${fileMode}" }`);
-          yield* git(cwd, ["add", "t3.json"]);
+          yield* writeTextFile(cwd, "fcode.json", `{ "worktreeSubmodules": "${fileMode}" }`);
+          yield* git(cwd, ["add", "fcode.json"]);
           yield* git(cwd, ["commit", "--allow-empty", "-m", `submodules: ${fileMode}`]);
           const worktreePath = pathService.join(worktreesDir, branch);
-          const disabled = yield* Ref.make<"settings" | "t3.json" | false>(false);
+          const disabled = yield* Ref.make<"settings" | "fcode.json" | false>(false);
           yield* driver.createWorktree(
             { cwd, path: worktreePath, refName: initialBranch, newRefName: branch },
             {
@@ -8321,14 +8321,14 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           nested: false,
         });
         assert.deepEqual(yield* createWithMode("none", "none"), {
-          disabled: "t3.json",
+          disabled: "fcode.json",
           inner: false,
           nested: false,
         });
       }).pipe(withGitFileProtocol),
     );
 
-    it.effect("checks out only the t3.json sparse patterns in a new worktree", () =>
+    it.effect("checks out only the fcode.json sparse patterns in a new worktree", () =>
       Effect.gen(function* () {
         const fileSystem = yield* FileSystem.FileSystem;
         const pathService = yield* Path.Path;
@@ -8339,7 +8339,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         yield* writeTextFile(repo, "sparse-patterns.txt", "/*\n!/assets/\n");
         yield* writeTextFile(
           repo,
-          "t3.json",
+          "fcode.json",
           `{ "worktreeSparsePatternsPath": "./sparse-patterns.txt" }`,
         );
         yield* git(repo, ["add", "."]);
@@ -8397,7 +8397,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
       }),
     );
 
-    it.effect("fails without a worktree when the t3.json sparse pattern path is not a file", () =>
+    it.effect("fails without a worktree when the fcode.json sparse pattern path is not a file", () =>
       Effect.gen(function* () {
         const fileSystem = yield* FileSystem.FileSystem;
         const pathService = yield* Path.Path;
@@ -8409,7 +8409,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         for (const patternsPath of ["missing.txt", "patterns"]) {
           yield* writeTextFile(
             cwd,
-            "t3.json",
+            "fcode.json",
             JSON.stringify({ worktreeSparsePatternsPath: patternsPath }),
           );
           yield* git(cwd, ["add", "."]);
@@ -8467,7 +8467,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           "# test\n",
         );
         assert.equal(
-          yield* driver.readConfigValue(worktreePath, "branch.feature/locked-config.t3-merge-base"),
+          yield* driver.readConfigValue(worktreePath, "branch.feature/locked-config.fcode-merge-base"),
           null,
         );
         assert.equal(yield* fileSystem.exists(pathService.join(cwd, ".git/config.lock")), true);
@@ -8478,16 +8478,16 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
       Effect.gen(function* () {
         const cwd = yield* makeTmpDir();
         yield* initRepoWithCommit(cwd);
-        yield* git(cwd, ["checkout", "-b", "t3/abcd1234"]);
+        yield* git(cwd, ["checkout", "-b", "fcode/abcd1234"]);
         yield* writeTextFile(cwd, ".git/config.lock", "");
         const driver = yield* GitVcsDriver.GitVcsDriver;
 
         const renamed = yield* TestClock.withLive(
-          driver.renameBranch({ cwd, oldBranch: "t3/abcd1234", newBranch: "t3/fix-login" }),
+          driver.renameBranch({ cwd, oldBranch: "fcode/abcd1234", newBranch: "fcode/fix-login" }),
         );
 
-        assert.equal(renamed.branch, "t3/fix-login");
-        assert.equal(yield* git(cwd, ["branch", "--show-current"]), "t3/fix-login");
+        assert.equal(renamed.branch, "fcode/fix-login");
+        assert.equal(yield* git(cwd, ["branch", "--show-current"]), "fcode/fix-login");
       }),
     );
 
@@ -8853,7 +8853,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         const added = yield* driver.ensureRemote({
           cwd,
           preferredName: "origin",
-          url: "https://github.com/another-owner/t3code.git",
+          url: "https://github.com/another-owner/fcode.git",
         });
         assert.equal(added, "origin-1");
       }),
@@ -8937,7 +8937,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
           Effect.provide(layerServerConfig),
         );
-        const input = { cwd, preferredName: "fork", url: "https://github.com/fork/t3code.git" };
+        const input = { cwd, preferredName: "fork", url: "https://github.com/fork/fcode.git" };
 
         const names = yield* Effect.all([driver.ensureRemote(input), driver.ensureRemote(input)], {
           concurrency: "unbounded",
@@ -8956,17 +8956,17 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         const lockPath = path.join(cwd, ".git", "config.lock");
         yield* fileSystem.writeFileString(lockPath, "");
         const { driver, failures } = yield* makeDriverReleasingLock(
-          (args) => args[1] === "t3.test",
+          (args) => args[1] === "fcode.test",
           lockPath,
         );
 
         // The retry waits on the real clock; the lock is already gone by then.
         yield* TestClock.withLive(
-          driver.writeConfigValue({ cwd, key: "t3.test", value: "written" }),
+          driver.writeConfigValue({ cwd, key: "fcode.test", value: "written" }),
         );
 
         assert.equal(yield* Ref.get(failures), 1);
-        assert.equal(yield* git(cwd, ["config", "t3.test"]), "written");
+        assert.equal(yield* git(cwd, ["config", "fcode.test"]), "written");
       }),
     );
 
@@ -9105,7 +9105,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         const driver = yield* GitVcsDriver.GitVcsDriver;
         const fileSystem = yield* FileSystem.FileSystem;
         // Remote names come from .git/config. Read as an option, this one runs `touch` in cwd.
-        const remoteName = "--upload-pack=touch${IFS}t3-marker;false";
+        const remoteName = "--upload-pack=touch${IFS}fcode-marker;false";
         yield* git(remote, ["init", "--bare"]);
         yield* git(cwd, [
           "push",
@@ -9120,7 +9120,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         yield* driver.fetchRemote({ cwd, remoteName });
         const head = yield* driver.fetchRefCommit({ cwd, ref: "refs/pull/7/head" });
 
-        assert.isFalse(yield* fileSystem.exists((yield* Path.Path).join(cwd, "t3-marker")));
+        assert.isFalse(yield* fileSystem.exists((yield* Path.Path).join(cwd, "fcode-marker")));
         assert.equal(head.commitSha, yield* git(cwd, ["rev-parse", "HEAD"]));
         assert.equal(
           yield* git(cwd, ["rev-parse", `refs/remotes/${remoteName}/${initialBranch}`]),
@@ -9175,7 +9175,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         const addedForFork = yield* driver.ensureRemote({
           cwd,
           preferredName: "octocat",
-          url: "git@github.com:octocat/t3code.git",
+          url: "git@github.com:octocat/fcode.git",
         });
         assert.equal(addedForFork, "octocat");
         assert.equal(yield* git(cwd, ["remote"]), "octocat\norigin");
@@ -9973,7 +9973,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           cwd,
           path: worktreePath,
           refName: resolvedBase.commitSha,
-          newRefName: "t3code/fetched-origin",
+          newRefName: "fcode/fetched-origin",
           baseRefName: resolvedBase.remoteRefName,
         });
 
@@ -9987,7 +9987,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           remoteHead,
         );
         assert.equal(
-          yield* driver.readConfigValue(worktreePath, "branch.t3code/fetched-origin.remote"),
+          yield* driver.readConfigValue(worktreePath, "branch.fcode/fetched-origin.remote"),
           null,
         );
         const status = yield* driver.statusDetails(worktreePath);
@@ -10083,7 +10083,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         assert.strictEqual(status.branchChanges?.deletions, 0);
         // gh pr create consumes this setting verbatim as the hosted target branch.
         assert.equal(
-          yield* driver.readConfigValue(worktreePath, "branch.feature/from-upstream.t3-merge-base"),
+          yield* driver.readConfigValue(worktreePath, "branch.feature/from-upstream.fcode-merge-base"),
           "release",
         );
         assert.equal(changes.baseRef, "upstream/release");
@@ -10219,11 +10219,11 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
 
           if (autoSetupMerge) {
             assert.equal(
-              yield* driver.readConfigValue(cwd, "branch.feature/push.t3-merge-base"),
+              yield* driver.readConfigValue(cwd, "branch.feature/push.fcode-merge-base"),
               initialBranch,
             );
             assert.equal(
-              yield* driver.readConfigValue(cwd, "branch.feature/push.t3-merge-base-ref"),
+              yield* driver.readConfigValue(cwd, "branch.feature/push.fcode-merge-base-ref"),
               `refs/heads/${initialBranch}`,
             );
           }
@@ -10358,7 +10358,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
         assert.equal(
           yield* (yield* GitVcsDriver.GitVcsDriver).readConfigValue(
             cwd,
-            "branch.feature/push.t3-merge-base",
+            "branch.feature/push.fcode-merge-base",
           ),
           "release",
         );
@@ -10605,11 +10605,11 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
             `refs/remotes/origin/${publishBranch}`,
           );
           assert.equal(
-            yield* driver.readConfigValue(cwd, `branch.${branch}.t3-merge-base`),
+            yield* driver.readConfigValue(cwd, `branch.${branch}.fcode-merge-base`),
             baseBranch,
           );
           assert.equal(
-            yield* driver.readConfigValue(cwd, `branch.${branch}.t3-merge-base-ref`),
+            yield* driver.readConfigValue(cwd, `branch.${branch}.fcode-merge-base-ref`),
             local ? `refs/heads/${baseBranch}` : `refs/remotes/upstream/${baseBranch}`,
           );
           assert.equal(yield* git(cwd, ["rev-parse", `refs/heads/${baseBranch}`]), upstreamDevSha);
@@ -10637,7 +10637,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
     it.effect.each([
       { upstreamRef: "refs/remotes/origin/main", baseKey: "gh-merge-base" },
       { upstreamRef: "refs/heads/main", baseKey: "gh-merge-base" },
-      { upstreamRef: "refs/heads/main", baseKey: "t3-merge-base" },
+      { upstreamRef: "refs/heads/main", baseKey: "fcode-merge-base" },
     ])(
       "keeps a recorded $baseKey when publishing a branch tracking $upstreamRef",
       ({ upstreamRef, baseKey }) =>
@@ -10654,7 +10654,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           yield* git(cwd, ["config", `branch.feature/y.${baseKey}`, "release/v2"]);
           yield* git(cwd, [
             "config",
-            "branch.feature/y.t3-merge-base-ref",
+            "branch.feature/y.fcode-merge-base-ref",
             "refs/heads/release/v2",
           ]);
           yield* writeTextFile(cwd, "feature.txt", "feature\n");
@@ -10675,7 +10675,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           );
           assert.equal(yield* driver.readBranchBase(cwd, "feature/y"), "release/v2");
           assert.equal(
-            yield* driver.readConfigValue(cwd, "branch.feature/y.t3-merge-base-ref"),
+            yield* driver.readConfigValue(cwd, "branch.feature/y.fcode-merge-base-ref"),
             "refs/heads/release/v2",
           );
         }),
@@ -10750,7 +10750,7 @@ it.layer(layerTest)("GitVcsDriver core integration", (it) => {
           yield* git(origin, ["init", "--bare"]);
           yield* git(fork, ["init", "--bare"]);
           yield* git(cwd, ["remote", "add", "origin", origin]);
-          // e.g. the remote T3 adds when checking out a pull request from alice's fork.
+          // e.g. the remote fcode adds when checking out a pull request from alice's fork.
           yield* git(cwd, ["remote", "add", "alice", fork]);
           yield* git(cwd, ["checkout", "-b", "alice/fix"]);
           yield* writeTextFile(cwd, "fix.txt", "fix\n");

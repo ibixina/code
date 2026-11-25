@@ -20,21 +20,21 @@ import type { ThreadMoveDestination } from "./threadOrder";
 import type {
   EnvironmentProject,
   EnvironmentThreadShell,
-} from "@t3tools/client-runtime/state/shell";
-import type { EnvironmentThreadSearchMatch } from "@t3tools/client-runtime/state/thread-search";
+} from "@fcode/client-runtime/state/shell";
+import type { EnvironmentThreadSearchMatch } from "@fcode/client-runtime/state/thread-search";
 import {
   formatWorkingDurationLabel,
   resolveThreadWorkingStartedAt,
-} from "@t3tools/client-runtime/state/models";
+} from "@fcode/client-runtime/state/models";
 import {
   AuthOrchestrationOperateScope,
   type EnvironmentId,
   type EnvironmentMachineKind,
-} from "@t3tools/contracts";
-import { toServerClock } from "@t3tools/client-runtime/clock";
-import type { SnoozePresetSetting } from "@t3tools/contracts/settings";
-import { canSnooze } from "@t3tools/client-runtime/state/thread-settled";
-import { threadChipCopyTarget } from "@t3tools/client-runtime/thread-reference";
+} from "@fcode/contracts";
+import { toServerClock } from "@fcode/client-runtime/clock";
+import type { SnoozePresetSetting } from "@fcode/contracts/settings";
+import { canSnooze } from "@fcode/client-runtime/state/thread-settled";
+import { threadChipCopyTarget } from "@fcode/client-runtime/thread-reference";
 import type { MenuAction } from "@react-native-menu/menu";
 import { useNavigation } from "@react-navigation/native";
 import { msg, T, useGT, useMessages } from "gt-react-native";
@@ -255,7 +255,7 @@ function ThreadListV2Section(props: {
     <>
       <Text
         className={cn(
-          "text-xs font-t3-medium",
+          "text-xs font-fcode-medium",
           sidebarPane
             ? "text-drawer-foreground-muted"
             : snoozed
@@ -427,8 +427,8 @@ export const ThreadListV2ShowMoreRow = memo(function ThreadListV2ShowMoreRow(pro
       <Text
         className={
           props.pane === "sidebar"
-            ? "text-xs font-t3-medium text-drawer-foreground-muted"
-            : "text-xs font-t3-medium text-foreground-muted"
+            ? "text-xs font-fcode-medium text-drawer-foreground-muted"
+            : "text-xs font-fcode-medium text-foreground-muted"
         }
       >
         {label}
@@ -559,7 +559,7 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
         ) : null}
         <Text
           className={cn(
-            "flex-1 text-base font-t3-medium",
+            "flex-1 text-base font-fcode-medium",
             selected
               ? selectedThreadRowColors.foregroundClassName
               : rowAppearance.foregroundClassName,
@@ -593,7 +593,7 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
             />
             <Text
               className={cn(
-                "text-xs font-t3-bold",
+                "text-xs font-fcode-bold",
                 selected
                   ? selectedThreadRowColors.foregroundClassName
                   : "text-adaptive-amber-700-300",
@@ -1398,7 +1398,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         <Text
           className={cn(
             "flex-1 text-base",
-            !recede && "font-t3-medium",
+            !recede && "font-fcode-medium",
             selected
               ? selectedThreadRowColors.foregroundClassName
               : rowAppearance.foregroundClassName,
@@ -1448,7 +1448,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               />
               <Text
                 className={cn(
-                  "text-xs font-t3-bold",
+                  "text-xs font-fcode-bold",
                   selected
                     ? selectedThreadRowColors.foregroundClassName
                     : "text-warning-foreground",
@@ -1472,7 +1472,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               />
               <Text
                 className={cn(
-                  "text-xs font-t3-bold",
+                  "text-xs font-fcode-bold",
                   selected ? selectedThreadRowColors.foregroundClassName : statusLabel.className,
                 )}
               >

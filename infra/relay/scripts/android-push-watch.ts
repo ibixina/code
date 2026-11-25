@@ -8,9 +8,9 @@ import {
   WsRpcGroup,
   type OrchestrationProjectShell,
   type OrchestrationV2ThreadShell,
-} from "@t3tools/contracts";
-import type { RelayAgentActivityState } from "@t3tools/contracts/relay";
-import { projectThreadAwarenessV2 } from "@t3tools/shared/agentAwareness";
+} from "@fcode/contracts";
+import type { RelayAgentActivityState } from "@fcode/contracts/relay";
+import { projectThreadAwarenessV2 } from "@fcode/shared/agentAwareness";
 import * as Cause from "effect/Cause";
 import * as Option from "effect/Option";
 import * as Clock from "effect/Clock";
@@ -206,7 +206,7 @@ const main = Effect.gen(function* () {
             packageName: device.packageName,
             alert: alert !== null,
             data: fitFcmData({
-              t3_kind: "agent_activity",
+              fcode_kind: "agent_activity",
               ...androidRecipientData(device.userId, device.deviceId, null),
               updated_at: String(now),
               ...androidActivityData(aggregate),

@@ -1,14 +1,14 @@
 import { expect } from "e2e";
 
-import { test, WEB } from "./t3.ts";
+import { test, WEB } from "./fcode.ts";
 
 test(
   "Language changes update the same terminal input during and after setup",
   WEB,
-  async ({ t3, app, browser, screen }) => {
-    const project = await t3.project("demo");
-    const thread = await t3.thread({ project, title: "Terminal work", messages: ["Start"] });
-    await t3.open(thread);
+  async ({ fcode, app, browser, screen }) => {
+    const project = await fcode.project("demo");
+    const thread = await fcode.thread({ project, title: "Terminal work", messages: ["Start"] });
+    await fcode.open(thread);
 
     await browser.evaluate(() => {
       const load = FontFace.prototype.load;
@@ -24,10 +24,10 @@ test(
     });
 
     await screen.getByRole("button", "Toggle terminal drawer").tap();
-    const input = browser.locator(".t3-ghostty-input:not([data-workspace-focus-default])");
+    const input = browser.locator(".fcode-ghostty-input:not([data-workspace-focus-default])");
     await expect(input).toHaveAttribute("aria-label", "Terminal input");
     await browser.evaluate(() => {
-      document.querySelector(".t3-ghostty-input")!.setAttribute("data-original-terminal", "");
+      document.querySelector(".fcode-ghostty-input")!.setAttribute("data-original-terminal", "");
       return null;
     });
 
@@ -37,14 +37,14 @@ test(
     await screen.getByLabel("言語", { exact: true }).waitFor();
 
     const originalInput = browser.locator(
-      ".t3-ghostty-input[data-original-terminal]:not([data-workspace-focus-default])",
+      ".fcode-ghostty-input[data-original-terminal]:not([data-workspace-focus-default])",
     );
     await app.screenshot("pending-terminal-input-after-language-change");
     await expect(originalInput).toHaveAttribute("aria-label", "ターミナルの入力");
     await browser.evaluate(() => window.dispatchEvent(new Event("release-terminal-font")));
 
     const readyInput = browser.locator(
-      ".t3-ghostty-input[data-original-terminal][data-workspace-focus-default]",
+      ".fcode-ghostty-input[data-original-terminal][data-workspace-focus-default]",
     );
     await expect(readyInput).toHaveAttribute("aria-label", "ターミナルの入力");
     await screen.getByLabel("言語", { exact: true }).tap();

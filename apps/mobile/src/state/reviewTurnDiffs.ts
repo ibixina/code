@@ -1,6 +1,6 @@
-import { turnDiffSections } from "@t3tools/client-runtime/state/thread-repositories";
-import type { EnvironmentId, OrchestrationGetTurnDiffResult, ThreadId } from "@t3tools/contracts";
-import { quoteGitPatchPath, unquoteGitPatchPath } from "@t3tools/shared/gitPatchPath";
+import { turnDiffSections } from "@fcode/client-runtime/state/thread-repositories";
+import type { EnvironmentId, OrchestrationGetTurnDiffResult, ThreadId } from "@fcode/contracts";
+import { quoteGitPatchPath, unquoteGitPatchPath } from "@fcode/shared/gitPatchPath";
 import * as Effect from "effect/Effect";
 import { Atom, type AtomRegistry } from "effect/reactivity";
 
@@ -66,7 +66,7 @@ function patchInFolder(patch: string, folder: string): string {
       }
       const binary = BINARY_FILES.exec(line);
       return binary
-        ? // oxlint-disable-next-line t3code/no-untranslated-copy -- a line of Git patch text, parsed as a diff
+        ? // oxlint-disable-next-line fcode/no-untranslated-copy -- a line of Git patch text, parsed as a diff
           `Binary files ${pathInFolder(binary[1]!, folder, "a/")} and ${pathInFolder(binary[2]!, folder, "b/")} differ`
         : line;
     })

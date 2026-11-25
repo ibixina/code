@@ -5,9 +5,9 @@ import {
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
   RuntimeRequestId,
   ThreadId,
-} from "@t3tools/contracts";
-import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { makeThreadRequestsResolvedAnnouncer } from "@t3tools/client-runtime/state/thread-requests";
+} from "@fcode/contracts";
+import { scopeProjectRef, scopeThreadRef } from "@fcode/client-runtime/environment";
+import { makeThreadRequestsResolvedAnnouncer } from "@fcode/client-runtime/state/thread-requests";
 import { expect, it, vi } from "vite-plus/test";
 import { AsyncResult } from "effect/reactivity";
 

@@ -1,16 +1,16 @@
 import { expect } from "e2e";
 
-import { test, WEB } from "./t3.ts";
+import { test, WEB } from "./fcode.ts";
 
 // Scenarios title with a Codex command that always fails, so reaching it is the fixed behavior;
 // the bug refused first with "This thread has no messages to title yet."
 test(
   "Regenerate title on a fresh fork reaches the title model with the inherited history",
   WEB,
-  async ({ t3, app, screen }) => {
-    const project = await t3.project("demo");
-    const thread = await t3.thread({ project, title: "Earlier work", messages: ["first"] });
-    await t3.open(thread);
+  async ({ fcode, app, screen }) => {
+    const project = await fcode.project("demo");
+    const thread = await fcode.thread({ project, title: "Earlier work", messages: ["first"] });
+    await fcode.open(thread);
 
     await expect(screen.getByText("first fixture turn complete", { exact: false })).toBeVisible();
     await screen.getByRole("button", "Fork from this response").first().tap();

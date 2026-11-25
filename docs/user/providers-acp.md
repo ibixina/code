@@ -1,15 +1,15 @@
 # ACP providers
 
-T3 Code can run installed ACP commands or coding agents from the official
+fcode can run installed ACP commands or coding agents from the official
 [ACP Registry](https://agentclientprotocol.com/get-started/registry). Registry agents bring their
-own models, tools, and sign-in, while T3 Code provides projects, threads, checkpoints, and task
+own models, tools, and sign-in, while fcode provides projects, threads, checkpoints, and task
 delegation.
 
-Agents that T3 Code supports as their own providers, such as Codex, Claude, Cursor, Grok, OpenCode,
+Agents that fcode supports as their own providers, such as Codex, Claude, Cursor, Grok, OpenCode,
 Pi, and [Antigravity](./providers-antigravity.md), don't appear in the Registry list. Enable them in
 **Settings → Providers** instead.
 
-T3 Code prefers the current ACP v2 preview protocol and uses its richer messages, usage, plans,
+fcode prefers the current ACP v2 preview protocol and uses its richer messages, usage, plans,
 configuration, compaction, and agent-terminal updates when the agent supports them. It also
 negotiates ACP v1 for Registry agents that have not migrated yet, so they continue to work through
 the same generic integration.
@@ -36,22 +36,22 @@ name. For DeepSeek Harness, use `dsh` with arguments `--profile` and `acp`.
 
 Local commands require no registry entry or download. Environment overrides apply to the command;
 credentials and skills remain managed by the installed agent or its wrapper. Models and reasoning
-options come from ACP, including model IDs that contain JSON. T3 Code launches the executable directly
+options come from ACP, including model IDs that contain JSON. fcode launches the executable directly
 without expanding shell expressions.
 
 ## Where agents run
 
-Registry agents always run on the machine that hosts your T3 Code server. That stays true when you
-connect through `app.t3.codes`, T3 Connect, or a relay.
+Registry agents always run on the machine that hosts your fcode server. That stays true when you
+connect through `app.t3.codes`, fcode Connect, or a relay.
 
-Agents install under `tools/<agent-id>/<version>/` inside T3 home. T3 Code verifies SHA-256 when the Registry entry
+Agents install under `tools/<agent-id>/<version>/` inside fcode home. fcode verifies SHA-256 when the Registry entry
 provides one; entries without a checksum retain the Registry's HTTPS distribution guarantee.
-Registry `npx` and `uvx` packages use T3-owned npm prefixes and Python tool directories at the exact
+Registry `npx` and `uvx` packages use fcode-owned npm prefixes and Python tool directories at the exact
 version published by the Registry. Their commands are available in a new server terminal for
-sign-in and direct use. Removing an agent's last provider instance removes T3-managed binary files
+sign-in and direct use. Removing an agent's last provider instance removes fcode-managed binary files
 but keeps package installs. To use an existing local binary, set **Executable override** explicitly.
 
-T3 Code checks the Registry for new versions in the background and installs them for T3-managed
+fcode checks the Registry for new versions in the background and installs them for fcode-managed
 agents on the next provider check; a check is skipped while that agent is starting a session.
 Refreshing providers in Settings checks the Registry right away.
 
@@ -64,7 +64,7 @@ provider, mobile also offers **Settings → Providers**.
 Browser sign-in shows the agent's URL and waits for you to open or copy it before telling the
 agent to proceed. The page opens on your device, while the agent runs on the environment.
 Terminal methods run in an in-app terminal on that environment. On mobile, send responses
-through the terminal response field. T3 Code reconnects after terminal login and waits for the
+through the terminal response field. fcode reconnects after terminal login and waits for the
 agent to confirm sign-in before reporting success. You can cancel or retry an expired attempt.
 
 Browser and terminal sign-in leave credentials in the agent's own store. Agents that use API keys
@@ -92,21 +92,21 @@ is running update the picker without waiting for another provider probe.
 ## Commands and skills
 
 Slash commands the agent provides appear under **Provider** in the `/` menu while a session is
-running. Commands the agent names with a `$` prefix appear in T3 Code's `$` skill menu instead.
+running. Commands the agent names with a `$` prefix appear in fcode's `$` skill menu instead.
 
 ## Native sessions
 
 When an agent advertises ACP session listing and import support, expand its provider card,
-choose a project, and select **List sessions**. Importing one creates a deterministic T3 thread
+choose a project, and select **List sessions**. Importing one creates a deterministic fcode thread
 backed by that native session. Importing the same agent session again returns the existing thread,
 including when another client performs the import.
 
 The thread keeps the native session's title and last-update value as provider metadata without
-overwriting a title you set in T3 Code. Agents that report ACP context usage drive the thread details
+overwriting a title you set in fcode. Agents that report ACP context usage drive the thread details
 context window and cumulative cost metadata. See
 [commands and skills](./composer.md#commands-and-skills) to show it on web and desktop.
 Text resources and links render as assistant output;
-binary resources, images, and audio that T3 Code cannot render yet appear as explicit placeholders
+binary resources, images, and audio that fcode cannot render yet appear as explicit placeholders
 instead of disappearing.
 
 ## Permissions and terminals
@@ -116,29 +116,29 @@ approval rules. They start in their own default mode, and their mode picker in t
 menu switches it. How far an agent is confined depends on that mode and the agent's own settings,
 so use its sandbox and permission controls when that matters.
 
-When a registry agent asks for approval, T3 Code answers by the thread's
+When a registry agent asks for approval, fcode answers by the thread's
 [permission mode](./permission-modes.md): **Supervised** shows the request in the conversation,
 **Auto-accept edits** approves edits and shows the rest, and **Auto** and **Full access** approve
 automatically. File reads and searches never wait for approval.
 
-Devin runs its commands through T3 Code's terminals, and those commands follow the thread's
-permission mode. For other agents, T3 Code shows the command, output, and exit status the agent
+Devin runs its commands through fcode's terminals, and those commands follow the thread's
+permission mode. For other agents, fcode shows the command, output, and exit status the agent
 reports but does not run or stop their terminals.
 
-Registry agents can schedule work and use T3's MCP tools. Child-task presentation depends on what
+Registry agents can schedule work and use fcode's MCP tools. Child-task presentation depends on what
 the agent exposes: ACP has no portable native subagent-lineage contract, so richer delegation views
 remain agent-specific.
 
 ## Checkpoints
 
 Checkpoint rollback restores your files as usual. ACP agents cannot rewind their own conversation,
-so the next turn after a rollback starts a fresh agent session and T3 Code sends it the kept
+so the next turn after a rollback starts a fresh agent session and fcode sends it the kept
 conversation, without the turns you rolled back.
 
 Select an ACP model in **Settings → Threads → Text generation model** to use it for generated text,
 such as thread titles, commit messages, and pull request descriptions. Branch names use this model
 unless a source-control writer model is configured. Each request opens a separate session outside
-the project checkout. T3 requests session deletion when the agent supports it. The agent controls
+the project checkout. fcode requests session deletion when the agent supports it. The agent controls
 whether it retains session history.
 
 ## Advanced configuration

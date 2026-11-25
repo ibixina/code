@@ -1,8 +1,8 @@
 import { assert, describe, it } from "@effect/vitest";
-import { GitCommandError } from "@t3tools/contracts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { SpawnExecutableResolution } from "@t3tools/shared/shell";
-import * as TestSourceControlHost from "@t3tools/source-control-testing/TestSourceControlHost";
+import { GitCommandError } from "@fcode/contracts";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import { SpawnExecutableResolution } from "@fcode/shared/shell";
+import * as TestSourceControlHost from "@fcode/source-control-testing/TestSourceControlHost";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
@@ -12,7 +12,7 @@ import * as TanStackSourceApi from "./TanStackSourceApi.ts";
 import * as TanStackSourceSourceControlProvider from "./TanStackSourceSourceControlProvider.ts";
 
 const REMOTE = "https://source.tanstack.com/@acme/web.git";
-const OWNER_KEY = "branch.pr-42.t3TanstackSourcePull";
+const OWNER_KEY = "branch.pr-42.fcodeTanstackSourcePull";
 
 /** Pull request #42 of acme/web, opened from a fork, so it checks out as `pr-42`. */
 const PULL = {
@@ -120,7 +120,7 @@ function checkout(options: {
 
 describe("TanStackSourceSourceControlProvider.checkoutChangeRequest", () => {
   it.effect(
-    "refuses a pr-<n> branch T3 did not make for this pull request, and leaves it alone",
+    "refuses a pr-<n> branch fcode did not make for this pull request, and leaves it alone",
     () => {
       // An unrelated branch at the pull request's base is an ancestor of its head.
       const { run, git, config } = checkout({ recordedOwner: null, isAncestor: true });

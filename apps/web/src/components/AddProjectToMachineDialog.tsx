@@ -1,25 +1,25 @@
 import { m } from "../i18n/messages";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import { useParams } from "@tanstack/react-router";
-import { scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { scopeProjectRef } from "@fcode/client-runtime/environment";
 import {
   getAddProjectInitialQuery,
   getCloneDestinationPath,
   getCloneDirectoryPath,
-} from "@t3tools/client-runtime/operations/projects";
-import { resolvePastedPath } from "@t3tools/shared/path";
+} from "@fcode/client-runtime/operations/projects";
+import { resolvePastedPath } from "@fcode/shared/path";
 import {
   type EnvironmentId,
   type ProjectIgnoredFile,
   type ScopedProjectRef,
   resolveEnvironmentMachineKind,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   type CloneProtocol,
   cloneUrlForProtocol,
   cloneUrlProtocol,
   withoutRemoteUrlCredentials,
-} from "@t3tools/shared/cloneUrl";
+} from "@fcode/shared/cloneUrl";
 import { ArrowRightIcon } from "lucide-react";
 import { useId, useState } from "react";
 import { T, useGT, Var } from "gt-react";
@@ -286,7 +286,7 @@ function AddProjectToMachineDialog({ request }: { request: AddProjectToMachineRe
                 </span>
               </div>
               <div className="flex w-28 flex-col items-center gap-0.5 text-muted-foreground text-xs">
-                {/* oxlint-disable-next-line t3code/no-untranslated-copy -- git command name */}
+                {/* oxlint-disable-next-line fcode/no-untranslated-copy -- git command name */}
                 <span>git clone</span>
                 <span className="flex w-full items-center">
                   <span className="h-px flex-1 bg-border" />

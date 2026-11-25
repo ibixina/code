@@ -4,8 +4,8 @@ import * as EffectNodeCrypto from "@effect/platform-node/NodeCrypto";
 import type {
   RelayEnvironmentLinkProofPayload,
   RelayEnvironmentLinkRequest,
-} from "@t3tools/contracts/relay";
-import { RELAY_LINK_PROOF_TYP } from "@t3tools/shared/relayJwt";
+} from "@fcode/contracts/relay";
+import { RELAY_LINK_PROOF_TYP } from "@fcode/shared/relayJwt";
 import { describe, expect, it } from "@effect/vitest";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -39,12 +39,12 @@ const config = RelayConfiguration.RelayConfiguration.of({
     teamId: "team-id",
     keyId: "key-id",
     privateKey: Redacted.make("private-key"),
-    bundleId: "com.t3tools.t3code.dev",
+    bundleId: "com.fcode.app.dev",
   },
   apnsDeliveryJobSigningSecret: Redacted.make("job-secret"),
   clerkSecretKey: Redacted.make("clerk-secret"),
   clerkPublishableKey: "pk_test_test",
-  clerkJwtAudience: "t3-code-relay",
+  clerkJwtAudience: "fcode-relay",
   cloudMintPrivateKey: Redacted.make(relayKeyPair.privateKey),
   cloudMintPublicKey: relayKeyPair.publicKey,
   managedEndpointBaseDomain: undefined,
@@ -75,7 +75,7 @@ const makeRequest = Effect.gen(function* () {
     expiresAtEpochSeconds: Math.floor(expiresAt.epochMilliseconds / 1_000),
   });
   const payload = {
-    iss: "t3-env:env-link-test",
+    iss: "fcode-env:env-link-test",
     aud: "https://relay.example.test",
     sub: "env-link-test",
     jti: "link-proof-jti",
@@ -206,7 +206,7 @@ describe("EnvironmentLinker", () => {
         expiresAtEpochSeconds: Math.floor(expiresAt.epochMilliseconds / 1_000),
       });
       const payload = {
-        iss: "t3-env:env-link-test",
+        iss: "fcode-env:env-link-test",
         aud: "https://relay.example.test",
         sub: "env-link-test",
         jti: "publish-only-proof-jti",

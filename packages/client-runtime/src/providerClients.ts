@@ -4,17 +4,17 @@ import {
   CodexSettings,
   isProviderDriverKind,
   ProviderDriverKind,
-} from "@t3tools/contracts";
-import { acpRegistryClient } from "@t3tools/provider-acp-registry/client";
-import { makeProviderClientRegistry, type ProviderIcon } from "@t3tools/provider-core/client";
-import { modelShortName } from "@t3tools/provider-core/modelShortName";
-import { cursorClient } from "@t3tools/provider-cursor/client";
-import { fxClient } from "@t3tools/provider-fx/client";
-import { grokClient } from "@t3tools/provider-grok/client";
-import { kiroClient } from "@t3tools/provider-kiro/client";
-import { museClient } from "@t3tools/provider-muse/client";
-import { openCodeClient } from "@t3tools/provider-opencode/client";
-import { piClient } from "@t3tools/provider-pi/client";
+} from "@fcode/contracts";
+import { acpRegistryClient } from "@fcode/provider-acp-registry/client";
+import { makeProviderClientRegistry, type ProviderIcon } from "@fcode/provider-core/client";
+import { modelShortName } from "@fcode/provider-core/modelShortName";
+import { cursorClient } from "@fcode/provider-cursor/client";
+import { fxClient } from "@fcode/provider-fx/client";
+import { grokClient } from "@fcode/provider-grok/client";
+import { kiroClient } from "@fcode/provider-kiro/client";
+import { museClient } from "@fcode/provider-muse/client";
+import { openCodeClient } from "@fcode/provider-opencode/client";
+import { piClient } from "@fcode/provider-pi/client";
 
 // OpenRouter's Ink and Cloud glyphs from https://openrouter.ai/brand.
 export const openRouterIcon: ProviderIcon = {

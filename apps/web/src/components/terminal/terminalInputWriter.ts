@@ -1,4 +1,4 @@
-import { chunkTerminalWrite } from "@t3tools/contracts";
+import { chunkTerminalWrite } from "@fcode/contracts";
 
 /** Sends one chunk of terminal input; resolves false when it failed and the rest should drop. */
 type SendTerminalChunk = (chunk: string, split: boolean) => Promise<boolean | "not-dispatched">;

@@ -4,7 +4,7 @@ import * as NodeHttp from "node:http";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, describe, it } from "@effect/vitest";
 import type { InteractionUpdate } from "@cursor/sdk";
-import { toolOutputImages } from "@t3tools/shared/toolOutput";
+import { toolOutputImages } from "@fcode/shared/toolOutput";
 import {
   CheckpointId,
   EnvironmentId,
@@ -17,15 +17,15 @@ import {
   RunAttemptId,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
 import * as ChildProcess from "effect/process/ChildProcess";
-import { spawnAndCollect } from "@t3tools/provider-core/server/snapshotProbe";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { spawnAndCollect } from "@fcode/provider-core/server/snapshotProbe";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
@@ -33,13 +33,13 @@ import * as Path from "effect/Path";
 import * as Stream from "effect/Stream";
 import { vi } from "vite-plus/test";
 
-import { symlinksSupported } from "@t3tools/shared/testing/symlinks";
-import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
-import { makeProviderFailure } from "@t3tools/provider-core/server/failure";
+import { symlinksSupported } from "@fcode/shared/testing/symlinks";
+import * as TestProviderHost from "@fcode/provider-testing/TestProviderHost";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
+import * as McpProviderSessions from "@fcode/provider-core/server/McpProviderSessions";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
+import * as ProviderContinuationRequests from "@fcode/provider-core/server/ProviderContinuationRequests";
+import { makeProviderFailure } from "@fcode/provider-core/server/failure";
 import {
   cursorMcpServers,
   cursorRuntimeAgentPolicy,
@@ -947,7 +947,7 @@ describe("CursorAdapterV2", () => {
     ),
   );
 
-  it.effect("sends T3 instructions to each Cursor conversation that lacks them", () =>
+  it.effect("sends fcode instructions to each Cursor conversation that lacks them", () =>
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;
       const workspace = yield* fileSystem.makeTempDirectoryScoped({ prefix: "cursor-v2-device-" });
@@ -1117,8 +1117,8 @@ describe("CursorAdapterV2", () => {
           lastProviderTurn = providerTurn.providerTurn;
         const sent = sentMessages.at(-1)!;
         return {
-          orchestration: sent.includes("## T3 Code orchestration"),
-          devices: sent.includes("## T3 Code devices"),
+          orchestration: sent.includes("## fcode orchestration"),
+          devices: sent.includes("## fcode devices"),
           runtime: sent.includes("<runtime_info>"),
         };
       });
@@ -3190,7 +3190,7 @@ describe("CursorAdapterV2", () => {
     };
 
     assert.deepEqual(cursorMcpServers(mcpSession), {
-      "t3-code": {
+      "fcode": {
         type: "http",
         url: "http://127.0.0.1:43123/mcp",
         headers: {
@@ -3306,7 +3306,7 @@ describe("CursorAdapterV2", () => {
             "argument-only": { "command": "node", "args": ["server.mjs", "--workspace", "\${workspaceFolder}"] },
             "env-only": { "command": "node", "args": ["server.mjs"], "env": { "PROJECT_ROOT": "\${workspaceFolder}" } },
             "cwd-only": { "command": "node", "args": ["server.mjs"], "cwd": "\${workspaceFolder}" },
-            "unset-env": { "command": "node", "env": { "CONFIG": "\${env:T3_MCP_UNSET}" } },
+            "unset-env": { "command": "node", "env": { "CONFIG": "\${env:FCODE_MCP_UNSET}" } },
             "wrapped": { "command": "proto", "args": ["run", "node", "--", "\${workspaceFolder}/server.mjs"] },
             "label": { "command": "node", "args": ["server.mjs", "--label", "\${workspaceFolder}/client"] },
             "env-file": { "command": "node", "args": ["\${workspaceFolder}/server.mjs"], "envFile": ".env.mcp" },
@@ -3352,7 +3352,7 @@ describe("CursorAdapterV2", () => {
           authorizationHeader: "Bearer synthetic-cursor-token",
           browserToolsAvailable: false,
         });
-        const t3Servers = cursorMcpServers(yield* mcpSessions.read(threadId));
+        const fcodeServers = cursorMcpServers(yield* mcpSessions.read(threadId));
         const modelSelection = { instanceId, model: "composer-2.5" };
         const runtimePolicy = ProviderAdapter.ProviderAdapterV2RuntimePolicy.make({
           runtimeMode: "full-access",
@@ -3463,10 +3463,10 @@ describe("CursorAdapterV2", () => {
           },
           "cwd-only": { command: "node", args: ["server.mjs"], cwd: projectRoot },
         };
-        // The agent is created with T3's server only; the resolved servers go with each turn.
-        assert.deepEqual(openedWith?.mcpServers, t3Servers);
+        // The agent is created with fcode's server only; the resolved servers go with each turn.
+        assert.deepEqual(openedWith?.mcpServers, fcodeServers);
         yield* sendTurn(1);
-        assert.deepEqual(sentWith[0], { ...expectedServers, ...t3Servers });
+        assert.deepEqual(sentWith[0], { ...expectedServers, ...fcodeServers });
         // A server switched off between turns stays off on the next one.
         yield* fileSystem.writeFileString(
           path.join(home, ".cursor", "projects", projectDirectory, "mcp-disabled.json"),
@@ -3474,14 +3474,14 @@ describe("CursorAdapterV2", () => {
         );
         yield* sendTurn(2);
         const { repro: _disabled, ...stillEnabled } = expectedServers;
-        assert.deepEqual(sentWith[1], { ...stillEnabled, ...t3Servers });
+        assert.deepEqual(sentWith[1], { ...stillEnabled, ...fcodeServers });
         // Unreadable disabled state starts none of the overrides, and the turn still goes out.
         yield* fileSystem.writeFileString(
           path.join(home, ".cursor", "projects", projectDirectory, "mcp-disabled.json"),
           "[",
         );
         yield* sendTurn(3);
-        assert.deepEqual(sentWith[2], t3Servers);
+        assert.deepEqual(sentWith[2], fcodeServers);
         // A restricted turn starts no command the checkout names; the user's own file still applies.
         yield* fileSystem.writeFileString(
           path.join(home, ".cursor", "projects", projectDirectory, "mcp-disabled.json"),
@@ -3493,7 +3493,7 @@ describe("CursorAdapterV2", () => {
           yield* sendTurn(4 + index, { ...runtimePolicy, runtimeMode });
           assert.deepEqual(sentWith[3 + index], {
             repro: { command: "node", args: [`${home}/shadowed.mjs`], cwd: projectRoot },
-            ...t3Servers,
+            ...fcodeServers,
           });
         }
         yield* fileSystem.writeFileString(
@@ -3734,7 +3734,7 @@ describe("CursorAdapterV2", () => {
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;
       const workspace = yield* fileSystem.makeTempDirectoryScoped({
-        prefix: "t3code-cursor-dead-worker-",
+        prefix: "fcode-cursor-dead-worker-",
       });
       const instanceId = ProviderInstanceId.make("cursor");
       const threadId = ThreadId.make("cursor-dead-worker-thread");

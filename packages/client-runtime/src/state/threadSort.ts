@@ -1,13 +1,13 @@
-import type { ProjectId } from "@t3tools/contracts";
-import type { SidebarProjectSortOrder, SidebarThreadSortOrder } from "@t3tools/contracts/settings";
+import type { ProjectId } from "@fcode/contracts";
+import type { SidebarProjectSortOrder, SidebarThreadSortOrder } from "@fcode/contracts/settings";
 import {
   generateSpreadPinOrderKeys,
   LEADING_ORDER_TIER,
   pinOrderKeyBetween,
-} from "@t3tools/shared/pinOrderKey";
+} from "@fcode/shared/pinOrderKey";
 import type { EnvironmentThreadShell } from "./models.ts";
 
-export { generateSpreadPinOrderKeys, pinOrderKeyBetween } from "@t3tools/shared/pinOrderKey";
+export { generateSpreadPinOrderKeys, pinOrderKeyBetween } from "@fcode/shared/pinOrderKey";
 
 export interface ThreadSortInput {
   readonly createdAt: string;
@@ -35,15 +35,17 @@ export function resolveSettledThreadTimestamp(thread: SettledThreadTimestampInpu
   if (thread.settledAt != null && toSortableTimestamp(thread.settledAt) !== null) {
     return thread.settledAt;
   }
-  return resolveThreadActivityTimestamp(thread);
+  return resolveThreadActivityTimestamp(thread, false);
 }
 
 export function resolveThreadActivityTimestamp(
   thread: Pick<EnvironmentThreadShell, "latestUserMessageAt" | "latestRun" | "updatedAt">,
+  includeMetadataUpdates = true,
 ): string | null {
   let latest: string | null = null;
   let latestMs = Number.NEGATIVE_INFINITY;
   for (const candidate of [
+    includeMetadataUpdates ? thread.updatedAt : null,
     thread.latestUserMessageAt,
     thread.latestRun?.requestedAt,
     thread.latestRun?.startedAt,
@@ -55,8 +57,28 @@ export function resolveThreadActivityTimestamp(
       latestMs = parsed;
     }
   }
-  if (latest !== null) return latest;
-  return toSortableTimestamp(thread.updatedAt) === null ? null : thread.updatedAt;
+  return latest ?? (toSortableTimestamp(thread.updatedAt) === null ? null : thread.updatedAt);
+}
+
+/** Newest first by the time a sidebar row shows, so the order matches the labels. */
+export function sortThreadsByActivity<
+  T extends Pick<
+    EnvironmentThreadShell,
+    "id" | "environmentId" | "latestUserMessageAt" | "latestRun" | "updatedAt"
+  >,
+>(threads: readonly T[]): T[] {
+  return threads
+    .map((thread) => ({
+      thread,
+      timestampMs: toSortableTimestamp(resolveThreadActivityTimestamp(thread) ?? undefined) ?? 0,
+    }))
+    .sort(
+      (left, right) =>
+        right.timestampMs - left.timestampMs ||
+        left.thread.id.localeCompare(right.thread.id) ||
+        left.thread.environmentId.localeCompare(right.thread.environmentId),
+    )
+    .map(({ thread }) => thread);
 }
 
 export function sortSettledThreads<T extends SettledThreadTimestampInput & { readonly id: string }>(

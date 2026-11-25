@@ -383,8 +383,6 @@ export const ServerObservability = Schema.Struct({
   otlpLogsSource: Schema.optional(OtlpEndpointSource),
   otlpLogsVariable: Schema.optional(TrimmedNonEmptyString),
   otlpLogsEnabled: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
-  /** Relay tracing policy for browsers opened from this server. */
-  relayTracingAllowed: Schema.optionalKey(Schema.Boolean),
 });
 export type ServerObservability = typeof ServerObservability.Type;
 
@@ -702,7 +700,7 @@ export const ServerEventLoopStall = Schema.Struct({
 });
 export type ServerEventLoopStall = typeof ServerEventLoopStall.Type;
 
-/** The boolean `T3CODE_FEATURE_FLAGS` a server started with. Unset flags are off. */
+/** The boolean `FCODE_FEATURE_FLAGS` a server started with. Unset flags are off. */
 export const ServerFeatureFlags = Schema.Struct({
   secretProviders: Schema.optionalKey(Schema.Boolean),
   tanstackSource: Schema.optionalKey(Schema.Boolean),

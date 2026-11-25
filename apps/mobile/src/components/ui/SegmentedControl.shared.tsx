@@ -77,7 +77,7 @@ export function SegmentedControl<Value extends string | number>(
             >
               <AppText
                 textRole="footnote"
-                className={selected ? "font-t3-bold" : "font-t3-medium"}
+                className={selected ? "font-fcode-bold" : "font-fcode-medium"}
                 style={{
                   color: selected ? selectedTextColor : mutedColor,
                 }}

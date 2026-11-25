@@ -1,6 +1,6 @@
-import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import { EnvironmentId, ProjectId } from "@t3tools/contracts";
+import { scopeProjectRef } from "@fcode/client-runtime/environment";
+import type { EnvironmentProject } from "@fcode/client-runtime/state/shell";
+import { EnvironmentId, ProjectId } from "@fcode/contracts";
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 
 import { DraftId, useComposerDraftStore } from "../composerDraftStore";

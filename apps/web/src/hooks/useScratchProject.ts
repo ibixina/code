@@ -1,14 +1,14 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import { RegistryContext } from "@effect/atom-react";
-import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
+import { scopeProjectRef } from "@fcode/client-runtime/environment";
+import { availableScratchWorkspaceRoot } from "@fcode/client-runtime/operations/projects";
 import {
   isAtomCommandInterrupted,
   runAtomCommand,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import type { EnvironmentId } from "@t3tools/contracts";
+} from "@fcode/client-runtime/state/runtime";
+import type { EnvironmentProject } from "@fcode/client-runtime/state/shell";
+import type { EnvironmentId } from "@fcode/contracts";
 import type { AtomRegistry } from "effect/reactivity";
 import { msg } from "gt-react";
 import { useContext } from "react";

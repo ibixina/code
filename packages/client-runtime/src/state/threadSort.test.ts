@@ -1,4 +1,4 @@
-import { RunId } from "@t3tools/contracts";
+import { EnvironmentId, RunId, ThreadId } from "@fcode/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
@@ -10,6 +10,7 @@ import {
   sortActiveThreadsByOrderKey,
   sortSettledThreads,
   sortThreads,
+  sortThreadsByActivity,
   type SettledThreadTimestampInput,
   type ThreadSortInput,
 } from "./threadSort.ts";
@@ -101,6 +102,36 @@ describe("sortSettledThreads", () => {
     ]);
 
     expect(sorted.map((thread) => thread.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("sortThreadsByActivity", () => {
+  const thread = (id: string, input: Partial<SettledThreadTimestampInput> = {}) => ({
+    id: ThreadId.make(id),
+    environmentId: EnvironmentId.make("env"),
+    latestUserMessageAt: input.latestUserMessageAt ?? null,
+    latestRun: input.latestRun ?? null,
+    updatedAt: input.updatedAt ?? "2026-03-09T09:00:00.000Z",
+  });
+
+  it("puts the thread whose run finished last on top, as the rows' times read", () => {
+    const sorted = sortThreadsByActivity([
+      thread("messaged", { latestUserMessageAt: "2026-03-09T10:10:00.000Z" }),
+      thread("finished", {
+        latestUserMessageAt: "2026-03-09T10:00:00.000Z",
+        latestRun: {
+          runId: RunId.make("run-1"),
+          status: "completed",
+          assistantMessageId: null,
+          requestedAt: "2026-03-09T10:00:00.000Z",
+          startedAt: "2026-03-09T10:00:00.000Z",
+          completedAt: "2026-03-09T10:30:00.000Z",
+        },
+      }),
+      thread("idle", { updatedAt: "2026-03-09T10:20:00.000Z" }),
+    ]);
+
+    expect(sorted.map((entry) => entry.id)).toEqual(["finished", "idle", "messaged"]);
   });
 });
 

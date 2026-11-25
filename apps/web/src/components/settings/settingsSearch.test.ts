@@ -3,8 +3,8 @@ import {
   EnvironmentId,
   makeProviderSettingsSchema,
   SourceControlProviderKind,
-} from "@t3tools/contracts";
-import { UNKNOWN_SOURCE_CONTROL_CLIENT } from "@t3tools/client-runtime/source-control-clients";
+} from "@fcode/contracts";
+import { UNKNOWN_SOURCE_CONTROL_CLIENT } from "@fcode/client-runtime/source-control-clients";
 import * as Schema from "effect/Schema";
 import { decodeMsg } from "gt-react";
 
@@ -160,7 +160,7 @@ describe("searchSettings", () => {
       "review-guide-model",
       "review-guide-instructions",
       "source-control-writing-style",
-      "t3-connect",
+      "fcode-connect",
       "hold-webhooks-while-offline",
       "tailscale-https",
       "wsl-backend",
@@ -168,7 +168,6 @@ describe("searchSettings", () => {
       "auto-settle-merged-threads",
       "days-before-auto-settle",
       "linked-environments",
-      "agent-feedback",
     ]);
     expect(available.map((item) => item.id).filter((id) => gatedIds.has(id))).toEqual([]);
   });
@@ -257,16 +256,6 @@ describe("searchSettings", () => {
 });
 
 describe("settings search targets", () => {
-  it("requires an environment for the resolved telemetry export destination", () => {
-    const result = searchSettings("OpenTelemetry export").find(
-      (item) => item.id === "telemetry-export",
-    )!;
-    const target = getSettingsSearchTargetScope(result.targetId ?? result.id)!;
-    expect(isSettingsSearchScopeAvailable(target.scope, "all")).toBe(false);
-    expect(isSettingsSearchScopeAvailable(target.scope, "project")).toBe(false);
-    expect(isSettingsSearchScopeAvailable(target.scope, "environment")).toBe(true);
-  });
-
   it("keeps environment-wide settings out of project scopes", () => {
     const updates = getSettingsSearchTargetScope("provider-update-checks")!;
     expect(updates.scope).toBe("environment-defaults");

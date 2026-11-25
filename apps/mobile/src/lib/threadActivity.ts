@@ -1,24 +1,24 @@
 import type {
   ThreadPendingApproval,
   ThreadPendingUserInput,
-} from "@t3tools/client-runtime/state/thread-requests";
-import { linkRequestTargetName } from "@t3tools/client-runtime/link-request";
-import { turnItemIsWorkspacePreparation } from "@t3tools/client-runtime/state/turn-item-presentation";
-import { formatSubagentDisplayTitle } from "@t3tools/client-runtime/state/subagent-display";
+} from "@fcode/client-runtime/state/thread-requests";
+import { linkRequestTargetName } from "@fcode/client-runtime/link-request";
+import { turnItemIsWorkspacePreparation } from "@fcode/client-runtime/state/turn-item-presentation";
+import { formatSubagentDisplayTitle } from "@fcode/client-runtime/state/subagent-display";
 import {
   isLiveSubagentTurnItem,
   waitingOnSubagentsLabel,
-} from "@t3tools/client-runtime/state/subagentRuntime";
-import { extractToolActivityPresentation } from "@t3tools/client-runtime/work-log/tool-presentation";
+} from "@fcode/client-runtime/state/subagentRuntime";
+import { extractToolActivityPresentation } from "@fcode/client-runtime/work-log/tool-presentation";
 import {
   turnItemDetailRevision,
   turnItemHasDetail,
   turnItemNeedsDetailFetch,
-} from "@t3tools/client-runtime/work-log/item-detail";
+} from "@fcode/client-runtime/work-log/item-detail";
 import {
   commandDisplayText,
   commandProgramName,
-} from "@t3tools/client-runtime/work-log/command-label";
+} from "@fcode/client-runtime/work-log/command-label";
 import {
   commandlessCommandLabel,
   contextCompactionLabel,
@@ -35,14 +35,14 @@ import {
   type WorkLogPresentationEntry,
   type WorkLogToolLifecycleStatus,
   workEntryHiddenByToolCallVisibility,
-} from "@t3tools/client-runtime/work-log/presentation";
-import type { ToolCallVisibility } from "@t3tools/contracts/settings";
+} from "@fcode/client-runtime/work-log/presentation";
+import type { ToolCallVisibility } from "@fcode/contracts/settings";
 import {
-  resolveT3McpToolDefinition,
-  type T3McpToolLogo,
-  type T3McpToolPresentation,
-} from "@t3tools/shared/t3McpToolPresentation";
-import { resolveT3McpToolPresentation } from "@t3tools/shared/t3McpToolPresentationCopy";
+  resolveFcodeMcpToolDefinition,
+  type FcodeMcpToolLogo,
+  type FcodeMcpToolPresentation,
+} from "@fcode/shared/fcodeMcpToolPresentation";
+import { resolveFcodeMcpToolPresentation } from "@fcode/shared/fcodeMcpToolPresentationCopy";
 import type {
   ChatAttachment,
   MessageId,
@@ -58,36 +58,36 @@ import type {
   RunAttemptId,
   ScheduledTaskId,
   TurnItemId,
-} from "@t3tools/contracts";
-import { idleCompactionOf, isCompactionCommandMessage, RunId, ThreadId } from "@t3tools/contracts";
+} from "@fcode/contracts";
+import { idleCompactionOf, isCompactionCommandMessage, RunId, ThreadId } from "@fcode/contracts";
 import {
   classifyToolActivity,
   collectToolFilePaths,
   isJavaScriptReplTool,
-} from "@t3tools/shared/toolActivity";
+} from "@fcode/shared/toolActivity";
 import {
   dynamicToolTitle,
   formatReadToolLabel,
   formatSearchToolLabel,
-} from "@t3tools/shared/toolActivityCopy";
-import { claudeResumeCompactionAge } from "@t3tools/shared/claudeCompaction";
-import { formatDuration } from "@t3tools/shared/orchestrationTimingCopy";
-import { truncate } from "@t3tools/shared/String";
-import type { HtmlRenderReference } from "@t3tools/shared/htmlRender";
-import type { McpAppReference } from "@t3tools/shared/mcpApp";
+} from "@fcode/shared/toolActivityCopy";
+import { claudeResumeCompactionAge } from "@fcode/shared/claudeCompaction";
+import { formatDuration } from "@fcode/shared/orchestrationTimingCopy";
+import { truncate } from "@fcode/shared/String";
+import type { HtmlRenderReference } from "@fcode/shared/htmlRender";
+import type { McpAppReference } from "@fcode/shared/mcpApp";
 import {
   compactDynamicToolOutput,
   htmlRenderFromToolItem,
   sentMessageFromToolItem,
   mcpAppFromToolItem,
-} from "@t3tools/shared/toolOutput";
+} from "@fcode/shared/toolOutput";
 import * as DateTime from "effect/DateTime";
 import { msg } from "gt-react-native";
 import { m, type MessageResolver } from "../i18n/messages";
 import {
   IDLE_COMPACTION_TITLES,
   IDLE_COMPACTING_LABELS,
-} from "@t3tools/client-runtime/user-message";
+} from "@fcode/client-runtime/user-message";
 
 export type PendingApproval = ThreadPendingApproval;
 export type PendingUserInput = ThreadPendingUserInput;
@@ -122,7 +122,7 @@ export interface ThreadFeedActivity {
     | "warning"
     | "wrench"
     | "zap";
-  readonly logo: T3McpToolLogo | null;
+  readonly logo: FcodeMcpToolLogo | null;
   readonly toolLike: boolean;
   readonly prominent: boolean;
   readonly status: "success" | "failure" | "neutral" | null;
@@ -136,7 +136,7 @@ export interface ThreadFeedActivity {
 }
 
 export interface ThreadFeedMessage {
-  readonly context?: import("@t3tools/contracts").OrchestrationMessageContext | undefined;
+  readonly context?: import("@fcode/contracts").OrchestrationMessageContext | undefined;
   readonly id: MessageId;
   readonly role: "user" | "assistant";
   readonly text: string;
@@ -148,8 +148,8 @@ export interface ThreadFeedMessage {
   readonly creationSource?: OrchestrationV2CreationSource;
   readonly scheduledTaskId?: ScheduledTaskId;
   readonly senderThreadId?: ThreadId;
-  readonly linkedSender?: import("@t3tools/contracts").OrchestrationV2LinkedSender;
-  readonly idleCompaction?: import("@t3tools/contracts").OrchestrationV2IdleCompaction;
+  readonly linkedSender?: import("@fcode/contracts").OrchestrationV2LinkedSender;
+  readonly idleCompaction?: import("@fcode/contracts").OrchestrationV2IdleCompaction;
   readonly visibility: OrchestrationV2ProjectedTurnItem["visibility"];
   readonly sourceThreadId: ThreadId;
   readonly createdAt: string;
@@ -233,7 +233,7 @@ type ThreadFeedEntryContent =
       readonly summaryKind: ToolGroupSummaryKind;
       readonly toolSurface?: WorkLogPresentationEntry["toolSurface"];
       readonly toolIcon?: WorkLogPresentationEntry["toolIcon"];
-      readonly summaryToolIcon?: "browser" | "device" | "t3-code" | "pull-request";
+      readonly summaryToolIcon?: "browser" | "device" | "fcode" | "pull-request";
       readonly hasFailure: boolean;
       readonly live: boolean;
       readonly shimmer: boolean;
@@ -451,13 +451,6 @@ export function isSecretRequestActivityGroup(entry: ThreadFeedActivityGroup): bo
   );
 }
 
-export function isFeedbackRequestActivityGroup(entry: ThreadFeedActivityGroup): boolean {
-  return (
-    entry.activities.length === 1 &&
-    entry.activities[0]?.projectedItem.item.type === "feedback_request"
-  );
-}
-
 export function isLinkRequestActivityGroup(entry: ThreadFeedActivityGroup): boolean {
   return (
     entry.activities.length === 1 && entry.activities[0]?.projectedItem.item.type === "link_request"
@@ -506,7 +499,6 @@ function itemIsProminent(item: OrchestrationV2TurnItem): boolean {
     item.type === "system_notice" ||
     item.type === "proposed_plan" ||
     item.type === "secret_request" ||
-    item.type === "feedback_request" ||
     item.type === "link_request"
   );
 }
@@ -629,8 +621,6 @@ function itemIcon(item: OrchestrationV2TurnItem): ThreadFeedActivity["icon"] {
       return "zap";
     case "secret_request":
       return "lock";
-    case "feedback_request":
-      return "message";
     case "link_request":
       return "globe";
   }
@@ -639,19 +629,19 @@ function itemIcon(item: OrchestrationV2TurnItem): ThreadFeedActivity["icon"] {
 function itemToolPresentation(
   item: OrchestrationV2TurnItem,
   resolve: MessageResolver,
-): T3McpToolPresentation | null {
+): FcodeMcpToolPresentation | null {
   if (item.type !== "dynamic_tool") {
     return null;
   }
   return (
-    resolveT3McpToolPresentation(item.toolName, item.input, resolve) ??
-    resolveT3McpToolPresentation(item.title, item.input, resolve)
+    resolveFcodeMcpToolPresentation(item.toolName, item.input, resolve) ??
+    resolveFcodeMcpToolPresentation(item.title, item.input, resolve)
   );
 }
 
 function itemSummary(
   item: OrchestrationV2TurnItem,
-  toolPresentation: T3McpToolPresentation | null,
+  toolPresentation: FcodeMcpToolPresentation | null,
   resolve: MessageResolver,
 ): string {
   if (item.type === "notification") return item.summary;
@@ -705,8 +695,6 @@ function itemSummary(
       return resolve(msg("Thread created"));
     case "secret_request":
       return item.label;
-    case "feedback_request":
-      return resolve(msg("Feedback for the T3 team"));
     case "link_request":
       return resolve(msg("Link {target}", { target: linkRequestTargetName(item, resolve) }));
     case "dynamic_tool": {
@@ -777,8 +765,6 @@ function itemPreview(item: OrchestrationV2TurnItem, resolve: MessageResolver): s
     case "secret_request":
     case "link_request":
       return item.reason || null;
-    case "feedback_request":
-      return item.preview.subject;
     case "subagent":
       return item.result ?? item.progress ?? item.prompt;
     case "dynamic_tool":
@@ -1026,7 +1012,7 @@ function groupAdjacentActivities(
         item.type === "dynamic_tool" &&
         item.runId !== null &&
         (item.status === "running" || item.status === "completed") &&
-        resolveT3McpToolDefinition(item.toolName)?.summaryAction === "delegate" &&
+        resolveFcodeMcpToolDefinition(item.toolName)?.summaryAction === "delegate" &&
         !workEntryDisplayIndicatesToolFailure(entry.activity.workEntry)
       ) {
         const output = compactDynamicToolOutput(item.output);

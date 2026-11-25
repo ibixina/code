@@ -1,5 +1,4 @@
 import {
-  type AgentFeedbackMode,
   type AuthMcpClientAccess,
   type EnvironmentId,
   McpCapabilityUnavailableError,
@@ -10,12 +9,12 @@ import {
   type OrchestrationV2LinkedSender,
   type RuntimeMode,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Context from "effect/Context";
 import type * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
-import { formatThreadLink, hostedThreadLink } from "@t3tools/shared/threadLinks";
+import { formatThreadLink, hostedThreadLink } from "@fcode/shared/threadLinks";
 
 const ALL_MCP_CAPABILITIES = [
   "preview",
@@ -41,43 +40,43 @@ export interface McpClientCaller {
   readonly label: string;
   readonly access: AuthMcpClientAccess;
   /**
-   * Another T3 Code environment's peer link. What it starts here carries its
+   * Another fcode environment's peer link. What it starts here carries its
    * session as `linkOrigin`, and it changes only that work (`linkOrigin.ts`).
    */
   readonly linked?: boolean | undefined;
-  /** When a peer link's session ends unless it is used again, answered as `T3-Link-Expires-At`. */
+  /** When a peer link's session ends unless it is used again, answered as `fcode-Link-Expires-At`. */
   readonly linkExpiresAt?: DateTime.Utc | undefined;
   /**
-   * Narrower modes the client asked for on this request (`T3-Mode-Limit`):
+   * Narrower modes the client asked for on this request (`fcode-Mode-Limit`):
    * another environment passing on the limits of the agent it calls for.
    */
   readonly narrowedTo?: ClientModes | undefined;
-  /** A linked environment's thread this request is made for (`T3-Sender-Thread`). */
+  /** A linked environment's thread this request is made for (`fcode-Sender-Thread`). */
   readonly senderThread?: OrchestrationV2LinkedSender | undefined;
   /** An outside client's thread links go through this hosted app, as Copy thread's do. */
   readonly hostedAppUrl?: string | undefined;
 }
 
 /**
- * `T3-Mode-Limit: <runtimeMode>/<interactionMode>` lets an OAuth client cap
+ * `fcode-Mode-Limit: <runtimeMode>/<interactionMode>` lets an OAuth client cap
  * a request below what it was approved with: another environment passes on
  * the limits of the agent it calls for. It can only narrow (see
  * `clientModeCeiling`), so a client gains nothing by sending a broad one.
  */
-export const MODE_LIMIT_HEADER = "t3-mode-limit";
+export const MODE_LIMIT_HEADER = "fcode-mode-limit";
 
 /**
- * `T3-Link-Expires-At: <ISO time>` answers a peer link's request with when its
+ * `fcode-Link-Expires-At: <ISO time>` answers a peer link's request with when its
  * session now ends. Using a link renews it, so the linking side keeps this.
  */
-export const LINK_EXPIRES_AT_HEADER = "t3-link-expires-at";
+export const LINK_EXPIRES_AT_HEADER = "fcode-link-expires-at";
 
 /**
- * `T3-Sender-Thread: <environmentId>/<threadId>/<title>`, each URI-encoded: the
+ * `fcode-Sender-Thread: <environmentId>/<threadId>/<title>`, each URI-encoded: the
  * thread another environment makes a request for, so what it sends here can name
  * it. Read only from a linked client.
  */
-export const SENDER_THREAD_HEADER = "t3-sender-thread";
+export const SENDER_THREAD_HEADER = "fcode-sender-thread";
 
 export interface ClientModes {
   readonly runtimeMode: RuntimeMode;
@@ -155,23 +154,21 @@ export interface McpInvocationScope {
   readonly client: McpClientCaller | undefined;
   /** False while the Linked environments beta is off here; `/mcp` reads it per request. */
   readonly linkedEnvironments?: boolean;
-  /** The Agent feedback mode here; `/mcp` reads it per request. Unset is off. */
-  readonly agentFeedback?: AgentFeedbackMode;
   /** The broadest runtime mode an administrator lets a thread run in here. Unset is full access. */
   readonly runtimeModeCeiling?: RuntimeMode | undefined;
   /** True while Labs → Workflows is on here; `/mcp` reads it per request. Unset is off. */
   readonly workflows?: boolean;
   /**
-   * The origin this `/mcp` request reached, e.g. a T3 Connect tunnel. Hosted clients cannot
+   * The origin this `/mcp` request reached, e.g. a fcode Connect tunnel. Hosted clients cannot
    * see the URL they were configured with, so links they must fetch carry it. Unset in-process.
    */
   readonly origin?: string | undefined;
-  /** False when the calling thread's project is on no forge T3 reads; `/mcp` reads it per request. */
+  /** False when the calling thread's project is on no forge fcode reads; `/mcp` reads it per request. */
   readonly forge?: boolean;
 }
 
 /**
- * T3 Code renders `t3-thread://` links as thread chips. Other MCP clients cannot open them, so
+ * fcode renders `fcode-thread://` links as thread chips. Other MCP clients cannot open them, so
  * they get the hosted link Copy thread copies, which opens the thread in either app or a browser.
  * A known `title` labels the chip for clients that cannot load this environment's threads.
  */
@@ -190,11 +187,11 @@ export const threadLinkFor = (
 export class McpInvocationContext extends Context.Service<
   McpInvocationContext,
   McpInvocationScope
->()("t3/mcp/McpInvocationContext") {}
+>()("fcode/mcp/McpInvocationContext") {}
 
 /**
  * `McpSchema.EnabledWhen` for tools a delegated child must not see or call.
- * EnabledWhen only receives the MCP client profile, so read the T3 caller from the request fiber.
+ * EnabledWhen only receives the MCP client profile, so read the fcode caller from the request fiber.
  */
 export const hiddenFromSubagents = (): boolean => {
   const fiber = Fiber.getCurrent();
@@ -234,13 +231,6 @@ export const hiddenWhileLinksOff = (): boolean => {
   const fiber = Fiber.getCurrent();
   const scope = fiber && Context.getOrUndefined(fiber.context, McpInvocationContext);
   return scope?.linkedEnvironments !== false;
-};
-
-/** `McpSchema.EnabledWhen` for agent feedback tools, for every client including `t3 feedback`. */
-export const hiddenWhileFeedbackOff = (): boolean => {
-  const fiber = Fiber.getCurrent();
-  const scope = fiber && Context.getOrUndefined(fiber.context, McpInvocationContext);
-  return scope?.agentFeedback !== undefined && scope.agentFeedback !== "off";
 };
 
 /** `McpSchema.EnabledWhen` for workflow event types: outside clients only, while Workflows is on. */
@@ -306,7 +296,7 @@ export const requireThreadMcpCapability = <const C extends "preview" | "device">
 const threadCallerRequired = (operation: string) =>
   new OrchestratorMcpFailure({
     code: "thread_credential_required",
-    message: `${operation} acts as the calling T3 thread, so it needs an agent running inside T3 Code. This MCP client signed in from outside a thread.`,
+    message: `${operation} acts as the calling fcode thread, so it needs an agent running inside fcode. This MCP client signed in from outside a thread.`,
   });
 
 export type McpThreadInvocationScope = McpInvocationScope & { readonly thread: McpThreadCaller };

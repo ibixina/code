@@ -1,5 +1,5 @@
 {
-  "name": "@t3tools/shared",
+  "name": "@fcode/shared",
   "private": true,
   "type": "module",
   "exports": {
@@ -203,9 +203,9 @@
       "types": "./src/projectSettings.ts",
       "import": "./src/projectSettings.ts"
     },
-    "./t3ProjectFile": {
-      "types": "./src/t3ProjectFile.ts",
-      "import": "./src/t3ProjectFile.ts"
+    "./fcodeProjectFile": {
+      "types": "./src/fcodeProjectFile.ts",
+      "import": "./src/fcodeProjectFile.ts"
     },
     "./orchestrationTiming": {
       "types": "./src/orchestrationTiming.ts",
@@ -234,10 +234,6 @@
     "./dpopCommon": {
       "types": "./src/dpopCommon.ts",
       "import": "./src/dpopCommon.ts"
-    },
-    "./telemetryId": {
-      "types": "./src/telemetryId.ts",
-      "import": "./src/telemetryId.ts"
     },
     "./relayAuth": {
       "types": "./src/relayAuth.ts",
@@ -346,10 +342,6 @@
     "./relayClient": {
       "types": "./src/relayClient.ts",
       "import": "./src/relayClient.ts"
-    },
-    "./relayTracing": {
-      "types": "./src/relayTracing.ts",
-      "import": "./src/relayTracing.ts"
     },
     "./preview": {
       "types": "./src/preview.ts",
@@ -475,13 +467,13 @@
       "types": "./src/orchestrationV2Timeline.ts",
       "import": "./src/orchestrationV2Timeline.ts"
     },
-    "./t3McpToolPresentation": {
-      "types": "./src/t3McpToolPresentation.ts",
-      "import": "./src/t3McpToolPresentation.ts"
+    "./fcodeMcpToolPresentation": {
+      "types": "./src/fcodeMcpToolPresentation.ts",
+      "import": "./src/fcodeMcpToolPresentation.ts"
     },
-    "./t3McpToolPresentationCopy": {
-      "types": "./src/t3McpToolPresentationCopy.ts",
-      "import": "./src/t3McpToolPresentationCopy.ts"
+    "./fcodeMcpToolPresentationCopy": {
+      "types": "./src/fcodeMcpToolPresentationCopy.ts",
+      "import": "./src/fcodeMcpToolPresentationCopy.ts"
     },
     "./Array": {
       "types": "./src/Array.ts",
@@ -699,7 +691,7 @@
   "dependencies": {
     "@noble/curves": "catalog:",
     "@noble/hashes": "catalog:",
-    "@t3tools/contracts": "workspace:*",
+    "@fcode/contracts": "workspace:*",
     "effect": "catalog:",
     "ffi-rs": "1.3.2",
     "get-east-asian-width": "^1.6.0",

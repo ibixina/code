@@ -3,9 +3,9 @@ import * as NodeHttp from "node:http";
 
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import * as NetService from "@t3tools/shared/Net";
-import * as RelayClient from "@t3tools/shared/relayClient";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import * as NetService from "@fcode/shared/Net";
+import * as RelayClient from "@fcode/shared/relayClient";
 import { assert, it } from "@effect/vitest";
 import * as ConfigProvider from "effect/ConfigProvider";
 import * as Console from "effect/Console";
@@ -67,15 +67,15 @@ it.effect("does not install the relay client when the user declines the managed 
 );
 
 it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))(
-  "t3 connect next steps",
+  "fcode connect next steps",
   (it) => {
     it.effect.each([
       { subcommand: "status", hint: "connect link" },
       { subcommand: "publish", hint: "connect login" },
-    ])("t3 connect $subcommand names `t3 $hint` with --base-dir", ({ subcommand, hint }) =>
+    ])("fcode connect $subcommand names `fcode $hint` with --base-dir", ({ subcommand, hint }) =>
       Effect.gen(function* () {
         const fs = yield* FileSystem.FileSystem;
-        const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "t3-connect-hint-test-" });
+        const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-connect-hint-test-" });
 
         yield* Command.runWith(makeCli({ cloudEnabled: true }), { version: "0.0.0" })([
           "connect",
@@ -101,7 +101,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))
 );
 
 it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))(
-  "t3 connect unlink and status",
+  "fcode connect unlink and status",
   (it) => {
     const runConnect = (
       recordedPid: number,
@@ -138,7 +138,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))
         }
 
         const fs = yield* FileSystem.FileSystem;
-        const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "t3-connect-unlink-test-" });
+        const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-connect-unlink-test-" });
         const state = yield* makePersistedServerRuntimeState({
           config: { host: "127.0.0.1", devUrl: undefined },
           port: address.port,
@@ -204,7 +204,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))
       Effect.gen(function* () {
         const { printed, warnings } = yield* runConnect(deadPid, { portFreed: true });
 
-        assert.include(printed, "T3 Connect is disabled locally.");
+        assert.include(printed, "fcode Connect is disabled locally.");
         assert.notInclude(warnings.join("\n"), "Restart that server");
       }),
     );
@@ -272,7 +272,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))
         const { requests, printed, warnings } = yield* runConnect(process.pid);
 
         assert.deepEqual(requests, ["POST /api/connect/unlink"]);
-        assert.include(printed, "T3 Connect is disabled locally.");
+        assert.include(printed, "fcode Connect is disabled locally.");
         assert.notInclude(warnings.join("\n"), "cloudflared process");
       }),
     );
@@ -280,12 +280,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))
 );
 
 it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))(
-  "t3 connect link next step",
+  "fcode connect link next step",
   (it) => {
     it.effect("tells the user to restart a server that is already running, not to start one", () =>
       Effect.gen(function* () {
         const fs = yield* FileSystem.FileSystem;
-        const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "t3-connect-link-test-" });
+        const baseDir = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-connect-link-test-" });
         const relayClientPath = `${baseDir}/bin/cloudflared`;
         yield* fs.makeDirectory(`${baseDir}/bin`, { recursive: true });
         yield* fs.writeFileString(
@@ -321,7 +321,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer, NetService.layer))
         ]).pipe(
           Effect.provide(
             ConfigProvider.layer(
-              ConfigProvider.fromEnv({ env: { T3CODE_CLOUDFLARED_PATH: relayClientPath } }),
+              ConfigProvider.fromEnv({ env: { FCODE_CLOUDFLARED_PATH: relayClientPath } }),
             ),
           ),
         );

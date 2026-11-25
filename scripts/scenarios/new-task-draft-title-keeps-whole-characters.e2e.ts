@@ -1,6 +1,6 @@
 import { expect } from "e2e";
 
-import { IOS, test } from "./t3-mobile.ts";
+import { IOS, test } from "./fcode-mobile.ts";
 
 const KEPT = "a".repeat(68);
 // The emoji's two UTF-16 units straddle unit 69, where a draft's title is cut.
@@ -9,11 +9,11 @@ const PROMPT = `${KEPT}😀 and the rest of the prompt`;
 test(
   "An unsent new-task draft's row title ends without a broken character",
   IOS,
-  async ({ t3, app, screen, device }) => {
-    await t3.project("demo");
+  async ({ fcode, app, screen, device }) => {
+    await fcode.project("demo");
     // A local simulator keeps the last run's drafts.
     await app.clearState().catch(() => {});
-    await t3.open();
+    await fcode.open();
 
     await screen.getByRole("button", "New chat").tap({ timeout: 120_000 });
     const composer = screen.getByRole("textbox", "Ask anything");

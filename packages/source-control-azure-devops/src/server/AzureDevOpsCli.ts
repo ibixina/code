@@ -10,18 +10,18 @@ import {
   type SourceControlRepositoryVisibility,
   type VcsError,
   type VcsProcessExitFailureKind,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 
-import * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { SpawnExecutableResolution } from "@t3tools/shared/shell";
+import * as SourceControlHost from "@fcode/source-control-core/server/SourceControlHost";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import { SpawnExecutableResolution } from "@fcode/shared/shell";
 import { AzureCliInstallLocation } from "./azureCliLauncher.ts";
 import {
   decodeAzureDevOpsPullRequestJson,
   decodeAzureDevOpsPullRequestListJson,
   type NormalizedAzureDevOpsPullRequestRecord,
 } from "./azureDevOpsPullRequests.ts";
-import * as SourceControlProvider from "@t3tools/source-control-core/server/SourceControlProvider";
+import * as SourceControlProvider from "@fcode/source-control-core/server/SourceControlProvider";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
@@ -221,7 +221,7 @@ export class AzureDevOpsCli extends Context.Service<
       readonly args: ReadonlyArray<string>;
       readonly timeoutMs?: number;
       readonly maxOutputBytes?: number;
-      /** The remote T3 selected; without one, the checkout's primary remote scopes the command. */
+      /** The remote fcode selected; without one, the checkout's primary remote scopes the command. */
       readonly remoteUrl?: string;
       readonly stdin?: string;
     }) => Effect.Effect<SourceControlHost.SourceControlProcessOutput, AzureDevOpsCliError>;
@@ -271,7 +271,7 @@ export class AzureDevOpsCli extends Context.Service<
       readonly remoteUrl?: string;
     }) => Effect.Effect<string | null, AzureDevOpsCliError>;
   }
->()("@t3tools/source-control-azure-devops/server/AzureDevOpsCli") {}
+>()("@fcode/source-control-azure-devops/server/AzureDevOpsCli") {}
 
 function normalizeChangeRequestId(reference: string): string {
   const trimmed = reference.trim().replace(/^#/, "");
@@ -358,7 +358,7 @@ function decodeAzureDevOpsJson<S extends Schema.Top>(
   );
 }
 
-/** The remote that scopes `az` when T3 selected none, from `git remote -v` output. */
+/** The remote that scopes `az` when fcode selected none, from `git remote -v` output. */
 export function primaryRemoteUrl(output: string) {
   if (!output.endsWith("\n")) return null;
   const remotes = new Map<string, string>();

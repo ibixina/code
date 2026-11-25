@@ -24,7 +24,7 @@ import {
   RunId,
   RuntimeRequestId,
   TurnItemId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -39,23 +39,22 @@ import * as SqlError from "effect/sql/SqlError";
 import * as Stream from "effect/Stream";
 import * as Tracer from "effect/Tracer";
 
-import { toolOutputImages } from "@t3tools/shared/toolOutput";
+import { toolOutputImages } from "@fcode/shared/toolOutput";
 import * as SqlitePersistence from "../persistence/Sqlite.ts";
 import * as ServerConfig from "../config.ts";
 import * as GitVcsDriver from "../vcs/GitVcsDriver.ts";
 import * as EventSink from "./EventSink.ts";
 import * as EventStore from "./EventStore.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
 import * as ProjectionStore from "./ProjectionStore.ts";
 import * as ProviderEventIngestor from "./ProviderEventIngestor.ts";
-import * as ProviderUsageAnalytics from "../telemetry/ProviderUsageAnalytics.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import * as ProviderInstanceRegistry from "../provider/ProviderInstanceRegistry.ts";
 import { UsageLimitResetFallback } from "../usage/UsageLimitSources.ts";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import type { ProviderInstance } from "@t3tools/provider-core/server/driver";
-import type { ServerProvider } from "@t3tools/contracts";
-import { makeProviderFailure } from "@t3tools/provider-core/server/failure";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
+import type { ProviderInstance } from "@fcode/provider-core/server/driver";
+import type { ServerProvider } from "@fcode/contracts";
+import { makeProviderFailure } from "@fcode/provider-core/server/failure";
 import {
   makeProviderEventRoutingState,
   type ProviderEventRouteIdentity,
@@ -163,7 +162,7 @@ const makeSharedWorktree = Effect.gen(function* () {
     "-m",
     "initial",
   ]);
-  yield* command(repo, ["worktree", "add", "-b", "t3/abcd1234", worktreePath]);
+  yield* command(repo, ["worktree", "add", "-b", "fcode/abcd1234", worktreePath]);
   return { repo, worktreePath, command };
 });
 const modelSelection = {
@@ -350,104 +349,6 @@ it.effect("takes a hub's reset for an unreset usage_limit, then refreshes the sn
     );
   }),
 );
-
-it.effect("records accepted billed turn usage once without billing the context window", () => {
-  const recorded: Array<ProviderUsageAnalytics.ProviderTurnReport> = [];
-  const layerAnalytics = Layer.succeed(ProviderUsageAnalytics.ProviderTurnAnalytics, {
-    runStarted: () => Effect.void,
-    turnCompleted: (report) =>
-      Effect.sync(() => {
-        recorded.push(report);
-      }),
-    runSettled: () => Effect.void,
-  });
-  return Effect.gen(function* () {
-    const now = yield* DateTime.now;
-    const eventSink = yield* EventSink.EventSinkV2;
-    const ingestor = yield* ProviderEventIngestor.ProviderEventIngestorV2;
-    const idAllocator = yield* IdAllocator.IdAllocatorV2;
-    const threadEvent = yield* threadCreatedEvent(now);
-    yield* eventSink.write({ events: [threadEvent] });
-    const providerSessionId = yield* idAllocator.allocate.providerSession({
-      providerInstanceId: modelSelection.instanceId,
-      threadId: threadEvent.threadId,
-    });
-    const providerThreadId = idAllocator.derive.providerThread({
-      driver: CODEX_DRIVER,
-      nativeThreadId: "billing-thread",
-    });
-    const providerTurn = {
-      id: idAllocator.derive.providerTurn({ driver: CODEX_DRIVER, nativeTurnId: "billing-turn" }),
-      providerThreadId,
-      nodeId: NodeId.make("node:billing-turn"),
-      runAttemptId: null,
-      nativeTurnRef: null,
-      ordinal: 1,
-      status: "completed" as const,
-      startedAt: now,
-      completedAt: DateTime.makeUnsafe(DateTime.toEpochMillis(now) + 120),
-      tokenUsage: {
-        inputTokens: 4000,
-        cachedInputTokens: 3000,
-        outputTokens: 100,
-        usedTokens: 4100,
-        updatedAt: DateTime.formatIso(now),
-      },
-      turnTokenUsage: {
-        usageStatus: "complete" as const,
-        usageScope: "main_agent" as const,
-        hasSubagents: false,
-        inputTokens: 40,
-        cachedInputTokens: 30,
-        outputTokens: 10,
-      },
-    };
-    const input = {
-      providerSessionId,
-      providerInstanceId: modelSelection.instanceId,
-      threadId: threadEvent.threadId,
-      analyticsContext: {
-        modelSelection,
-        runtimeMode: "full-access" as const,
-        interactionMode: "default" as const,
-        origin: {
-          createdBy: "agent" as const,
-          creationSource: "provider" as const,
-          scheduled: false,
-          subagent: true,
-        },
-      },
-      event: { type: "provider_turn.updated" as const, driver: CODEX_DRIVER, providerTurn },
-    };
-    yield* ingestor.ingestNormalized(input);
-    yield* ingestor.ingestNormalized(input);
-    const ignored = yield* ingestor.ingestNormalized({
-      ...input,
-      event: {
-        ...input.event,
-        providerTurn: {
-          ...providerTurn,
-          id: idAllocator.derive.providerTurn({
-            driver: CODEX_DRIVER,
-            nativeTurnId: "stale-billing-turn",
-          }),
-        },
-      },
-      writeIfRunCurrent: {
-        runId: RunId.make("missing-run"),
-        activeAttemptId: RunAttemptId.make("stale-attempt"),
-        expectedStatus: "running",
-      },
-    });
-    assert.isEmpty(ignored);
-    assert.lengthOf(recorded, 1);
-    assert.deepEqual(recorded[0], {
-      driver: CODEX_DRIVER,
-      providerTurn,
-      context: input.analyticsContext,
-    });
-  }).pipe(Effect.provide(layerTest.pipe(Layer.provide(layerAnalytics))));
-});
 
 it.effect(
   "reports invalid provider questions as typed errors and still ingests valid questions",
@@ -804,7 +705,7 @@ layer("ProviderEventIngestorV2", (it) => {
                     parentCheckpointId: null,
                     ordinalWithinScope: input.ordinal,
                     appRunOrdinal: input.ordinal,
-                    ref: CheckpointRef.make(`refs/t3/checkpoints/rewound/${input.ordinal}`),
+                    ref: CheckpointRef.make(`refs/fcode/checkpoints/rewound/${input.ordinal}`),
                     status: "ready" as const,
                     files: [],
                     capturedAt: now,
@@ -882,7 +783,7 @@ layer("ProviderEventIngestorV2", (it) => {
             createdAt: now,
             updatedAt: now,
           },
-          retainedNativeTurnIds: ["turn-started-outside-t3", "kept-turn"],
+          retainedNativeTurnIds: ["turn-started-outside-fcode", "kept-turn"],
         },
       });
 
@@ -1979,17 +1880,17 @@ layer("ProviderEventIngestorV2", (it) => {
   );
 
   it.effect.each([
-    { parentMoved: false, failure: null, temporaryBranch: "t3/abcd1234" },
-    { parentMoved: true, failure: null, temporaryBranch: "t3/abcd1234" },
-    { parentMoved: false, failure: "write", temporaryBranch: "t3/abcd1234" },
-    { parentMoved: false, failure: "git", temporaryBranch: "t3/abcd1234" },
+    { parentMoved: false, failure: null, temporaryBranch: "fcode/abcd1234" },
+    { parentMoved: true, failure: null, temporaryBranch: "fcode/abcd1234" },
+    { parentMoved: false, failure: "write", temporaryBranch: "fcode/abcd1234" },
+    { parentMoved: false, failure: "git", temporaryBranch: "fcode/abcd1234" },
     { parentMoved: false, failure: null, temporaryBranch: "my-prefix/abcd1234" },
   ])(
     "rechecks a pending native child's branch after the rename scan: %j",
     ({ parentMoved, failure, temporaryBranch }) =>
       Effect.gen(function* () {
         const { worktreePath, command } = yield* makeSharedWorktree;
-        if (temporaryBranch !== "t3/abcd1234")
+        if (temporaryBranch !== "fcode/abcd1234")
           yield* command(worktreePath, ["branch", "-m", temporaryBranch]);
         const git = yield* GitVcsDriver.GitVcsDriver;
         const now = yield* DateTime.now;
@@ -2121,7 +2022,7 @@ layer("ProviderEventIngestorV2", (it) => {
       Effect.gen(function* () {
         const { worktreePath, command } = yield* makeSharedWorktree;
         const git = yield* GitVcsDriver.GitVcsDriver;
-        const branch = scenario === "explicit" ? "child-feature" : "t3/abcd1234";
+        const branch = scenario === "explicit" ? "child-feature" : "fcode/abcd1234";
         if (scenario === "explicit") yield* command(worktreePath, ["branch", "-m", branch]);
         if (scenario === "detached") yield* command(worktreePath, ["checkout", "--detach"]);
         const now = yield* DateTime.now;

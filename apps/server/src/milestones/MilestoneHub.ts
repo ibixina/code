@@ -3,7 +3,7 @@ import {
   type MilestoneFilter,
   type MilestoneId,
   milestoneMatches,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -87,7 +87,7 @@ export class MilestoneHub extends Context.Service<
       Scope.Scope
     >;
   }
->()("t3/milestones/MilestoneHub") {}
+>()("fcode/milestones/MilestoneHub") {}
 
 interface Kept {
   readonly event: MilestoneEvent;

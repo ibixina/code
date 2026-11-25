@@ -1,6 +1,6 @@
-import type { ThreadStructureRuntime } from "@t3tools/client-runtime/state/shell";
+import type { ThreadStructureRuntime } from "@fcode/client-runtime/state/shell";
 import { msg } from "gt-react";
-import { resolveThreadWorkingStartedAt } from "@t3tools/client-runtime/state/models";
+import { resolveThreadWorkingStartedAt } from "@fcode/client-runtime/state/models";
 import {
   type AssetResource,
   type OrchestrationV2Checkpoint,
@@ -16,31 +16,31 @@ import {
   type ToolActivitySource,
   type ThreadId,
   type TurnItemId,
-} from "@t3tools/contracts";
-import { extractToolActivityPresentation } from "@t3tools/client-runtime/work-log/tool-presentation";
-import { classifyToolActivity, collectToolFilePaths } from "@t3tools/shared/toolActivity";
-import { formatReadToolLabel, formatSearchToolLabel } from "@t3tools/shared/toolActivityCopy";
-import type { HtmlRenderReference } from "@t3tools/shared/htmlRender";
-import { turnItemDetailRevision } from "@t3tools/client-runtime/work-log/item-detail";
-import type { McpAppReference } from "@t3tools/shared/mcpApp";
+} from "@fcode/contracts";
+import { extractToolActivityPresentation } from "@fcode/client-runtime/work-log/tool-presentation";
+import { classifyToolActivity, collectToolFilePaths } from "@fcode/shared/toolActivity";
+import { formatReadToolLabel, formatSearchToolLabel } from "@fcode/shared/toolActivityCopy";
+import type { HtmlRenderReference } from "@fcode/shared/htmlRender";
+import { turnItemDetailRevision } from "@fcode/client-runtime/work-log/item-detail";
+import type { McpAppReference } from "@fcode/shared/mcpApp";
 import {
   htmlRenderFromToolItem,
   mcpAppFromToolItem,
   sentMessageFromToolItem,
-} from "@t3tools/shared/toolOutput";
+} from "@fcode/shared/toolOutput";
 import {
   contextCompactionLabel,
   workEntryIndicatesToolFailure,
-} from "@t3tools/client-runtime/work-log/presentation";
-import type { ThreadCheckpointSummary } from "@t3tools/client-runtime/state/thread-checkpoints";
-import { repositoryCheckpointScopeIds } from "@t3tools/client-runtime/state/thread-repositories";
+} from "@fcode/client-runtime/work-log/presentation";
+import type { ThreadCheckpointSummary } from "@fcode/client-runtime/state/thread-checkpoints";
+import { repositoryCheckpointScopeIds } from "@fcode/client-runtime/state/thread-repositories";
 import type {
   ThreadPendingApproval,
   ThreadPendingUserInput,
-} from "@t3tools/client-runtime/state/thread-requests";
-import type { ThreadRunSummary, ThreadRuntimeSummary } from "@t3tools/client-runtime/state/shell";
-import { threadRuntimeHasInterruptibleRun } from "@t3tools/client-runtime/state/thread-execution";
-import { turnItemIsWorkspacePreparation } from "@t3tools/client-runtime/state/turn-item-presentation";
+} from "@fcode/client-runtime/state/thread-requests";
+import type { ThreadRunSummary, ThreadRuntimeSummary } from "@fcode/client-runtime/state/shell";
+import { threadRuntimeHasInterruptibleRun } from "@fcode/client-runtime/state/thread-execution";
+import { turnItemIsWorkspacePreparation } from "@fcode/client-runtime/state/turn-item-presentation";
 
 import {
   isImageAttachment,
@@ -58,7 +58,7 @@ import { shallow } from "zustand/vanilla/shallow";
 export {
   workEntryDisplayIndicatesToolFailure,
   workEntryIndicatesToolFailure,
-} from "@t3tools/client-runtime/work-log/presentation";
+} from "@fcode/client-runtime/work-log/presentation";
 
 export type WorkLogToolLifecycleStatus =
   | "idle"
@@ -69,7 +69,7 @@ export type WorkLogToolLifecycleStatus =
   | "stopped";
 
 export interface WorkLogEntry {
-  readonly questionAnswer?: import("@t3tools/contracts").UserInputAttachmentAnswerPayload;
+  readonly questionAnswer?: import("@fcode/contracts").UserInputAttachmentAnswerPayload;
   readonly id: string;
   readonly createdAt: string;
   readonly runId?: RunId | null;
@@ -245,7 +245,6 @@ const STANDALONE_V2_ITEM_TYPES = new Set<OrchestrationV2ProjectedTurnItem["item"
   "run_interrupt_request",
   "run_interrupt_result",
   "secret_request",
-  "feedback_request",
   "link_request",
   "subagent",
 ]);
@@ -255,7 +254,6 @@ const PERSISTENT_RESOURCE_V2_ITEM_TYPES = new Set<OrchestrationV2TurnItem["type"
   "thread_created",
   // Still answerable after a steer supersedes the attempt that asked.
   "secret_request",
-  "feedback_request",
   "link_request",
 ]);
 

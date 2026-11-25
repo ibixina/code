@@ -16,11 +16,10 @@ import {
   RunId,
   ThreadId,
   TurnItemId,
-} from "@t3tools/contracts";
-import * as Context from "effect/Context";
+} from "@fcode/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
-import type * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import type * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
 import * as FileSystem from "effect/FileSystem";
@@ -55,7 +54,6 @@ import * as ProviderReplayHarness from "../orchestration-v2/testkit/ProviderRepl
 import * as DocumentText from "../provider/DocumentText.ts";
 import * as ProviderRegistry from "../provider/ProviderRegistry.ts";
 import * as ServerSettings from "../serverSettings.ts";
-import * as AnalyticsService from "../telemetry/AnalyticsService.ts";
 import * as GuestShareService from "./GuestShareService.ts";
 
 const instanceId = ProviderInstanceId.make("codex");
@@ -79,7 +77,7 @@ const layerOrchestration = Layer.mergeAll(
 );
 
 // The Connect hostname the fake tunnel reports. Tests set it to null to simulate an unlink.
-const hostname = Ref.makeUnsafe<string | null>("env.t3.test");
+const hostname = Ref.makeUnsafe<string | null>("env.fcode.test");
 const layerConnect = Layer.mock(CloudManagedEndpointRuntime)({
   inspectConnector: Effect.map(Ref.get(hostname), (value) => ({
     pid: 1,
@@ -92,7 +90,7 @@ const layerConnect = Layer.mock(CloudManagedEndpointRuntime)({
 const layerProviders = Layer.mock(ProviderRegistry.ProviderRegistry)({
   getProviders: Effect.succeed([]),
 });
-const layerConfig = ServerConfig.layerTest(process.cwd(), { prefix: "t3-guest-share-" });
+const layerConfig = ServerConfig.layerTest(process.cwd(), { prefix: "fcode-guest-share-" });
 // The real cleanup also closes terminals, previews and devices; these tests only need the files gone.
 const layerCleanup = Layer.effect(
   ResourceCleanupService.ResourceCleanupService,
@@ -119,28 +117,6 @@ const layerCleanup = Layer.effect(
   Layer.provide(layerConfig),
   Layer.provide(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
 );
-class RecordedAnalytics extends Context.Service<
-  RecordedAnalytics,
-  Ref.Ref<ReadonlyArray<Readonly<Record<string, unknown>>>>
->()("t3/guest/GuestShareService.test/RecordedAnalytics") {}
-const layerAnalytics = Layer.effectContext(
-  Effect.gen(function* () {
-    const recorded = yield* Ref.make<ReadonlyArray<Readonly<Record<string, unknown>>>>([]);
-    return Context.make(RecordedAnalytics, recorded).pipe(
-      Context.add(
-        AnalyticsService.AnalyticsService,
-        AnalyticsService.AnalyticsService.of({
-          record: (event, properties) =>
-            Ref.update(recorded, (events) => [...events, { event, ...properties }]).pipe(
-              Effect.as(true),
-            ),
-          flush: Effect.void,
-          recordOwners: () => Effect.void,
-        }),
-      ),
-    );
-  }),
-);
 const layerTest = GuestShareService.layer.pipe(
   Layer.provideMerge(
     CommandOutputHub.layer.pipe(
@@ -150,7 +126,6 @@ const layerTest = GuestShareService.layer.pipe(
   Layer.provide(layerProviders),
   Layer.provideMerge(ServerSettings.layerTest({ guestSharingEnabled: true })),
   Layer.provide(layerConnect),
-  Layer.provideMerge(layerAnalytics),
   Layer.provide(ServerSecretStore.layer),
   Layer.provide(DocumentText.layer),
   Layer.provideMerge(layerConfig),
@@ -160,7 +135,7 @@ const layerTest = GuestShareService.layer.pipe(
 const threadId = ThreadId.make("thread:guest-share-service");
 
 const shareThreadFor = Effect.fn(function* (threadId: ThreadId) {
-  yield* Ref.set(hostname, "env.t3.test");
+  yield* Ref.set(hostname, "env.fcode.test");
   const orchestrator = yield* Orchestrator.OrchestratorV2;
   yield* orchestrator.dispatch({
     type: "thread.create",
@@ -178,7 +153,7 @@ const shareThreadFor = Effect.fn(function* (threadId: ThreadId) {
   });
   const guestShares = yield* GuestShareService.GuestShareService;
   const { url } = yield* guestShares.create({ threadId });
-  assert.isTrue(url.startsWith("https://env.t3.test/guest#"));
+  assert.isTrue(url.startsWith("https://env.fcode.test/guest#"));
   const credential = url.slice(url.indexOf("#") + 1);
   return { orchestrator, guestShares, credential };
 });
@@ -208,18 +183,6 @@ it.effect("spends an invite once and ends the guest stream when the owner stops 
     );
     assert.isTrue(Exit.isFailure(yield* Effect.exit(guestShares.stream(session))));
     assert.isTrue(Exit.isFailure(yield* Effect.exit(guestShares.check(session))));
-  }).pipe(Effect.provide(layerTest)),
-);
-
-it.effect("counts a guest joining and sending, without their name or text", () =>
-  Effect.gen(function* () {
-    const { guestShares, credential } = yield* shareThread;
-    const { token: session, shareId } = yield* guestShares.redeem({ credential, name: "Sam" });
-    yield* guestShares.submit(session, { shareId, text: "Hello" }, []);
-    assert.deepEqual(yield* Ref.get(yield* RecordedAnalytics), [
-      { event: "feature.used", feature: "guest_share.join" },
-      { event: "feature.used", feature: "guest_message.submit", variant: "text_only" },
-    ]);
   }).pipe(Effect.provide(layerTest)),
 );
 
@@ -309,7 +272,7 @@ it.effect("redeems only a short invite whose signature and share id are both cur
   }).pipe(Effect.provide(layerTest)),
 );
 
-it.effect("refuses guest requests once T3 Connect no longer serves the link's host", () =>
+it.effect("refuses guest requests once fcode Connect no longer serves the link's host", () =>
   Effect.gen(function* () {
     const { guestShares, credential } = yield* shareThread;
     const { token: session } = yield* guestShares.redeem({ credential, name: "Sam" });
@@ -324,7 +287,7 @@ it.effect("refuses guest requests once T3 Connect no longer serves the link's ho
   }).pipe(Effect.provide(layerTest)),
 );
 
-it.effect("closes an open guest stream when T3 Connect stops serving the link's host", () =>
+it.effect("closes an open guest stream when fcode Connect stops serving the link's host", () =>
   Effect.gen(function* () {
     const { guestShares, credential } = yield* shareThread;
     const { token: session } = yield* guestShares.redeem({ credential, name: "Sam" });
@@ -340,7 +303,7 @@ it.effect("closes an open guest stream when T3 Connect stops serving the link's 
       ["view", "snapshot"],
     );
     assert.isTrue(Exit.isFailure(yield* Effect.exit(guestShares.stream(session))));
-    yield* Ref.set(hostname, "env.t3.test");
+    yield* Ref.set(hostname, "env.fcode.test");
     assert.isTrue(Exit.isSuccess(yield* Effect.exit(guestShares.stream(session))));
   }).pipe(Effect.provide(layerTest)),
 );

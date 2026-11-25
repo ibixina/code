@@ -7,8 +7,8 @@ import type {
   PreviewViewportSetting,
   PreviewZoomFactor,
   ScopedThreadRef,
-} from "@t3tools/contracts";
-import type { AtomCommandResult } from "@t3tools/client-runtime/state/runtime";
+} from "@fcode/contracts";
+import type { AtomCommandResult } from "@fcode/client-runtime/state/runtime";
 import * as Cause from "effect/Cause";
 import { AsyncResult } from "effect/reactivity";
 

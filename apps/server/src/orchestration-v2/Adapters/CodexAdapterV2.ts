@@ -2,7 +2,7 @@ import { pipe } from "effect/Function";
 import * as DocumentText from "../../provider/DocumentText.ts";
 import { brokenRuntimeError } from "../../provider/providerCompatibility.ts";
 import { revertCodexThread } from "../../provider/CodexThreadRevert.ts";
-import { historyResponseItems } from "@t3tools/provider-core/server/handoffBudget";
+import { historyResponseItems } from "@fcode/provider-core/server/handoffBudget";
 import { makeProviderTextDeltaCoalescer } from "./ProviderTextDeltaCoalescer.ts";
 import {
   mcpToolPresentation,
@@ -15,7 +15,7 @@ import {
   completeCodexTurnTokenUsage,
   type CodexTurnTokenUsageState,
 } from "../../provider/CodexTurnTokenUsage.ts";
-import type { ManagedServerProvider } from "@t3tools/provider-core/server/snapshot";
+import type { ManagedServerProvider } from "@fcode/provider-core/server/snapshot";
 import type { CodexEffectiveRuntime } from "../../provider/CodexManagedRuntime.ts";
 import { classifyCodexManagedError } from "../../provider/CodexManagedErrors.ts";
 import {
@@ -32,7 +32,6 @@ import {
   type CodexRateLimitSnapshot,
 } from "../../provider/codexUsageLimits.ts";
 import {
-  type AgentFeedbackMode,
   CodexSettings,
   defaultInstanceIdForDriver,
   isOrchestrationV2WorkActive,
@@ -47,20 +46,20 @@ import {
   isDelegatedAppThread,
   ThreadId,
   type TurnItemId,
-} from "@t3tools/contracts";
-import { SKILL_MENTION_PATTERN } from "@t3tools/shared/composerInlineTokens";
-import { AgentScope } from "@t3tools/shared/AgentScope";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+} from "@fcode/contracts";
+import { SKILL_MENTION_PATTERN } from "@fcode/shared/composerInlineTokens";
+import { AgentScope } from "@fcode/shared/AgentScope";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import {
   COMPUTER_USE_TOOL_SOURCE,
   dynamicToolSurface,
   dynamicToolTitle,
-} from "@t3tools/shared/toolActivity";
-import { getModelSelectionStringOptionValue, modelSelectionsEqual } from "@t3tools/shared/model";
-import { appendGeneratedImageEmbeds } from "@t3tools/shared/generatedImageMarkdown";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
-import { mcpToolResultOutput } from "@t3tools/shared/toolOutput";
-import { oauthCallbackUrl } from "@t3tools/shared/oauthCallback";
+} from "@fcode/shared/toolActivity";
+import { getModelSelectionStringOptionValue, modelSelectionsEqual } from "@fcode/shared/model";
+import { appendGeneratedImageEmbeds } from "@fcode/shared/generatedImageMarkdown";
+import { resolveSpawnCommand } from "@fcode/shared/shell";
+import { mcpToolResultOutput } from "@fcode/shared/toolOutput";
+import { oauthCallbackUrl } from "@fcode/shared/oauthCallback";
 import type {
   ChatAttachment,
   OrchestrationV2AppThread,
@@ -86,7 +85,7 @@ import type {
   ProviderTurnId,
   ProviderInstanceId,
   RuntimeMode,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as CodexClient from "effect-codex-app-server/client";
 import * as CodexErrors from "effect-codex-app-server/errors";
 import * as CodexSchema from "effect-codex-app-server/schema";
@@ -116,7 +115,7 @@ import { resolveAttachmentPath, resolveAttachmentPathById } from "../../attachme
 import * as PortScanner from "../../preview/PortScanner.ts";
 import { getCodexServiceTierOptionValue } from "../../codexModelOptions.ts";
 import { ServerConfig } from "../../config.ts";
-import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
+import { expandHomePath } from "@fcode/provider-core/server/pathExpansion";
 import { buildCodexAdditionalContext } from "../../provider/CodexDeveloperInstructions.ts";
 import {
   describeMcpElicitation,
@@ -131,43 +130,43 @@ import {
   boundProviderEventForLogging,
   shouldPersistProviderEvent,
 } from "../../provider/EventNdjsonLogger.ts";
-import * as ProviderEventLoggers from "@t3tools/provider-core/server/ProviderEventLoggers";
+import * as ProviderEventLoggers from "@fcode/provider-core/server/ProviderEventLoggers";
 import { codexAppServerArgs, resolveCodexLaunchArgs } from "../../provider/codexLaunchArgs.ts";
-import { mergeProviderInstanceEnvironment } from "@t3tools/provider-core/server/instanceEnvironment";
-import * as McpProviderSession from "@t3tools/provider-core/server/mcpSession";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
+import { mergeProviderInstanceEnvironment } from "@fcode/provider-core/server/instanceEnvironment";
+import * as McpProviderSession from "@fcode/provider-core/server/mcpSession";
+import * as McpProviderSessions from "@fcode/provider-core/server/McpProviderSessions";
 import {
   MCP_APP_EXTENSION_ID,
   MCP_APP_MIME_TYPE,
   MCP_APP_OUTPUT_KEY,
   MCP_APP_RESOURCE_SCHEME,
-} from "@t3tools/shared/mcpApp";
+} from "@fcode/shared/mcpApp";
 import { snapshotMcpApp } from "../../mcpApps/McpAppSnapshot.ts";
 import {
   ProviderAdapterDriverCreateError,
   type ProviderAdapterDriverCreateInput,
-} from "@t3tools/provider-core/server/adapterDriver";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
-import { backgroundWorkNotification } from "@t3tools/provider-core/server/notification";
+} from "@fcode/provider-core/server/adapterDriver";
+import * as ProviderContinuationRequests from "@fcode/provider-core/server/ProviderContinuationRequests";
+import { backgroundWorkNotification } from "@fcode/provider-core/server/notification";
 import {
   makeProviderFailure,
   makeProviderFailureTurnItem,
   makeProviderRetryTurnItem,
   PROVIDER_RETRY_BUDGET_MS,
-} from "@t3tools/provider-core/server/failure";
-import { turnScopedSelectionTransition } from "@t3tools/provider-core/server/selectionTransition";
+} from "@fcode/provider-core/server/failure";
+import { turnScopedSelectionTransition } from "@fcode/provider-core/server/selectionTransition";
 import {
   isProviderNativeImageAttachment,
   providerMessageTextWithAttachmentPaths,
-} from "@t3tools/provider-core/server/attachmentPrompt";
+} from "@fcode/provider-core/server/attachmentPrompt";
 import {
   makeSubagentChildThread,
   makeSubagentConversationArtifacts,
   subagentThreadTitle,
-} from "@t3tools/provider-core/server/subagentProjection";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import { buildWorkspaceInstructions } from "@t3tools/provider-core/server/runtimeInstructions";
+} from "@fcode/provider-core/server/subagentProjection";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
+import { buildWorkspaceInstructions } from "@fcode/provider-core/server/runtimeInstructions";
 
 const CODEX_PROVIDER = ProviderDriverKind.make("codex");
 const CODEX_CAPACITY_MAX_RETRIES = 5;
@@ -916,8 +915,7 @@ export const buildCodexTurnStartParams = Effect.fn("CodexAdapterV2.buildCodexTur
     readonly codexInput: ReadonlyArray<CodexSchema.V2TurnStartParams__UserInput>;
     readonly runtimePolicy: ProviderAdapter.ProviderAdapterV2RuntimePolicy;
     readonly modelSelection: ModelSelection;
-    readonly hasT3Mcp?: boolean;
-    readonly agentFeedback?: AgentFeedbackMode;
+    readonly hasFcodeMcp?: boolean;
     readonly browserToolsAvailable?: boolean;
     readonly deviceToolsAvailable?: boolean;
     /** ChatGPT token sharing does not accept service tiers. */
@@ -971,13 +969,12 @@ export const buildCodexTurnStartParams = Effect.fn("CodexAdapterV2.buildCodexTur
         { kind: "untrusted" as const, value: entry.text },
       ]),
     );
-    const t3Context =
-      input.hasT3Mcp === true
+    const fcodeContext =
+      input.hasFcodeMcp === true
         ? buildCodexAdditionalContext(
             {
               model: input.modelSelection.model,
               reasoningEffort: effort ?? undefined,
-              agentFeedback: input.agentFeedback ?? "off",
             },
             {
               browser: input.browserToolsAvailable ?? true,
@@ -985,18 +982,18 @@ export const buildCodexTurnStartParams = Effect.fn("CodexAdapterV2.buildCodexTur
             },
           )
         : undefined;
-    // Its own entry, so the folder list reaches the model without T3 Code's MCP tools too.
+    // Its own entry, so the folder list reaches the model without fcode's MCP tools too.
     const workspaceInstructions = buildWorkspaceInstructions(input.runtimePolicy);
     const workspaceContext =
       workspaceInstructions === ""
         ? undefined
-        : { t3_code_workspace: { kind: "application" as const, value: workspaceInstructions } };
+        : { fcode_workspace: { kind: "application" as const, value: workspaceInstructions } };
     const additionalContext =
-      t3Context === undefined &&
+      fcodeContext === undefined &&
       workspaceContext === undefined &&
       Object.keys(appContext).length === 0
         ? undefined
-        : { ...t3Context, ...workspaceContext, ...appContext };
+        : { ...fcodeContext, ...workspaceContext, ...appContext };
     return yield* decodeCodexTurnStartParams({
       threadId: input.nativeThreadId,
       input: input.codexInput,
@@ -1665,7 +1662,7 @@ export interface CodexAppServerClientFactoryShape {
 export class CodexAppServerClientFactory extends Context.Service<
   CodexAppServerClientFactory,
   CodexAppServerClientFactoryShape
->()("t3/orchestration-v2/Adapters/CodexAdapterV2/CodexAppServerClientFactory") {}
+>()("fcode/orchestration-v2/Adapters/CodexAdapterV2/CodexAppServerClientFactory") {}
 
 /** MCP startup grace in milliseconds; the 1 s default excludes cold npx/uvx servers from the first model request. */
 export const CODEX_THREAD_CONFIG = {
@@ -1677,11 +1674,11 @@ export const CODEX_THREAD_CONFIG = {
 } as const;
 
 // request_secret can wait an hour; keep Codex's MCP timeout above that.
-const CODEX_T3_MCP_TOOL_TIMEOUT_SEC = 65 * 60;
-// Holds T3 tools Codex must call directly, never from Code Mode. Calls arrive as
-// `t3-code-direct.<tool>`; t3McpToolPresentation.ts must keep resolving that form.
-const CODEX_T3_DIRECT_MCP_SERVER = "t3-code-direct";
-const CODEX_DIRECT_ONLY_T3_TOOLS = ["t3_thread_wait", "delegate_task"];
+const CODEX_FCODE_MCP_TOOL_TIMEOUT_SEC = 65 * 60;
+// Holds fcode tools Codex must call directly, never from Code Mode. Calls arrive as
+// `fcode-direct.<tool>`; fcodeMcpToolPresentation.ts must keep resolving that form.
+const CODEX_FCODE_DIRECT_MCP_SERVER = "fcode-direct";
+const CODEX_DIRECT_ONLY_FCODE_TOOLS = ["fcode_thread_wait", "delegate_task"];
 
 /** Names of the stdio MCP servers in a `config/read` config, the ones Codex starts per thread. */
 function codexStdioMcpServerNames(mcpServers: unknown): ReadonlyArray<string> {
@@ -1710,12 +1707,12 @@ function codexThreadRuntimeParams(input: {
   readonly config: Readonly<Record<string, Schema.Json>>;
 } {
   const { mcpSession } = input;
-  const t3Server =
+  const fcodeServer =
     mcpSession === undefined
       ? undefined
       : {
           url: mcpSession.endpoint,
-          tool_timeout_sec: CODEX_T3_MCP_TOOL_TIMEOUT_SEC,
+          tool_timeout_sec: CODEX_FCODE_MCP_TOOL_TIMEOUT_SEC,
           http_headers: { Authorization: mcpSession.authorizationHeader },
         };
   return {
@@ -1736,16 +1733,16 @@ function codexThreadRuntimeParams(input: {
               ]),
             ),
           }),
-      ...(t3Server === undefined
+      ...(fcodeServer === undefined
         ? {}
         : {
-            // Override only T3's servers so launch-argument MCP servers survive.
-            "mcp_servers.t3-code": { ...t3Server, disabled_tools: CODEX_DIRECT_ONLY_T3_TOOLS },
+            // Override only fcode's servers so launch-argument MCP servers survive.
+            "mcp_servers.fcode": { ...fcodeServer, disabled_tools: CODEX_DIRECT_ONLY_FCODE_TOOLS },
             // Code Mode runs a blocking wait or delegate wait as a nested call, and the model
             // keeps polling it. A second, direct-only registration makes it a plain tool call.
-            [`mcp_servers.${CODEX_T3_DIRECT_MCP_SERVER}`]: {
-              ...t3Server,
-              enabled_tools: CODEX_DIRECT_ONLY_T3_TOOLS,
+            [`mcp_servers.${CODEX_FCODE_DIRECT_MCP_SERVER}`]: {
+              ...fcodeServer,
+              enabled_tools: CODEX_DIRECT_ONLY_FCODE_TOOLS,
               omit_tools_from: ["code_mode", "deferred"],
             },
           }),
@@ -1824,7 +1821,7 @@ const CODEX_THREAD_ENV_CONFIG_KEY = `shell_environment_policy.set.${PortScanner.
 
 /**
  * One app-server serves every Codex thread on an instance, so each frame is routed to the
- * T3 thread it belongs to. Frames tied to no thread, such as `initialize`, go to the global log.
+ * fcode thread it belongs to. Frames tied to no thread, such as `initialize`, go to the global log.
  */
 function makeCodexProtocolThreadRouter() {
   const threadIdsByNativeId = new Map<string, ThreadId>();
@@ -1998,7 +1995,7 @@ export const layerAppServerClientFactory: Layer.Layer<
               }),
           ),
         );
-        // Its shells carry each thread's T3CODE_THREAD_ID, so port discovery reads listeners' threads.
+        // Its shells carry each thread's FCODE_THREAD_ID, so port discovery reads listeners' threads.
         yield* Effect.acquireRelease(Effect.sync(portDiscovery.trackAgent), (release) =>
           Effect.sync(release),
         );
@@ -6306,7 +6303,7 @@ export const makeCodexAdapterV2 = Effect.fn("makeCodexAdapterV2")(function* (
                 payload,
               );
             }
-            // T3's Full access policy is granular, under which Codex still asks before commands it
+            // fcode's Full access policy is granular, under which Codex still asks before commands it
             // deems dangerous. Managed-network asks enforce the user's allowlist, so they still ask.
             if (
               context.input.runtimePolicy.runtimeMode === "full-access" &&
@@ -8040,8 +8037,7 @@ export const makeCodexAdapterV2 = Effect.fn("makeCodexAdapterV2")(function* (
               codexInput,
               runtimePolicy: turnInput.runtimePolicy,
               modelSelection: turnInput.modelSelection,
-              hasT3Mcp: mcpSession !== undefined,
-              agentFeedback: turnInput.agentFeedback ?? "off",
+              hasFcodeMcp: mcpSession !== undefined,
               browserToolsAvailable: mcpSession?.browserToolsAvailable ?? true,
               deviceToolsAvailable: mcpSession?.capabilities?.has("device") ?? false,
               omitServiceTier: adapterOptions.resolveRuntime !== undefined,
@@ -9360,7 +9356,7 @@ export const makeCodexAdapterV2 = Effect.fn("makeCodexAdapterV2")(function* (
                   catch: () =>
                     new ProviderMcpSignInError({
                       server,
-                      detail: `Codex returned a sign-in page for ${server} that T3 Code can't open.`,
+                      detail: `Codex returned a sign-in page for ${server} that fcode can't open.`,
                     }),
                 });
                 const redirectUri = params.get("redirect_uri");

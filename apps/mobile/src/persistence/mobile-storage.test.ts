@@ -26,7 +26,7 @@ import "../lib/uuid";
 import * as MobileSecureStorage from "./mobile-secure-storage";
 import * as MobileStorage from "./mobile-storage";
 
-const deviceIdKey = "t3code.agent-awareness.device-id";
+const deviceIdKey = "fcode.agent-awareness.device-id";
 const makeStorage = MobileStorage.make().pipe(Effect.provide(MobileSecureStorage.layer));
 
 beforeEach(() => {
@@ -52,17 +52,6 @@ describe("mobile device identity", () => {
       expect(values.get(deviceIdKey)).toBe(deviceIds[0]);
       expect(uuidv4).toHaveBeenCalledTimes(1);
       expect(setItemAsync).toHaveBeenCalledTimes(1);
-    }),
-  );
-
-  it.effect("keeps the analytics id separate from the relay device id", () =>
-    Effect.gen(function* () {
-      const storage = yield* makeStorage;
-      const relayDeviceId = yield* storage.loadOrCreateAgentAwarenessDeviceId;
-      const analyticsDeviceId = yield* storage.loadOrCreateAnalyticsDeviceId;
-
-      expect(analyticsDeviceId).not.toBe(relayDeviceId);
-      expect(yield* storage.loadOrCreateAnalyticsDeviceId).toBe(analyticsDeviceId);
     }),
   );
 

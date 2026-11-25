@@ -1,4 +1,4 @@
-import type { OrchestrationV2TurnItem } from "@t3tools/contracts";
+import type { OrchestrationV2TurnItem } from "@fcode/contracts";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "../i18n/messages";

@@ -73,9 +73,9 @@ export class RelayConfiguration extends Context.Service<
     readonly managedEndpointCleanupMode?: ManagedEndpointCleanupMode;
     readonly legacyManagedEndpointCleanupMode?: ManagedEndpointCleanupMode;
     readonly legacyTunnelGraceMinutes?: number;
-    readonly t3Chat?: T3ChatSettings;
+    readonly fcodeChat?: T3ChatSettings;
   }
->()("t3code-relay/Config/RelayConfiguration") {}
+>()("fcode-relay/Config/RelayConfiguration") {}
 
 export const layer = (configuration: RelayConfiguration["Service"]) =>
   Layer.succeed(RelayConfiguration, RelayConfiguration.of(configuration));

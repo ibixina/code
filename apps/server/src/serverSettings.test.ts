@@ -18,8 +18,8 @@ import {
   UsageLimitSourceConfig,
   UsageLimitSourceId,
   type SimlockDeviceHostConfig,
-} from "@t3tools/contracts";
-import { createModelSelection } from "@t3tools/shared/model";
+} from "@fcode/contracts";
+import { createModelSelection } from "@fcode/shared/model";
 import { assert, it } from "@effect/vitest";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -38,7 +38,7 @@ import * as ServerSecretStore from "./auth/ServerSecretStore.ts";
 import { sourceControlHostSecretName } from "./sourceControl/sourceControlHostSecrets.ts";
 import * as ServerConfig from "./config.ts";
 import * as SqlitePersistence from "./persistence/Sqlite.ts";
-import { writeFileStringAtomically } from "@t3tools/shared/atomicWrite";
+import { writeFileStringAtomically } from "@fcode/shared/atomicWrite";
 import * as ServerSettingsModule from "./serverSettings.ts";
 import { SECRET_REDACTED } from "./settingsSecrets.ts";
 import * as ManagedPolicy from "./policy/ManagedPolicy.ts";
@@ -65,7 +65,7 @@ const layerServerSettings = (policy?: ManagedPolicyDocument) =>
     Layer.provideMerge(
       Layer.fresh(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "t3code-server-settings-test-",
+          prefix: "fcode-server-settings-test-",
         }),
       ),
     ),
@@ -79,7 +79,7 @@ const layerServerSettingsWithSecrets = () =>
     Layer.provideMerge(
       Layer.fresh(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "t3code-server-settings-test-",
+          prefix: "fcode-server-settings-test-",
         }),
       ),
     ),
@@ -359,7 +359,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("server settings"
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const service = yield* ServerSettingsModule.ServerSettingsService;
-      const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "t3-settings-dotfiles-" });
+      const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-settings-dotfiles-" });
       const linkedSettingsPath = path.join(dotfiles, "settings.json");
       yield* fs.writeFileString(linkedSettingsPath, `{ "responseStreamingMode": "turn" }`);
       yield* fs.remove(config.settingsPath, { force: true });
@@ -1080,12 +1080,11 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("server settings"
       const serverConfig = yield* ServerConfig.ServerConfig;
       const fileSystem = yield* FileSystem.FileSystem;
       const serverSettings = yield* ServerSettingsModule.ServerSettingsService;
-      const raw = '{"agentFeedback":{"mode":"auto"},"providers":1}';
+      const raw = '{"providers":1}';
       yield* fileSystem.writeFileString(serverConfig.settingsPath, raw);
 
       const settings = yield* serverSettings.getSettings;
 
-      assert.equal(settings.agentFeedback.mode, "off");
       assert.isFalse(settings.continueThreadsAfterServerUpdate);
       assert.equal(yield* fileSystem.readFileString(serverConfig.settingsPath), raw);
     }).pipe(Effect.provide(layerServerSettings())),
@@ -1168,7 +1167,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("server settings"
       Layer.provideMerge(Layer.fresh(SqlitePersistence.layerMemory)),
       Layer.provideMerge(
         Layer.fresh(
-          ServerConfig.layerTest(process.cwd(), { prefix: "t3code-settings-secret-cache-test-" }),
+          ServerConfig.layerTest(process.cwd(), { prefix: "fcode-settings-secret-cache-test-" }),
         ),
       ),
     );
@@ -1217,7 +1216,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("server settings"
       Layer.provideMerge(
         Layer.fresh(
           ServerConfig.layerTest(process.cwd(), {
-            prefix: "t3code-inline-secret-failure-test-",
+            prefix: "fcode-inline-secret-failure-test-",
           }),
         ),
       ),
@@ -2044,7 +2043,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("server settings"
       Layer.provideMerge(
         Layer.fresh(
           ServerConfig.layerTest(process.cwd(), {
-            prefix: "t3code-server-settings-legacy-failure-test-",
+            prefix: "fcode-server-settings-legacy-failure-test-",
           }),
         ),
       ),
@@ -2303,7 +2302,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("server settings"
         Layer.provideMerge(
           Layer.fresh(
             ServerConfig.layerTest(process.cwd(), {
-              prefix: "t3code-server-settings-materialization-failure-test-",
+              prefix: "fcode-server-settings-materialization-failure-test-",
             }),
           ),
         ),
@@ -2996,7 +2995,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))(
       const shared = ServerSecretStore.layer.pipe(
         Layer.provideMerge(Layer.fresh(SqlitePersistence.layerMemory)),
         Layer.provideMerge(
-          Layer.fresh(ServerConfig.layerTest(process.cwd(), { prefix: "t3code-hidden-secret-" })),
+          Layer.fresh(ServerConfig.layerTest(process.cwd(), { prefix: "fcode-hidden-secret-" })),
         ),
       );
       const withPolicy = <A, E>(
@@ -3180,7 +3179,7 @@ it.live("reloads a symlinked settings file after its target directory is replace
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
     const service = yield* ServerSettingsModule.ServerSettingsService;
-    const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "t3-settings-dotfiles-" });
+    const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-settings-dotfiles-" });
     const active = path.join(dotfiles, "active");
     const restored = path.join(dotfiles, "restored");
     yield* fs.makeDirectory(active);
@@ -3253,7 +3252,7 @@ it.effect("starts with symlinked settings when the settings directory watch fail
       const config = yield* ServerConfig.ServerConfig;
       const service = yield* ServerSettingsModule.ServerSettingsService;
       settingsDirectory = path.dirname(config.settingsPath);
-      const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "t3-settings-dotfiles-" });
+      const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-settings-dotfiles-" });
       const target = path.join(dotfiles, "settings.json");
       yield* fs.writeFileString(target, `{ "responseStreamingMode": "paragraph" }`);
       yield* fs.remove(config.settingsPath, { force: true });
@@ -3271,7 +3270,7 @@ it.effect("publishes edits made before the restored settings watch is registered
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "t3-settings-dotfiles-" });
+    const dotfiles = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-settings-dotfiles-" });
     const active = path.join(dotfiles, "active");
     const restored = path.join(dotfiles, "restored");
     const target = path.join(active, "settings.json");

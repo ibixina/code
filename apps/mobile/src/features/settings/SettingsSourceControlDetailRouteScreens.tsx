@@ -4,13 +4,13 @@ import {
   hasIssueTrackerTeams,
   issueTrackerBindings,
   issueTrackerSummary,
-} from "@t3tools/client-runtime/state/issue-trackers";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+} from "@fcode/client-runtime/state/issue-trackers";
+import { sourceControlClients } from "@fcode/client-runtime/source-control-clients";
 import {
   AuthSettingsWriteScope,
   type EnvironmentId,
   type SourceControlProviderKind,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Option from "effect/Option";
 import { T, useGT, useMessages } from "gt-react-native";
 import type { ReactNode } from "react";

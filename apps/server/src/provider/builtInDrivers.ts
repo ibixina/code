@@ -1,21 +1,21 @@
 import {
   AcpRegistryDriver,
   type AcpRegistryDriverEnv,
-} from "@t3tools/provider-acp-registry/server";
+} from "@fcode/provider-acp-registry/server";
 import { AntigravityDriver, type AntigravityDriverEnv } from "./Drivers/AntigravityDriver.ts";
 import { ClaudeDriver, type ClaudeDriverEnv } from "./Drivers/ClaudeDriver.ts";
 import { CodexDriver, type CodexDriverEnv } from "./Drivers/CodexDriver.ts";
-import { CursorDriver, type CursorDriverEnv } from "@t3tools/provider-cursor/server";
-import { FxDriver, type FxDriverEnv } from "@t3tools/provider-fx/server";
-import { GrokDriver, type GrokDriverEnv } from "@t3tools/provider-grok/server";
-import { OpenCodeDriver, type OpenCodeDriverEnv } from "@t3tools/provider-opencode/server";
-import { MuseDriver, type MuseDriverEnv } from "@t3tools/provider-muse/server";
-import { PiDriver, type PiDriverEnv } from "@t3tools/provider-pi/server";
+import { CursorDriver, type CursorDriverEnv } from "@fcode/provider-cursor/server";
+import { FxDriver, type FxDriverEnv } from "@fcode/provider-fx/server";
+import { GrokDriver, type GrokDriverEnv } from "@fcode/provider-grok/server";
+import { OpenCodeDriver, type OpenCodeDriverEnv } from "@fcode/provider-opencode/server";
+import { MuseDriver, type MuseDriverEnv } from "@fcode/provider-muse/server";
+import { PiDriver, type PiDriverEnv } from "@fcode/provider-pi/server";
 import type {
   AnyProviderDriver,
   ProviderUsageReaderEnv,
-} from "@t3tools/provider-core/server/driver";
-import { KiroDriver, type KiroDriverEnv } from "@t3tools/provider-kiro/server";
+} from "@fcode/provider-core/server/driver";
+import { KiroDriver, type KiroDriverEnv } from "@fcode/provider-kiro/server";
 
 export type BuiltInDriversEnv =
   | AcpRegistryDriverEnv

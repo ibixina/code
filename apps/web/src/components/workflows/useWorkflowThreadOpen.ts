@@ -1,8 +1,8 @@
 import {
   type LinkedThreadOpen,
   resolveLinkedThreadOpen,
-} from "@t3tools/client-runtime/linked-thread";
-import type { EnvironmentId } from "@t3tools/contracts";
+} from "@fcode/client-runtime/linked-thread";
+import type { EnvironmentId } from "@fcode/contracts";
 
 import { useConnectedEnvironmentIds, useEnvironment } from "../../state/environments";
 import { useLinkedEnvironments } from "../../state/peerLinks";

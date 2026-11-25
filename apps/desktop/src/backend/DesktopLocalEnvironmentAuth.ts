@@ -1,7 +1,7 @@
-import { bootstrapRemoteBearerSession } from "@t3tools/client-runtime/authorization";
-import type { RemoteEnvironmentRequestError } from "@t3tools/client-runtime/rpc";
-import { PRIMARY_LOCAL_ENVIRONMENT_ID } from "@t3tools/contracts";
-import { currentDesktopBootstrapToken } from "@t3tools/shared/desktopBootstrapToken";
+import { bootstrapRemoteBearerSession } from "@fcode/client-runtime/authorization";
+import type { RemoteEnvironmentRequestError } from "@fcode/client-runtime/rpc";
+import { PRIMARY_LOCAL_ENVIRONMENT_ID } from "@fcode/contracts";
+import { currentDesktopBootstrapToken } from "@fcode/shared/desktopBootstrapToken";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
@@ -63,7 +63,7 @@ export class DesktopLocalEnvironmentAuth extends Context.Service<
   {
     readonly getBearerToken: Effect.Effect<string, DesktopLocalEnvironmentAuthError>;
   }
->()("@t3tools/desktop/backend/DesktopLocalEnvironmentAuth") {}
+>()("@fcode/desktop/backend/DesktopLocalEnvironmentAuth") {}
 
 /** @public */
 export const make = Effect.gen(function* () {
@@ -111,7 +111,7 @@ export const make = Effect.gen(function* () {
             httpBaseUrl: config.httpBaseUrl.href,
             credential,
             clientMetadata: {
-              label: "T3 Code Desktop",
+              label: "fcode Desktop",
               deviceType: "desktop",
             },
           }).pipe(Effect.provideService(HttpClient.HttpClient, httpClient));

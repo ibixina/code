@@ -3,7 +3,7 @@ import { expect } from "e2e";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 
-import { runPromise, test, WEB } from "./t3.ts";
+import { runPromise, test, WEB } from "./fcode.ts";
 
 const PROBE = String.raw`import { existsSync, writeFileSync } from "node:fs";
 const file = (name) => new URL(name, import.meta.url);
@@ -36,10 +36,10 @@ const timer = setInterval(() => {
 test(
   "A second viewer answers terminal queries after the first viewer closes during a pending write",
   WEB,
-  async ({ t3, app, browser, screen }) => {
+  async ({ fcode, app, browser, screen }) => {
     await browser.emulateMedia({ colorScheme: "dark" });
-    const project = await t3.project("demo", { "cursor-probe.mjs": PROBE });
-    const thread = await t3.thread({ project, title: "Shared terminal", messages: ["hello"] });
+    const project = await fcode.project("demo", { "cursor-probe.mjs": PROBE });
+    const thread = await fcode.thread({ project, title: "Shared terminal", messages: ["hello"] });
     const read = (name: string) =>
       runPromise(
         Effect.gen(function* () {
@@ -69,7 +69,7 @@ test(
       };
     });
 
-    await t3.open(thread);
+    await fcode.open(thread);
     const toggle = screen.getByRole("button", "Toggle terminal drawer");
     const first = screen.getByLabel("Terminal input");
     await browser.evaluate(() => {

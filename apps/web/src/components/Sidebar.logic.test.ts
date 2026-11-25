@@ -1,6 +1,6 @@
-import { presentThreadShell } from "@t3tools/client-runtime/state/models";
-import { threadKey } from "@t3tools/client-runtime/state/entities";
-import { isThreadWorking as isSidebarThreadWorking } from "@t3tools/client-runtime/state/thread-inbox";
+import { presentThreadShell } from "@fcode/client-runtime/state/models";
+import { threadKey } from "@fcode/client-runtime/state/entities";
+import { isThreadWorking as isSidebarThreadWorking } from "@fcode/client-runtime/state/thread-inbox";
 import * as DateTime from "effect/DateTime";
 import { deriveActiveWorkStartedAt } from "../session-logic.ts";
 import { describe, expect, it } from "vite-plus/test";
@@ -24,7 +24,6 @@ import {
   resolveWorkingStartedAt,
   searchSidebarThreads,
   shouldRecedeSidebarThread,
-  sortInboxThreadsByReturn,
   resolveSidebarDropTarget,
   planSidebarThreadDrop,
   resolveSidebarReorderableThreadKeys,
@@ -41,15 +40,16 @@ import {
   sidebarFolderExpansionKeys,
   withoutRemovedCheckout,
 } from "./Sidebar.logic";
-import { scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime/environment";
+import { sortInboxThreadsByReturn } from "@fcode/client-runtime/state/thread-inbox";
+import { scopeThreadRef, scopedThreadKey } from "@fcode/client-runtime/environment";
 import {
   activeThreadSortKey,
   sortActiveThreadsByOrderKey,
   sortPinnedThreadsByOrderKey,
-} from "@t3tools/client-runtime/state/thread-sort";
+} from "@fcode/client-runtime/state/thread-sort";
 import { resolveProjectExpanded } from "../uiStateStore";
-import { threadSearchMatchKey } from "@t3tools/client-runtime/state/thread-search";
-import { EnvironmentId, ProjectId, ProviderInstanceId, RunId, ThreadId } from "@t3tools/contracts";
+import { threadSearchMatchKey } from "@fcode/client-runtime/state/thread-search";
+import { EnvironmentId, ProjectId, ProviderInstanceId, RunId, ThreadId } from "@fcode/contracts";
 
 import {
   DEFAULT_INTERACTION_MODE,
@@ -159,7 +159,7 @@ function makeLatestRun(overrides?: {
 }
 
 describe("withoutRemovedCheckout", () => {
-  const worktree = { branch: "t3/task", worktreePath: "/worktrees/task" };
+  const worktree = { branch: "fcode/task", worktreePath: "/worktrees/task" };
   const local = { branch: "main", worktreePath: null };
   const removed = { branch: null, worktreePath: null };
   const tracking = { trackedFolders: [{ path: "/work/wrapper/api" }] };
@@ -1184,14 +1184,15 @@ describe("Working shelf (beta)", () => {
       key,
       section,
     });
+    // The Working shelf sits above Pinned.
     const items: readonly SidebarListItem[] = [
+      marker("working-header"),
+      row("w1", "working"),
       marker("pinned-header"),
       row("p1", "pinned"),
       marker("pinned-divider"),
       row("a1", "active"),
       row("a2", "active"),
-      marker("working-header"),
-      row("w1", "working"),
       marker("settled-header"),
       row("s1", "settled"),
     ];
@@ -1204,6 +1205,11 @@ describe("Working shelf (beta)", () => {
         activeOrder: ["a1", "a2", "p1"],
       });
       expect(resolveSidebarDropVerb("active", "working")).toBeNull();
+      expect(resolveSidebarDropTarget(items, "a2", "p1")).toEqual({
+        section: "pinned",
+        pinnedOrder: ["a2", "p1"],
+        activeOrder: ["a1"],
+      });
     });
 
     it.each([
@@ -1662,7 +1668,7 @@ describe("sidebarFolderExpansionKeys", () => {
   it("honors a collapse the legacy sidebar saved under a member's cwd", () => {
     const keys = sidebarFolderExpansionKeys({
       projectKey: "github.com/pingdotgg/t3code",
-      memberProjects: [{ physicalProjectKey: "local:/code/t3code", workspaceRoot: "/code/t3code" }],
+      memberProjects: [{ physicalProjectKey: "local:/code/fcode", workspaceRoot: "/code/fcode" }],
     });
     const cwdKey = keys.at(-1)!;
 
@@ -1675,8 +1681,8 @@ describe("sidebarFolderExpansionKeys", () => {
 describe("groupSidebarThreadsByProject", () => {
   it("puts each thread in its project's folder and drops empty projects unless kept", () => {
     const remoteEnvironmentId = EnvironmentId.make("environment-remote");
-    const t3code = ProjectId.make("t3code");
-    const t3codeRemote = ProjectId.make("t3code-remote");
+    const fcode = ProjectId.make("fcode");
+    const fcodeRemote = ProjectId.make("fcode-remote");
     const fleet = ProjectId.make("fleet");
     const thread = (id: string, environmentId: EnvironmentId, projectId: ProjectId) => ({
       id,
@@ -1685,10 +1691,10 @@ describe("groupSidebarThreadsByProject", () => {
     });
     const groups = [
       {
-        projectKey: "t3code",
+        projectKey: "fcode",
         memberProjectRefs: [
-          { environmentId: localEnvironmentId, projectId: t3code },
-          { environmentId: remoteEnvironmentId, projectId: t3codeRemote },
+          { environmentId: localEnvironmentId, projectId: fcode },
+          { environmentId: remoteEnvironmentId, projectId: fcodeRemote },
         ],
       },
       {
@@ -1704,9 +1710,9 @@ describe("groupSidebarThreadsByProject", () => {
     ];
 
     const threads = [
-      thread("a", localEnvironmentId, t3code),
+      thread("a", localEnvironmentId, fcode),
       thread("orphan", localEnvironmentId, ProjectId.make("deleted")),
-      thread("b", remoteEnvironmentId, t3codeRemote),
+      thread("b", remoteEnvironmentId, fcodeRemote),
     ];
     const summarize = (keepEmpty: (group: (typeof groups)[number]) => boolean) =>
       groupSidebarThreadsByProject(groups, threads, keepEmpty).map((folder) => ({
@@ -1715,14 +1721,14 @@ describe("groupSidebarThreadsByProject", () => {
       }));
 
     expect(summarize(() => true)).toEqual([
-      { projectKey: "t3code", threads: ["a", "b"] },
+      { projectKey: "fcode", threads: ["a", "b"] },
       { projectKey: "fleet", threads: [] },
       { projectKey: "notes", threads: [] },
     ]);
-    expect(summarize(() => false)).toEqual([{ projectKey: "t3code", threads: ["a", "b"] }]);
+    expect(summarize(() => false)).toEqual([{ projectKey: "fcode", threads: ["a", "b"] }]);
     // A pinned project keeps its empty folder while other empty projects drop out.
     expect(summarize((group) => group.projectKey === "fleet")).toEqual([
-      { projectKey: "t3code", threads: ["a", "b"] },
+      { projectKey: "fcode", threads: ["a", "b"] },
       { projectKey: "fleet", threads: [] },
     ]);
   });

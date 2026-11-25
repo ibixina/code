@@ -5,16 +5,16 @@ import type {
   OrchestrationV2SearchThreadResult,
   OrchestrationV2ThreadHistoryPage,
   ProjectId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   latestExecutedRun,
   latestRootProviderFailure,
   orchestrationV2WorktreePending,
   runRanAfter,
   usageLimitBlockedRun,
-} from "@t3tools/shared/orchestrationV2ThreadError";
-import { threadIssueKeysEqual } from "@t3tools/contracts";
-import { canonicalizeGitCafePullRequestUrl } from "@t3tools/source-control-definitions/registry";
+} from "@fcode/shared/orchestrationV2ThreadError";
+import { threadIssueKeysEqual } from "@fcode/contracts";
+import { canonicalizeGitCafePullRequestUrl } from "@fcode/source-control-definitions/registry";
 import { threadPullRequestsOf } from "../sourceControl/threadPullRequests.ts";
 import {
   normalizeThreadPullRequestKey,
@@ -83,10 +83,10 @@ import {
   TurnItemId,
   TrimmedNonEmptyString,
   managedRuntimeModeCeilingMessage,
-} from "@t3tools/contracts";
-import * as KeyedLock from "@t3tools/shared/KeyedLock";
-import { modelSelectionsEqual } from "@t3tools/shared/model";
-import { expandAssistantCitationsForProvider } from "@t3tools/shared/assistantCitations";
+} from "@fcode/contracts";
+import * as KeyedLock from "@fcode/shared/KeyedLock";
+import { modelSelectionsEqual } from "@fcode/shared/model";
+import { expandAssistantCitationsForProvider } from "@fcode/shared/assistantCitations";
 import { modelSwitchSince } from "./modelSwitch.ts";
 import {
   contextBoundaryOrdinal,
@@ -96,14 +96,14 @@ import {
 import { isPlaceholderThreadTitle } from "./placeholderThreadTitle.ts";
 import { combinePullRequestWatchWakes, type PullRequestWatchWake } from "./pullRequestWatch.ts";
 import { outputRequestProblem } from "./runOutput.ts";
-import { recordThreadOpen } from "@t3tools/shared/paletteSearch";
-import { isSlashCommand } from "@t3tools/shared/composerTrigger";
+import { recordThreadOpen } from "@fcode/shared/paletteSearch";
+import { isSlashCommand } from "@fcode/shared/composerTrigger";
 import {
   backgroundWorkHoldsCompletion,
   derivePendingBackgroundWork,
   hasPendingBackgroundSubagent,
   pendingBackgroundTurnItems,
-} from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
+} from "@fcode/shared/orchestrationV2PendingBackgroundWork";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
@@ -146,7 +146,7 @@ import {
   visibleConversationItems,
   visibleDeltaRunOrdinals,
 } from "./ContextHandoffService.ts";
-import { notificationTurnItem } from "@t3tools/provider-core/server/notification";
+import { notificationTurnItem } from "@fcode/provider-core/server/notification";
 import {
   cancelledBeforeStart,
   continuationFailedBeforePrompt,
@@ -173,7 +173,7 @@ import {
 import * as EffectOutbox from "./EffectOutbox.ts";
 import { withCommandMetrics } from "../observability/Metrics.ts";
 import type { OrchestrationEffectRequestV2, PendingOrchestrationEffectV2 } from "./EffectOutbox.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import {
   DispatchModeLimit,
@@ -201,8 +201,8 @@ import {
   type ShellSnapshotOptions,
 } from "./ProjectionStore.ts";
 import { ProviderAdapterRegistryV2 } from "./ProviderAdapterRegistry.ts";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
-import { makeProviderFailure } from "@t3tools/provider-core/server/failure";
+import * as ProviderContinuationRequests from "@fcode/provider-core/server/ProviderContinuationRequests";
+import { makeProviderFailure } from "@fcode/provider-core/server/failure";
 import * as RunExecutionService from "./RunExecutionService.ts";
 import { makeInterruptResultTurnItem } from "./runInterruptResult.ts";
 import { ProviderSessionManagerV2 } from "./ProviderSessionManager.ts";
@@ -219,14 +219,14 @@ import {
   delegatedTaskReportRuns,
   monitorUpdateRunIds,
   subagentThreadTitle,
-} from "@t3tools/provider-core/server/subagentProjection";
+} from "@fcode/provider-core/server/subagentProjection";
 import {
   forkableSourceRunStatusError,
   isForkableSourceRunStatus,
   ThreadForkServiceV2,
 } from "./ThreadForkService.ts";
 import { planThreadDeletion } from "./ThreadDeletion.ts";
-import type * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import type * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
 import * as ServerSettings from "../serverSettings.ts";
 
 const isMessageQuestionAnswer = Schema.is(
@@ -572,7 +572,7 @@ export interface OrchestratorV2Shape {
 }
 
 export class OrchestratorV2 extends Context.Service<OrchestratorV2, OrchestratorV2Shape>()(
-  "t3/orchestration-v2/Orchestrator/OrchestratorV2",
+  "fcode/orchestration-v2/Orchestrator/OrchestratorV2",
 ) {}
 
 /** Run ordinals can skip values: a queued run moves past newer runs when it starts. */
@@ -718,7 +718,6 @@ function commandThreadId(command: OrchestrationV2ServerCommand): ThreadId {
       return command.parentThreadId;
     case "secret_request.record":
     case "link_request.record":
-    case "feedback_request.record":
       return command.threadId;
     case "thread.fork":
     case "thread.merge_back":
@@ -792,7 +791,7 @@ const WORKSPACE_PREPARATION_INPUT = "Preparing workspace";
 /** How long automatic settlement waits for a queued turn to start. */
 export const QUEUED_TURN_START_GRACE_MS = 2 * 60 * 1_000;
 const RUNTIME_REQUEST_DELIVERY_FAILED_MESSAGE =
-  "T3 Code could not confirm that your answer reached the agent. If the run stays stuck, stop it and try again.";
+  "fcode could not confirm that your answer reached the agent. If the run stays stuck, stop it and try again.";
 
 function withoutPreparationResult(
   item: Extract<OrchestrationV2TurnItem, { readonly type: "command_execution" }>,
@@ -3821,7 +3820,7 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
       }
       return plan.parentRun?.id;
     }
-    // task_status and t3_thread_read use distinct command IDs, so two
+    // task_status and fcode_thread_read use distinct command IDs, so two
     // valid observations can race after their read preflight. Re-emit the
     // existing task row so the second dispatch is a successful idempotent
     // no-op rather than "already acknowledged/disposed" or empty-events.
@@ -6474,7 +6473,7 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
     readonly messageId: OrchestrationV2ConversationMessage["id"];
     readonly text: string;
     readonly attachments: ReadonlyArray<ChatAttachment>;
-    readonly context?: import("@t3tools/contracts").OrchestrationMessageContext | undefined;
+    readonly context?: import("@fcode/contracts").OrchestrationMessageContext | undefined;
     readonly createdBy: OrchestrationV2ConversationMessage["createdBy"];
     readonly creationSource: OrchestrationV2ConversationMessage["creationSource"];
     readonly scheduledTaskId?: OrchestrationV2ConversationMessage["scheduledTaskId"];
@@ -8235,7 +8234,7 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
       const queueIsHeld = projection.runs.some(
         (candidate) => candidate.status === "queued" && candidate.queueHeld === true,
       );
-      // Buffered wakes need a T3 run for output the CLI already started producing.
+      // Buffered wakes need a fcode run for output the CLI already started producing.
       // Stop still holds wakes that arrive before the active run settles.
       const wakeSkipsHold =
         !worktreeSetupUnresolved &&
@@ -11246,98 +11245,6 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
         providerInstanceId: run.providerInstanceId,
         occurredAt: now,
         payload: turnItem,
-      });
-    },
-  );
-
-  /** Records or updates the card for a feedback report the user asked the agent to send. */
-  const dispatchFeedbackRequestRecord = Effect.fn("orchestrationV2.dispatch.feedbackRequestRecord")(
-    function* (
-      command: Extract<
-        OrchestrationV2InternalCommand,
-        { readonly type: "feedback_request.record" }
-      >,
-      events: Ref.Ref<Array<OrchestrationV2DomainEvent>>,
-    ) {
-      const projection = yield* projectionStore
-        .getThreadRecords(
-          command.threadId,
-          ["runs", "nodes", "turnItems", "attempts", "providerTurns"],
-          { turnItemTypes: ["feedback_request"], messageRoles: [] },
-        )
-        .pipe(
-          Effect.mapError(
-            (cause) => new OrchestratorProjectionError({ threadId: command.threadId, cause }),
-          ),
-        );
-      const fail = (cause: string) =>
-        new OrchestratorDispatchError({
-          commandId: command.commandId,
-          commandType: command.type,
-          cause,
-        });
-      const run = projection.runs.find((candidate) => candidate.id === command.runId);
-      const existing = projection.turnItems.find((item) => item.id === command.turnItemId);
-      if (
-        existing !== undefined &&
-        (existing.type !== "feedback_request" || existing.runId !== command.runId)
-      ) {
-        return yield* fail(
-          `Turn item ${command.turnItemId} is not a feedback report of run ${command.runId}.`,
-        );
-      }
-      // A decided card stays decided, so a late close cannot reopen or relabel it.
-      if (existing !== undefined && existing.feedbackStatus !== "pending") return;
-      if (existing !== undefined && command.feedbackStatus === "pending") return;
-      if (run === undefined) return yield* fail(`Run ${command.runId} does not exist.`);
-      // Only a new card must sit on the run's current root. A steering restart can replace the
-      // root before the user answers, and the answer must still close the card.
-      if (existing === undefined && run.rootNodeId !== command.nodeId) {
-        return yield* fail(`Node ${command.nodeId} is not the root of run ${command.runId}.`);
-      }
-      const nodeId = existing?.nodeId ?? command.nodeId;
-      const now = yield* DateTime.now;
-      const pending = command.feedbackStatus === "pending";
-      yield* emit(
-        events,
-        command,
-      )({
-        type: "turn-item.updated",
-        threadId: command.threadId,
-        runId: command.runId,
-        ...(nodeId === null ? {} : { nodeId }),
-        providerInstanceId: run.providerInstanceId,
-        occurredAt: now,
-        payload: {
-          id: command.turnItemId,
-          threadId: command.threadId,
-          runId: command.runId,
-          nodeId,
-          providerThreadId: existing?.providerThreadId ?? run.providerThreadId,
-          providerTurnId:
-            existing === undefined
-              ? (providerTurnForRun(projection, run)?.id ?? null)
-              : existing.providerTurnId,
-          nativeItemRef: null,
-          parentItemId: null,
-          ordinal: existing?.ordinal ?? (yield* nextTurnItemOrdinal(projection)),
-          status: pending
-            ? "waiting"
-            : command.feedbackStatus === "sent"
-              ? "completed"
-              : "cancelled",
-          title: "Feedback for the T3 team",
-          startedAt: existing?.startedAt ?? now,
-          completedAt: pending ? null : now,
-          updatedAt: now,
-          type: "feedback_request",
-          preview: command.preview,
-          // An answered card keeps only what was sent, so its answer drops the unsent text.
-          ...(command.conversationTrace === undefined
-            ? {}
-            : { conversationTrace: command.conversationTrace }),
-          feedbackStatus: command.feedbackStatus,
-        },
       });
     },
   );
@@ -16464,9 +16371,6 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
         break;
       case "secret_request.record":
         yield* dispatchSecretRequestRecord(command, events);
-        break;
-      case "feedback_request.record":
-        yield* dispatchFeedbackRequestRecord(command, events);
         break;
       case "link_request.record":
         yield* dispatchLinkRequestRecord(command, events, effects);

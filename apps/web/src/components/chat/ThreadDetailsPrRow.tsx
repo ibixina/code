@@ -1,13 +1,13 @@
-import { resolvePullRequestDetailChecks } from "@t3tools/client-runtime/pull-request-checks";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { resolvePullRequestDetailChecks } from "@fcode/client-runtime/pull-request-checks";
+import { sourceControlClients } from "@fcode/client-runtime/source-control-clients";
 import { changeRequestTermKind } from "../pullRequest/changeRequestTerm";
 import { T, useGT, useMessages, Var } from "gt-react";
 import { PullRequestChangeBreakdownRows } from "../pullRequest/PullRequestChangeBreakdownStat";
 import { ThreadDetailsControl } from "./ThreadDetailsControl";
 import { PullRequestGlyph } from "../pullRequest/pullRequestIcons";
-import { selectEnvironmentQueryData } from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import type { EnvironmentId, ProjectId, PullRequestRef } from "@t3tools/contracts";
+import { selectEnvironmentQueryData } from "@fcode/client-runtime/state/runtime";
+import type { EnvironmentProject } from "@fcode/client-runtime/state/shell";
+import type { EnvironmentId, ProjectId, PullRequestRef } from "@fcode/contracts";
 import {
   ArrowUpRightIcon,
   EyeIcon,

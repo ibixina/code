@@ -33,7 +33,7 @@ export const ResourceTelemetryProcessCategory = Schema.Literals([
   "electron-gpu",
   "electron-utility",
   "resource-monitor",
-  "unknown-t3",
+  "unknown-fcode",
 ]);
 export type ResourceTelemetryProcessCategory = typeof ResourceTelemetryProcessCategory.Type;
 
@@ -319,10 +319,9 @@ export const ShellEnvironmentPatch = Schema.Struct({
   SSL_CERT_FILE: Schema.optionalKey(Schema.NullOr(Schema.String)),
   SSL_CERT_DIR: Schema.optionalKey(Schema.NullOr(Schema.String)),
   NODE_EXTRA_CA_CERTS: Schema.optionalKey(Schema.NullOr(Schema.String)),
-  T3CODE_TELEMETRY_ENABLED: Schema.optionalKey(Schema.NullOr(Schema.String)),
   DO_NOT_TRACK: Schema.optionalKey(Schema.NullOr(Schema.String)),
-  T3CODE_FEATURE_FLAGS: Schema.optionalKey(Schema.NullOr(Schema.String)),
-  T3CODE_RELEASE_BASE_URL: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  FCODE_FEATURE_FLAGS: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  FCODE_RELEASE_BASE_URL: Schema.optionalKey(Schema.NullOr(Schema.String)),
   __MISE_DIFF: Schema.optionalKey(Schema.NullOr(Schema.String)),
   JAVA_HOME: Schema.optionalKey(Schema.NullOr(Schema.String)),
   PNPM_HOME: Schema.optionalKey(Schema.NullOr(Schema.String)),
@@ -453,7 +452,7 @@ export const ResourceTelemetryGroups = Schema.Struct({
   backend: ResourceTelemetryAggregate,
   electron: ResourceTelemetryAggregate,
   monitor: ResourceTelemetryAggregate,
-  allT3: ResourceTelemetryAggregate,
+  allFcode: ResourceTelemetryAggregate,
 });
 export type ResourceTelemetryGroups = typeof ResourceTelemetryGroups.Type;
 

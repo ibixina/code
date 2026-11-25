@@ -4,13 +4,13 @@ import {
   type EnvironmentThreadShell,
   type PendingSubagentRequest,
   presentThreadShell,
-} from "@t3tools/client-runtime/state/models";
-import { isShownUnderParent } from "@t3tools/client-runtime/state/threads";
+} from "@fcode/client-runtime/state/models";
+import { isShownUnderParent } from "@fcode/client-runtime/state/threads";
 import type { AnyRouter } from "@tanstack/react-router";
-import { parseThreadKey, threadKey } from "@t3tools/client-runtime/state/entities";
-import type { EnvironmentId, OrchestrationV2ThreadShell, ThreadId } from "@t3tools/contracts";
-import { monitorHoldsWakeCompletion } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
-import type { ClientSettings } from "@t3tools/contracts/settings";
+import { parseThreadKey, threadKey } from "@fcode/client-runtime/state/entities";
+import type { EnvironmentId, OrchestrationV2ThreadShell, ThreadId } from "@fcode/contracts";
+import { monitorHoldsWakeCompletion } from "@fcode/shared/orchestrationV2PendingBackgroundWork";
+import type { ClientSettings } from "@fcode/contracts/settings";
 import * as Option from "effect/Option";
 import type { AtomRegistry } from "effect/reactivity";
 import {

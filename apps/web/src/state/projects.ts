@@ -1,13 +1,13 @@
-import { createEnvironmentProjectAtoms } from "@t3tools/client-runtime/state/projects";
-import { createProjectEnvironmentAtoms } from "@t3tools/client-runtime/state/projects";
-import { createEnvironmentRpcQueryAtomFamily } from "@t3tools/client-runtime/state/runtime";
-import { WS_METHODS } from "@t3tools/contracts";
+import { createEnvironmentProjectAtoms } from "@fcode/client-runtime/state/projects";
+import { createProjectEnvironmentAtoms } from "@fcode/client-runtime/state/projects";
+import { createEnvironmentRpcQueryAtomFamily } from "@fcode/client-runtime/state/runtime";
+import { WS_METHODS } from "@fcode/contracts";
 
 import { environmentCatalog } from "../connection/catalog";
 import { connectionAtomRuntime } from "../connection/runtime";
 import { environmentShell, environmentSnapshotAtom, expectsPrimaryEnvironment } from "./shell";
-import { parseScopedProjectKey } from "@t3tools/client-runtime/environment";
-import { AVAILABLE_CONNECTION_STATE } from "@t3tools/client-runtime/connection";
+import { parseScopedProjectKey } from "@fcode/client-runtime/environment";
+import { AVAILABLE_CONNECTION_STATE } from "@fcode/client-runtime/connection";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { serverEnvironment } from "./server";
 

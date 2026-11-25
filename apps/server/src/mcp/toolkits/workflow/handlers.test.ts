@@ -1,6 +1,6 @@
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import { expect, it } from "@effect/vitest";
-import { EnvironmentId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ProviderInstanceId, ThreadId } from "@fcode/contracts";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Stream from "effect/Stream";
@@ -14,7 +14,7 @@ import * as McpToolAccessTestkit from "../../McpToolAccess.testkit.ts";
 import * as WorkflowHandlers from "./handlers.ts";
 import { WorkflowToolkit } from "./tools.ts";
 
-const fullAccess = { sessionId: "session-1", label: "t3 CLI", access: "full-access" } as const;
+const fullAccess = { sessionId: "session-1", label: "fcode CLI", access: "full-access" } as const;
 const supervised = { sessionId: "session-2", label: "Bot", access: "approval-required" } as const;
 
 const handlersWith = (
@@ -47,7 +47,7 @@ it.effect("start passes an explicit null payload through and defaults an omitted
       const toolkit = yield* WorkflowToolkit;
       for (const input of [{ input: null }, {}]) {
         yield* toolkit
-          .handle("t3_workflow", {
+          .handle("fcode_workflow", {
             action: "start",
             workflow: "echo",
             idempotencyKey: "trial",
@@ -84,7 +84,7 @@ it.effect("signal refuses a run destination mixed with a channel destination", (
         ],
         (address) =>
           toolkit
-            .handle("t3_workflow", { action: "signal", value: { choice: "yes" }, ...address })
+            .handle("fcode_workflow", { action: "signal", value: { choice: "yes" }, ...address })
             .pipe(
               Stream.unwrap,
               Stream.runCollect,
@@ -114,7 +114,7 @@ const emptyRun = { run: undefined, steps: [], references: [] } as never;
 const call = (input: Record<string, unknown>) =>
   Effect.gen(function* () {
     const toolkit = yield* WorkflowToolkit;
-    return yield* toolkit.handle("t3_workflow", input as never).pipe(
+    return yield* toolkit.handle("fcode_workflow", input as never).pipe(
       Stream.unwrap,
       Stream.runCollect,
       Effect.map((parts) => parts.at(-1)?.result),
@@ -225,7 +225,7 @@ it.effect("questions are narrowed to a kind, and runs to a tag", () =>
           { action: "list" as const, tag: "backlog" },
         ],
         (input) =>
-          toolkit.handle("t3_workflow", input).pipe(
+          toolkit.handle("fcode_workflow", input).pipe(
             Stream.unwrap,
             Stream.runCollect,
             Effect.map((parts) => parts.at(-1)?.result),
@@ -271,7 +271,7 @@ it.effect("an answer sent through the tool names the client that sent it", () =>
         }),
       ),
     );
-    expect(named).toEqual(["t3 CLI"]);
+    expect(named).toEqual(["fcode CLI"]);
   }),
 );
 
@@ -298,7 +298,7 @@ it.effect(
         const answer = (invocation: McpInvocationContext.McpInvocationScope) =>
           server
             .callTool({
-              name: "t3_workflow",
+              name: "fcode_workflow",
               arguments: {
                 action: "signal",
                 runId: "run-1",
@@ -350,11 +350,11 @@ it.effect(
         ),
       );
       expect(result.refusals).toEqual([
-        "Tool 't3_workflow' not found",
-        "Tool 't3_workflow' not found",
+        "Tool 'fcode_workflow' not found",
+        "Tool 'fcode_workflow' not found",
       ]);
       expect(result.sent).toBe(false);
-      expect(named).toEqual(["t3 CLI"]);
+      expect(named).toEqual(["fcode CLI"]);
     }),
 );
 
@@ -375,7 +375,7 @@ it.effect("withdraw names the caller who withdrew the question and says whether 
         }),
       ),
     );
-    expect(calls).toEqual([["run-1", "wanted", { by: "t3 CLI", reason: "settled elsewhere" }]]);
+    expect(calls).toEqual([["run-1", "wanted", { by: "fcode CLI", reason: "settled elsewhere" }]]);
     expect(result).toEqual({ withdrawal: "not_open", steps: [], references: [] });
   }),
 );

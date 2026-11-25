@@ -11,15 +11,15 @@ import {
   RunId,
   type RuntimeMode,
   ThreadId,
-} from "@t3tools/contracts";
-import { ACP_PROTOCOL } from "@t3tools/provider-acp/server/adapter";
-import { FxSettings } from "@t3tools/provider-fx/settings";
-import { FX_DRIVER_KIND, makeFxAdapterV2 } from "@t3tools/provider-fx/testing";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import { ProviderAdapterV2RuntimePolicy } from "@t3tools/provider-core/server/ProviderAdapter";
-import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
-import { resolveSelfInvocation } from "@t3tools/shared/nodeRuntime";
+} from "@fcode/contracts";
+import { ACP_PROTOCOL } from "@fcode/provider-acp/server/adapter";
+import { FxSettings } from "@fcode/provider-fx/settings";
+import { FX_DRIVER_KIND, makeFxAdapterV2 } from "@fcode/provider-fx/testing";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
+import * as McpProviderSessions from "@fcode/provider-core/server/McpProviderSessions";
+import { ProviderAdapterV2RuntimePolicy } from "@fcode/provider-core/server/ProviderAdapter";
+import * as TestProviderHost from "@fcode/provider-testing/TestProviderHost";
+import { resolveSelfInvocation } from "@fcode/shared/nodeRuntime";
 import * as DateTime from "effect/DateTime";
 import * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
@@ -166,7 +166,7 @@ const openFxSession = Effect.fn("openFxSession")(function* (input: {
   const fileSystem = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
   const replayDir = yield* fileSystem.makeTempDirectoryScoped({
-    prefix: `t3-fx-${input.scenario}-`,
+    prefix: `fcode-fx-${input.scenario}-`,
   });
   const statusPath = path.join(replayDir, "status.json");
   const transcript = yield* decodeAcpReplayTranscript(
@@ -317,7 +317,7 @@ describe("FxAdapterV2", () => {
       scenario: "supervised-mode-policy",
       runtimeMode: "approval-required",
       modeOptions: [
-        { id: "_t3/session-mode", value: "auto" },
+        { id: "_fcode/session-mode", value: "auto" },
         { id: "mode", value: "auto" },
       ],
       frames: [

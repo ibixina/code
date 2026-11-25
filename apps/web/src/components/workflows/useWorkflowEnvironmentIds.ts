@@ -1,4 +1,4 @@
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@fcode/contracts";
 
 import { useServerConfigs } from "../../state/entities";
 import { useConnectedEnvironmentIds } from "../../state/environments";

@@ -1,15 +1,15 @@
-import type { ProjectId, ScopedThreadRef, ThreadPullRequestLink } from "@t3tools/contracts";
+import type { ProjectId, ScopedThreadRef, ThreadPullRequestLink } from "@fcode/contracts";
 import {
   sourceControlClients,
   UNKNOWN_SOURCE_CONTROL_CLIENT,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@fcode/client-runtime/source-control-clients";
 import {
   type PullRequestListLine,
   pullRequestListLines,
   resolveThreadPullRequestChains,
   visibleThreadPullRequests,
-} from "@t3tools/client-runtime/thread-pull-requests";
-import { canStartThreadPullRequestWatch } from "@t3tools/client-runtime/thread-pull-request-compatibility";
+} from "@fcode/client-runtime/thread-pull-requests";
+import { canStartThreadPullRequestWatch } from "@fcode/client-runtime/thread-pull-request-compatibility";
 import {
   ArrowUpRightIcon,
   EyeIcon,
@@ -27,7 +27,7 @@ import {
   encodePullRequestDragPayload,
 } from "~/components/chat/composerMentionDrag";
 import { writeTextToClipboard } from "~/hooks/useCopyToClipboard";
-import { findProjectForChangeRequest } from "@t3tools/client-runtime/change-request-links";
+import { findProjectForChangeRequest } from "@fcode/client-runtime/change-request-links";
 import { pullRequestLinkPanelTarget, useOpenPrLink } from "~/lib/openPullRequestLink";
 import { useClientSettings } from "~/hooks/useSettings";
 import { usePrimaryEnvironmentId } from "~/state/environments";

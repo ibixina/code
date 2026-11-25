@@ -4,16 +4,16 @@ import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 import * as Layer from "effect/Layer";
-import { EnvironmentId } from "@t3tools/contracts";
-import { RelayMobileClientId } from "@t3tools/contracts/relay";
+import { EnvironmentId } from "@fcode/contracts";
+import { RelayMobileClientId } from "@fcode/contracts/relay";
 import {
   EnvironmentSupervisor,
   AVAILABLE_CONNECTION_STATE,
   PrimaryConnectionTarget,
   type PreparedConnection,
-} from "@t3tools/client-runtime/connection";
-import { ManagedRelay } from "@t3tools/client-runtime/relay";
-import { layerRemoteHttpClient, type RpcSession } from "@t3tools/client-runtime/rpc";
+} from "@fcode/client-runtime/connection";
+import { ManagedRelay } from "@fcode/client-runtime/relay";
+import { layerRemoteHttpClient, type RpcSession } from "@fcode/client-runtime/rpc";
 import { HttpClient } from "effect/http";
 
 import * as MobileStorage from "../../persistence/mobile-storage";
@@ -90,7 +90,6 @@ function layerCloudClient() {
       MobileStorage.MobileStorage,
       MobileStorage.MobileStorage.of({
         loadOrCreateAgentAwarenessDeviceId: Effect.succeed("device-1"),
-        loadOrCreateAnalyticsDeviceId: Effect.succeed("analytics-device-1"),
         loadAgentAwarenessDeviceId: Effect.succeed("device-1"),
         loadAgentAwarenessRegistrationRecord: Effect.succeed(null),
         saveAgentAwarenessRegistrationRecord: () => Effect.void,

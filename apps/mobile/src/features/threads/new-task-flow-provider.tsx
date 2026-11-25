@@ -1,7 +1,7 @@
 import { ActiveNewTaskContext } from "../../state/active-new-task";
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@fcode/client-runtime/errors";
 import { msg, useMessages } from "gt-react-native";
-import { resolveNewThreadModelSelection } from "@t3tools/shared/usageLimits";
+import { resolveNewThreadModelSelection } from "@fcode/shared/usageLimits";
 import { useNowMinuteMs } from "../../lib/clock";
 import { m, type MessageResolver } from "../../i18n/messages";
 import * as Dialog from "../../components/ui/Dialog";
@@ -13,16 +13,16 @@ import type {
   ProviderOptionSelection,
   RuntimeMode,
   ServerProvider,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   CommandId,
   DEFAULT_PROVIDER_INTERACTION_MODE,
   MessageId,
   repositoryGroupingKeyOf,
   ThreadId,
-} from "@t3tools/contracts";
-import { threadContextsOutsideEnvironment } from "@t3tools/shared/composerContextReferences";
-import { isTriagePrompt, replaceTriagePlaybookLink } from "@t3tools/shared/triagePrompt";
+} from "@fcode/contracts";
+import { threadContextsOutsideEnvironment } from "@fcode/shared/composerContextReferences";
+import { isTriagePrompt, replaceTriagePlaybookLink } from "@fcode/shared/triagePrompt";
 import * as Arr from "effect/Array";
 import { pipe } from "effect/Function";
 
@@ -74,13 +74,13 @@ import {
   useRemoteConnectionStatus,
   useSavedRemoteConnections,
 } from "../../state/use-remote-environment-registry";
-import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
+import { availableScratchWorkspaceRoot } from "@fcode/client-runtime/operations/projects";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import { type VcsRef } from "@t3tools/client-runtime/state/vcs";
+} from "@fcode/client-runtime/state/runtime";
+import { EnvironmentProject } from "@fcode/client-runtime/state/shell";
+import { type VcsRef } from "@fcode/client-runtime/state/vcs";
 import {
   buildHomeProjectScopes,
   sortHomeProjectScopes,
@@ -113,7 +113,7 @@ import {
   resolveWorktreeRepositorySelection,
   type WorktreeRepositoryChoice,
   type WorktreeRepositorySelection,
-} from "@t3tools/client-runtime/state/thread-repositories";
+} from "@fcode/client-runtime/state/thread-repositories";
 import { useConnectionsReady, useWorkspaceEnvironments } from "../../state/workspace";
 
 type WorkspaceMode = "local" | "worktree";

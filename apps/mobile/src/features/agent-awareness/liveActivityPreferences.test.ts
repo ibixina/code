@@ -4,8 +4,8 @@ import * as Exit from "effect/Exit";
 import * as Option from "effect/Option";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { EnvironmentId } from "@t3tools/contracts";
-import { ManagedRelay } from "@t3tools/client-runtime/relay";
+import type { EnvironmentId } from "@fcode/contracts";
+import { ManagedRelay } from "@fcode/client-runtime/relay";
 
 import type { SavedRemoteConnection } from "../../lib/connection";
 import {

@@ -6,10 +6,9 @@ import {
   type ClientConnectionMethod,
   EnvironmentId,
   type ExecutionEnvironmentDescriptor,
-} from "@t3tools/contracts";
-import { RelayEnvironmentConnectScope } from "@t3tools/contracts/relay";
-import * as KeyedLock from "@t3tools/shared/KeyedLock";
-import { withRelayClientTracing } from "@t3tools/shared/relayTracing";
+} from "@fcode/contracts";
+import { RelayEnvironmentConnectScope } from "@fcode/contracts/relay";
+import * as KeyedLock from "@fcode/shared/KeyedLock";
 import {
   exchangeRemoteDpopAccessToken,
   type RemoteEnvironmentAuthError,
@@ -125,7 +124,7 @@ export class RemoteEnvironmentAuthorization extends Context.Service<
       readonly directConnection?: DirectDpopConnection;
     }) => Effect.Effect<void, ConnectionAttemptError>;
   }
->()("@t3tools/client-runtime/authorization/service/RemoteEnvironmentAuthorization") {}
+>()("@fcode/client-runtime/authorization/service/RemoteEnvironmentAuthorization") {}
 
 const CACHED_ENDPOINT_SOCKET_TIMEOUT_MS = 3_000;
 const DPOP_AUTHORIZATION_TIMEOUT_MS = 30_000;
@@ -259,8 +258,6 @@ export const make = Effect.gen(function* () {
         wsBaseUrl: input.wsBaseUrl,
         httpBaseUrl: input.httpBaseUrl,
         bearerToken: input.bearerToken,
-        clientMetadata: presentation.metadata,
-        connectionMethod: input.connectionMethod,
       }).pipe(
         Effect.mapError(mapRemoteEnvironmentError),
         Effect.provideService(HttpClient.HttpClient, httpClient),
@@ -299,8 +296,6 @@ export const make = Effect.gen(function* () {
                 }),
             ),
           ),
-        clientMetadata: presentation.metadata,
-        connectionMethod: "relay",
         ...(timeoutMs === undefined ? {} : { timeoutMs }),
       });
     },
@@ -321,7 +316,7 @@ export const make = Effect.gen(function* () {
   const sessionPending = () =>
     new ConnectionTransientError({
       reason: "session-pending",
-      ...translatableDetail(msg("Waiting for the T3 Connect sign-in to load.")),
+      ...translatableDetail(msg("Waiting for the fcode Connect sign-in to load.")),
     });
 
   const assertSession = Effect.fnUntraced(function* (
@@ -639,8 +634,6 @@ export const make = Effect.gen(function* () {
                   proofError(msg("Could not create the websocket authorization proof.")),
                 ),
               ),
-          clientMetadata: presentation.metadata,
-          connectionMethod: "direct",
         }).pipe(Effect.provideService(HttpClient.HttpClient, httpClient), Effect.result);
       let credential = yield* directDpopToken(connection);
       let socket = yield* openSocket(credential);
@@ -727,7 +720,7 @@ export const make = Effect.gen(function* () {
         return yield* mapDpopSocketError(cachedSocket.failure);
       }
       // An unreachable direct address says nothing about the token, so keep
-      // it for the T3 Connect route rather than forcing a relay round trip.
+      // it for the fcode Connect route rather than forcing a relay round trip.
       if (endpoint !== undefined && cachedSocket.failure._tag !== "EnvironmentAuthInvalidError") {
         return yield* mapDpopSocketError(cachedSocket.failure);
       }
@@ -778,7 +771,6 @@ export const make = Effect.gen(function* () {
       return yield* getDpopToken(input).pipe(
         Effect.map(({ token }) => httpAuthorization(token)),
         Effect.withSpan("environment.authorization.http"),
-        withRelayClientTracing,
       );
     }),
     // Untraced: a span here would stay open for the socket's lifetime. Each renewal has its own.
@@ -786,7 +778,7 @@ export const make = Effect.gen(function* () {
       const direct = input.directConnection;
       let expiresAtEpochMs = input.expiresAtEpochMs;
       let now = yield* Clock.currentTimeMillis;
-      // Past expiry the server has closed a T3 Connect socket. A direct socket stays open for
+      // Past expiry the server has closed a fcode Connect socket. A direct socket stays open for
       // its session's whole renewal window, so it keeps retrying until a blocked credential.
       while (direct !== undefined || now < expiresAtEpochMs) {
         // getDpopToken reuses a cached token until it is within the skew of expiry.
@@ -803,7 +795,6 @@ export const make = Effect.gen(function* () {
             : directDpopToken(direct).pipe(Effect.map((credential) => credential.expiresAtEpochMs))
         ).pipe(
           Effect.withSpan("environment.authorization.renewSocket"),
-          withRelayClientTracing,
           // A relay blip retries until expiry; a blocked credential ends the loop.
           Effect.catchTags({ ConnectionTransientError: () => Effect.succeed(expiresAtEpochMs) }),
         );

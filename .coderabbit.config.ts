@@ -38,9 +38,9 @@ const DOC_RULES = [
       "Hold remote route, peer link, SSH, and preview tunnel changes to docs/internals/05_remote.md.",
   },
   {
-    files: "docs/internals/06_t3-connect.md",
+    files: "docs/internals/06_fcode-connect.md",
     applyTo: "{infra/relay/src,apps/server/src/cloud}/**/*.ts",
-    instructions: "Hold relay and T3 Connect changes to docs/internals/06_t3-connect.md.",
+    instructions: "Hold relay and fcode Connect changes to docs/internals/06_fcode-connect.md.",
   },
   {
     files: "SECURITY.md",
@@ -55,12 +55,6 @@ const DOC_RULES = [
       "apps/server/src/{serviceLauncher.ts,desktopUpdate/**,cloud/serviceSelectionLock.ts,orchestration-v2/ProviderRuntimeRecoveryService.ts,orchestration-v2/RestartContinuation.ts}",
     instructions:
       "Hold update, rollback, and restart-recovery changes to docs/internals/07_server-updates.md.",
-  },
-  {
-    files: "docs/internals/08_product-analytics.md",
-    applyTo: "{apps/server/src/telemetry,apps/server/src/feedback}/**/*.ts",
-    instructions:
-      "Hold analytics identity, attribution, and privacy boundaries to docs/internals/08_product-analytics.md.",
   },
   {
     files: "docs/internals/09_connection-runtime.md",

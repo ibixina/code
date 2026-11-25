@@ -1,5 +1,5 @@
-import type { ClientConnectionMethod, EnvironmentId } from "@t3tools/contracts";
-import type { RelayProtectedError } from "@t3tools/contracts/relay";
+import type { ClientConnectionMethod, EnvironmentId } from "@fcode/contracts";
+import type { RelayProtectedError } from "@fcode/contracts/relay";
 import type { ManagedRelayClientError } from "../relay/managedRelay.ts";
 import { msg } from "gt-i18n";
 import { dpopFailureText, relayProtectedErrorText } from "../relay/errorPresentation.ts";
@@ -55,7 +55,7 @@ export function environmentMismatchError(input: {
     reason: "configuration",
     ...translatableDetail(
       msg(
-        "This address now runs a different T3 Code install ({actual}, not {expected}). Remove this connection and add it again.",
+        "This address now runs a different fcode install ({actual}, not {expected}). Remove this connection and add it again.",
         { actual: input.actual, expected: input.expected },
       ),
     ),
@@ -145,7 +145,7 @@ function relayProtectedError(error: RelayProtectedError): ConnectionAttemptError
         detail,
         i18nMessage,
         traceId,
-        // The tunnel carried the request when T3 Code is what failed to answer.
+        // The tunnel carried the request when fcode is what failed to answer.
         hop:
           endpointFailure === "origin_unreachable" || endpointFailure === "invalid_response"
             ? "server"
@@ -232,7 +232,7 @@ export function mapRemoteEnvironmentError(
       ? { detail: `${cause.message} ${NETWORK_BLOCKING_HINT}` }
       : translatableDetail(...text, NETWORK_BLOCKING_HINT);
   };
-  // Over T3 Connect the relay already reached the host, so a request that never
+  // Over fcode Connect the relay already reached the host, so a request that never
   // arrives was blocked between this device and the tunnel.
   const unreachableHop = connectionMethod === "relay" ? "tunnel" : "server";
   const via = connectionMethod === "relay" ? "relay" : "direct";

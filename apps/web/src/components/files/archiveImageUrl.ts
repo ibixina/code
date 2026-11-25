@@ -1,4 +1,4 @@
-import { hostPreviewMimeTypeFromExtension } from "@t3tools/shared/filePreview";
+import { hostPreviewMimeTypeFromExtension } from "@fcode/shared/filePreview";
 import * as Base64 from "effect/encoding/Base64";
 
 /**

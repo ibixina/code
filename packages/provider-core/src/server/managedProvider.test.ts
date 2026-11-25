@@ -5,8 +5,8 @@ import {
   ProviderInstanceId,
   ServerSettingsError,
   type ServerProvider,
-} from "@t3tools/contracts";
-import { createModelCapabilities } from "@t3tools/shared/model";
+} from "@fcode/contracts";
+import { createModelCapabilities } from "@fcode/shared/model";
 import * as Cache from "effect/Cache";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -108,10 +108,10 @@ function layerProviderHost(input: {
       compatibility: () => Effect.undefined,
       paths: {
         cwd: process.cwd(),
-        baseDir: "/t3",
-        stateDir: "/t3/userdata",
-        providerStatusCacheDir: "/t3/caches",
-        attachmentsDir: "/t3/userdata/attachments",
+        baseDir: "/fcode",
+        stateDir: "/fcode/userdata",
+        providerStatusCacheDir: "/fcode/caches",
+        attachmentsDir: "/fcode/userdata/attachments",
       },
       settings: input.settings ?? {
         get: Effect.succeed(DEFAULT_SERVER_SETTINGS),
@@ -527,7 +527,7 @@ describe("makeManagedServerProvider", () => {
                 : count === 2
                   ? Effect.fail(
                       new ServerSettingsError({
-                        settingsPath: "/t3/userdata/settings.json",
+                        settingsPath: "/fcode/userdata/settings.json",
                         operation: "read-file",
                       }),
                     )

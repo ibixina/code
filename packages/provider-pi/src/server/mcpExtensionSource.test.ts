@@ -5,9 +5,9 @@ import * as NodeOS from "node:os";
 import * as NodeModule from "node:module";
 import * as NodeVM from "node:vm";
 import { assert, describe, it } from "@effect/vitest";
-import { PULL_REQUEST_LINKING_INSTRUCTIONS } from "@t3tools/provider-core/server/runtimeInstructions";
+import { PULL_REQUEST_LINKING_INSTRUCTIONS } from "@fcode/provider-core/server/runtimeInstructions";
 
-import { PI_T3_MCP_EXTENSION_SOURCE, PI_T3_SERVICE_TIER_COMMAND } from "./mcpExtensionSource.ts";
+import { PI_FCODE_MCP_EXTENSION_SOURCE, PI_FCODE_SERVICE_TIER_COMMAND } from "./mcpExtensionSource.ts";
 import { loadMcpBridge } from "./mcpBridge.testkit.ts";
 
 type RequestHook = (
@@ -34,12 +34,12 @@ async function loadHooks(
 ) {
   const handlers = new Map<string, unknown>();
   const source = NodeModule.stripTypeScriptTypes(
-    PI_T3_MCP_EXTENSION_SOURCE.replace(/^import .*;$/gm, "").replace(
+    PI_FCODE_MCP_EXTENSION_SOURCE.replace(/^import .*;$/gm, "").replace(
       "export default async function",
       "async function",
     ),
   );
-  await NodeVM.runInNewContext(`${source}\nt3McpExtension(pi)`, {
+  await NodeVM.runInNewContext(`${source}\nfcodeMcpExtension(pi)`, {
     process: { env: {}, argv },
     NodeFSP,
     NodePath,
@@ -92,8 +92,8 @@ describe("Pi orchestration prompt section", () => {
       { ui: { notify: assert.fail } },
     );
     assert.isUndefined(result);
-    assert.include(sections.t3_code_orchestration, "orchestrator_capabilities");
-    assert.include(sections.t3_code_orchestration, PULL_REQUEST_LINKING_INSTRUCTIONS);
+    assert.include(sections.fcode_orchestration, "orchestrator_capabilities");
+    assert.include(sections.fcode_orchestration, PULL_REQUEST_LINKING_INSTRUCTIONS);
   });
 });
 
@@ -402,7 +402,7 @@ describe("Pi MCP tool schemas", () => {
     }
   });
 
-  it("records each T3 schema once on Pi, which keeps hidden alias declarations in the transcript", async () => {
+  it("records each fcode schema once on Pi, which keeps hidden alias declarations in the transcript", async () => {
     const inputSchema = {
       type: "object",
       properties: { depth: { type: "number", description: "Snapshot depth" } },
@@ -436,7 +436,7 @@ describe("Pi MCP tool schemas", () => {
 
 describe("Pi tool discovery permissions", () => {
   it.each(["approval-required", "auto-accept-edits", "auto"])(
-    "allows annotated T3 reads in %s while gating mutations and replacements",
+    "allows annotated fcode reads in %s while gating mutations and replacements",
     async (runtimeMode) => {
       const bridge = await loadMcpBridge({ modern: true, runtimeMode });
       const hook = bridge.handlers.get("tool_call") as unknown as (
@@ -497,13 +497,13 @@ describe("Pi tool discovery permissions", () => {
     let toolCall: ToolCallHook | undefined;
     let searchPath = "builtin:tool-search";
     const source = NodeModule.stripTypeScriptTypes(
-      PI_T3_MCP_EXTENSION_SOURCE.replace(/^import .*;$/gm, "").replace(
+      PI_FCODE_MCP_EXTENSION_SOURCE.replace(/^import .*;$/gm, "").replace(
         "export default async function",
         "async function",
       ),
     );
-    await NodeVM.runInNewContext(`${source}\nt3McpExtension(pi)`, {
-      process: { env: { T3_PI_RUNTIME_MODE: "approval-required" } },
+    await NodeVM.runInNewContext(`${source}\nfcodeMcpExtension(pi)`, {
+      process: { env: { FCODE_PI_RUNTIME_MODE: "approval-required" } },
       pi: {
         on: (name: string, handler: ToolCallHook) => {
           if (name === "tool_call") toolCall = handler;
@@ -573,12 +573,12 @@ async function loadRequestHook() {
   const handlers = new Map<string, RequestHook>();
   const commands = new Map<string, CommandHandler>();
   const source = NodeModule.stripTypeScriptTypes(
-    PI_T3_MCP_EXTENSION_SOURCE.replace(/^import .*;$/gm, "").replace(
+    PI_FCODE_MCP_EXTENSION_SOURCE.replace(/^import .*;$/gm, "").replace(
       "export default async function",
       "async function",
     ),
   );
-  await NodeVM.runInNewContext(`${source}\nt3McpExtension(pi)`, {
+  await NodeVM.runInNewContext(`${source}\nfcodeMcpExtension(pi)`, {
     process: { env: {} },
     pi: {
       on: (name: string, handler: RequestHook) => handlers.set(name, handler),
@@ -587,7 +587,7 @@ async function loadRequestHook() {
     },
   });
   const hook = handlers.get("before_provider_request");
-  const setServiceTier = commands.get(PI_T3_SERVICE_TIER_COMMAND);
+  const setServiceTier = commands.get(PI_FCODE_SERVICE_TIER_COMMAND);
   assert.isDefined(hook);
   assert.isDefined(setServiceTier);
   return Object.assign(hook!, { setServiceTier: setServiceTier! });

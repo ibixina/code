@@ -17,7 +17,7 @@ import {
   ProviderInteractionMode,
   RuntimeMode,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Context from "effect/Context";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -61,10 +61,6 @@ import * as McpInvocationContext from "./McpInvocationContext.ts";
 import * as McpSessionRegistry from "./McpSessionRegistry.ts";
 import * as OrchestratorMcpService from "./OrchestratorMcpService.ts";
 import * as PreviewAutomationBroker from "./PreviewAutomationBroker.ts";
-import { FEEDBACK_CLI_CLIENT_LABEL } from "../feedback/FeedbackReport.ts";
-import * as Feedback from "../feedback/FeedbackService.ts";
-import * as FeedbackHandlers from "./toolkits/feedback/handlers.ts";
-import { FeedbackToolkit } from "./toolkits/feedback/tools.ts";
 import { OrchestratorToolkit } from "./toolkits/orchestrator/tools.ts";
 import { PreviewToolkit } from "./toolkits/preview/tools.ts";
 import { PreviewControlsToolkit } from "./toolkits/previewControls/tools.ts";
@@ -103,7 +99,7 @@ const layerTest = McpHttpServer.layerPreviewToolkit.pipe(
   Layer.provideMerge(McpHttpServer.layerInProcessMcpServer),
   Layer.provideMerge(McpToolAccessTestkit.liveThreadsLayer),
   Layer.provideMerge(PreviewAutomationBroker.layer),
-  Layer.provideMerge(ServerConfig.layerTest(process.cwd(), { prefix: "t3-mcp-http-server-test-" })),
+  Layer.provideMerge(ServerConfig.layerTest(process.cwd(), { prefix: "fcode-mcp-http-server-test-" })),
   Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
 );
 const layerPullRequestsTest = McpHttpServer.layerPullRequestsToolkit.pipe(
@@ -276,7 +272,7 @@ it.effect.each([
             }),
           ),
           Layer.provide(Layer.mock(ProjectService.ProjectService)({})),
-          Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "t3-device-mcp-test-" })),
+          Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "fcode-device-mcp-test-" })),
           Layer.provide(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
         ),
       ),
@@ -302,14 +298,14 @@ it.effect("rejects a metadata-only response when the screenshot is saved", () =>
 const layerRecordingTools = (calls: Array<unknown>) => {
   const RecordingToolkit = Toolkit.make(
     OrchestratorToolkit.tools.delegate_task,
-    OrchestratorToolkit.tools.t3_thread_list,
-    OrchestratorToolkit.tools.t3_thread_read,
-    OrchestratorToolkit.tools.t3_thread_wait,
-    ProjectToolkit.tools.t3_project_list,
-    ProjectToolkit.tools.t3_project_update,
-    ThreadToolkit.tools.t3_queue,
-    PreviewControlsToolkit.tools.t3_preview_list,
-    ProjectToolkit.tools.t3_thread_launch,
+    OrchestratorToolkit.tools.fcode_thread_list,
+    OrchestratorToolkit.tools.fcode_thread_read,
+    OrchestratorToolkit.tools.fcode_thread_wait,
+    ProjectToolkit.tools.fcode_project_list,
+    ProjectToolkit.tools.fcode_project_update,
+    ThreadToolkit.tools.fcode_queue,
+    PreviewControlsToolkit.tools.fcode_preview_list,
+    ProjectToolkit.tools.fcode_thread_launch,
   );
   const record = McpToolAccess.reads((params: unknown) =>
     Effect.sync(() => calls.push(params)).pipe(
@@ -322,14 +318,14 @@ const layerRecordingTools = (calls: Array<unknown>) => {
     RecordingToolkit,
     McpToolAccess.toLayer(RecordingToolkit, {
       delegate_task: record,
-      t3_thread_list: record,
-      t3_thread_read: record,
-      t3_thread_wait: record,
-      t3_project_list: record,
-      t3_project_update: record,
-      t3_queue: record,
-      t3_preview_list: record,
-      t3_thread_launch: record,
+      fcode_thread_list: record,
+      fcode_thread_read: record,
+      fcode_thread_wait: record,
+      fcode_project_list: record,
+      fcode_project_update: record,
+      fcode_queue: record,
+      fcode_preview_list: record,
+      fcode_thread_launch: record,
     }),
   ).pipe(
     Layer.provideMerge(McpHttpServer.layerInProcessMcpServer),
@@ -348,7 +344,7 @@ const layerRecordingTools = (calls: Array<unknown>) => {
         Layer.mock(ServerSettings.ServerSettingsService)({}),
         Layer.mock(DocumentText.DocumentText)({}),
         Layer.mock(ProviderRegistry.ProviderRegistry)({}),
-        ServerConfig.layerTest(process.cwd(), { prefix: "t3-mcp-http-server-test-" }),
+        ServerConfig.layerTest(process.cwd(), { prefix: "fcode-mcp-http-server-test-" }),
         NodeCrypto.layer,
       ),
     ),
@@ -661,11 +657,11 @@ it.effect("decodes null optional arguments the way it decodes omitted ones", () 
   const calls: Array<unknown> = [];
   return Effect.gen(function* () {
     const thread = { threadId: "thread-null-arguments" };
-    yield* callTool("t3_thread_read", thread);
-    yield* callTool("t3_thread_read", { ...thread, afterPosition: null, view: null });
+    yield* callTool("fcode_thread_read", thread);
+    yield* callTool("fcode_thread_read", { ...thread, afterPosition: null, view: null });
     yield* callTool("delegate_task", { task: "Inspect", target: {} });
     yield* callTool("delegate_task", { task: "Inspect", title: null, target: { model: null } });
-    yield* callTool("t3_project_update", { projectId: "project-1", projectIcon: null });
+    yield* callTool("fcode_project_update", { projectId: "project-1", projectIcon: null });
 
     expect(calls).toHaveLength(5);
     expect(calls[1]).toEqual(calls[0]);
@@ -706,10 +702,10 @@ it.effect("rejects arguments a tool does not declare instead of dropping them", 
   const calls: Array<unknown> = [];
   return Effect.gen(function* () {
     const launch = yield* Effect.flip(
-      callTool("t3_thread_launch", { title: "Repro", scratch: true, prompt: "say hi" }),
+      callTool("fcode_thread_launch", { title: "Repro", scratch: true, prompt: "say hi" }),
     );
     const wait = yield* Effect.flip(
-      callTool("t3_thread_wait", { threadId: "thread-excess-arguments", timeout: 5_000 }),
+      callTool("fcode_thread_wait", { threadId: "thread-excess-arguments", timeout: 5_000 }),
     );
 
     expect(calls).toEqual([]);
@@ -722,7 +718,7 @@ it.effect("accepts a nested key the merged advertised schema shows", () => {
   const calls: Array<unknown> = [];
   return Effect.gen(function* () {
     yield* Effect.exit(
-      callTool("t3_thread_launch", {
+      callTool("fcode_thread_launch", {
         title: "Root",
         projectId: "project-1",
         message: "say hi",
@@ -735,25 +731,25 @@ it.effect("accepts a nested key the merged advertised schema shows", () => {
 });
 
 it.effect(
-  "clamps t3_thread_read page sizes above their maximum instead of rejecting the call",
+  "clamps fcode_thread_read page sizes above their maximum instead of rejecting the call",
   () => {
     const calls: Array<unknown> = [];
     return Effect.gen(function* () {
       const thread = { threadId: "thread-clamped-arguments" };
       // Codex never shows the model these bounds, so an over-large page must still read.
-      yield* callTool("t3_thread_read", {
+      yield* callTool("fcode_thread_read", {
         ...thread,
         limit: 150,
         runLimit: 80,
         maxCharsPerItem: 60_000,
       });
-      yield* callTool("t3_thread_read", {
+      yield* callTool("fcode_thread_read", {
         ...thread,
         limit: 100,
         runLimit: 50,
         maxCharsPerItem: 20_000,
       });
-      yield* callTool("t3_thread_read", { ...thread, limit: 7, runLimit: 1, maxCharsPerItem: 1 });
+      yield* callTool("fcode_thread_read", { ...thread, limit: 7, runLimit: 1, maxCharsPerItem: 1 });
 
       expect(calls).toEqual([
         { ...thread, limit: 100, runLimit: 50, maxCharsPerItem: 20_000 },
@@ -765,12 +761,12 @@ it.effect(
 );
 
 it.effect.each(["limit", "runLimit", "maxCharsPerItem"])(
-  "still rejects a t3_thread_read %s below its minimum",
+  "still rejects a fcode_thread_read %s below its minimum",
   (field) => {
     const calls: Array<unknown> = [];
     return Effect.gen(function* () {
       // Zero is a different request than one item, so it fails rather than answering another question.
-      const rejected = yield* callTool("t3_thread_read", {
+      const rejected = yield* callTool("fcode_thread_read", {
         threadId: "thread-below-minimum",
         [field]: 0,
       }).pipe(Effect.flip);
@@ -782,10 +778,10 @@ it.effect.each(["limit", "runLimit", "maxCharsPerItem"])(
 );
 
 const clampedListLimits = [
-  { tool: "t3_thread_list", input: { allProjects: true }, maximum: 100 },
-  { tool: "t3_project_list", input: {}, maximum: 100 },
-  { tool: "t3_queue", input: { action: "list" }, maximum: 100 },
-  { tool: "t3_preview_list", input: {}, maximum: 50 },
+  { tool: "fcode_thread_list", input: { allProjects: true }, maximum: 100 },
+  { tool: "fcode_project_list", input: {}, maximum: 100 },
+  { tool: "fcode_queue", input: { action: "list" }, maximum: 100 },
+  { tool: "fcode_preview_list", input: {}, maximum: 50 },
 ];
 
 it.effect.each(clampedListLimits)(
@@ -808,7 +804,7 @@ it("keeps cross-tool routing out of the delegate_task description", () => {
   const description = OrchestratorToolkit.tools.delegate_task.description ?? "";
   expect(description).toContain("Start one child agent with only `task`");
   // Review rounds, follow-ups, and polling are routed in the system text.
-  expect(description).not.toContain("t3_thread_send");
+  expect(description).not.toContain("fcode_thread_send");
   expect(description).not.toContain("Do not poll");
   expect(description).not.toContain("Prefer native");
 });
@@ -850,7 +846,7 @@ it.effect("bounds large ARIA trees without dropping every server locator", () =>
     Effect.gen(function* () {
       const accessibilityTree = Array.from(
         { length: 2_000 },
-        (_, index) => `- button "删除 ${index}" [ref=t3-snapshot-e${index}]`,
+        (_, index) => `- button "删除 ${index}" [ref=fcode-snapshot-e${index}]`,
       ).join("\n");
       const visibleText = Array.from({ length: 700 }, (_, index) => `Row ${index} value`).join(
         "\n",
@@ -867,7 +863,7 @@ it.effect("bounds large ARIA trees without dropping every server locator", () =>
         visibleText: string;
       };
       expect(metadata.visibleText.slice(0, 1_000)).toBe(visibleText.slice(0, 1_000));
-      expect(metadata.accessibilityTree).toContain("[ref=t3-snapshot-e0]");
+      expect(metadata.accessibilityTree).toContain("[ref=fcode-snapshot-e0]");
       expect(metadata.accessibilityTree.length).toBeLessThan(accessibilityTree.length);
       const body = result.content[1];
       expect(Buffer.byteLength(body?.type === "text" ? body.text : "", "utf8")).toBeLessThanOrEqual(
@@ -964,7 +960,7 @@ it.effect("bounds page text made of wide characters before dropping locators", (
     Effect.gen(function* () {
       const accessibilityTree = Array.from(
         { length: 20 },
-        (_, i) => `- button "Button ${i}" [ref=t3-1-e${i}]`,
+        (_, i) => `- button "Button ${i}" [ref=fcode-1-e${i}]`,
       ).join("\n");
       yield* serveSnapshots("mcp-wide-text-client", {
         ...snapshotResult,
@@ -1286,7 +1282,7 @@ it.effect("admits provider and OAuth client credentials and points only clients 
         ),
         Layer.provide(ServerHttp.layerBrowserApiCors),
         Layer.provide(
-          ServerConfig.layerTest(process.cwd(), { prefix: "t3-mcp-origin-test-" }).pipe(
+          ServerConfig.layerTest(process.cwd(), { prefix: "fcode-mcp-origin-test-" }).pipe(
             Layer.provide(NodeServices.layer),
           ),
         ),
@@ -1413,7 +1409,7 @@ it.effect("accepts case-insensitive MCP bearer schemes and diagnoses rejected cr
     Layer.provide(ServerSecretStore.layer),
     Layer.provide(ManagedPolicy.layerTest()),
     Layer.provideMerge(ServerEnvironment.layerIdentity),
-    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "t3-mcp-auth-header-test-" })),
+    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "fcode-mcp-auth-header-test-" })),
     Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
   );
   return Effect.scoped(
@@ -1534,7 +1530,7 @@ it.effect("gives outside clients an upload URL on the origin their request reach
         Layer.provide(
           AssetSigner.layer.pipe(
             Layer.provideMerge(ServerSecretStore.layer),
-            Layer.provideMerge(ServerConfig.layerTest(process.cwd(), { prefix: "t3-mcp-upload-" })),
+            Layer.provideMerge(ServerConfig.layerTest(process.cwd(), { prefix: "fcode-mcp-upload-" })),
             Layer.provideMerge(DocumentText.layer),
             Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
           ),
@@ -1570,7 +1566,7 @@ it.effect("gives outside clients an upload URL on the origin their request reach
                 id: 2,
                 method: "tools/call",
                 params: {
-                  name: "t3_attachment_prepare_upload",
+                  name: "fcode_attachment_prepare_upload",
                   arguments: {
                     upload: {
                       type: "image",
@@ -1723,135 +1719,6 @@ it.effect("hides tools for links and refuses another environment while the beta 
   ).pipe(Effect.provide(NodeHttpServer.layerTest)),
 );
 
-it.effect("offers agent feedback tools only while the setting is on, to every client", () =>
-  Effect.scoped(
-    Effect.gen(function* () {
-      const agentScope: McpInvocationContext.McpThreadInvocationScope = {
-        environmentId,
-        requestNamespace: "agentToken",
-        thread: {
-          threadId: ThreadId.make("thread-feedback"),
-          providerSessionId: "agentToken",
-          providerInstanceId: ProviderInstanceId.make("codex"),
-        },
-        client: undefined,
-        capabilities: new Set(["orchestration"]),
-        issuedAt: 1,
-      };
-      // Any OAuth client can register under the label `t3 feedback` signs in with.
-      const cliScope: McpInvocationContext.McpInvocationScope = {
-        environmentId,
-        requestNamespace: "cliToken",
-        thread: undefined,
-        client: { sessionId: "cli", label: FEEDBACK_CLI_CLIENT_LABEL, access: "full-access" },
-        capabilities: new Set(["orchestration"]),
-        issuedAt: 1,
-      };
-      const settingsContext = yield* Layer.build(ServerSettings.layerTest());
-      const settings = Context.get(settingsContext, ServerSettings.ServerSettingsService);
-      const serverLayer = McpHttpServer.layerMcpTransport(
-        Layer.mergeAll(
-          McpHttpServer.toolkitRegistration(FeedbackToolkit, FeedbackHandlers.layer),
-          McpHttpServer.layerToolSearch,
-        ),
-      ).pipe(
-        Layer.provide(Layer.succeedContext(settingsContext)),
-        Layer.provide(McpToolAccessTestkit.liveThreadsLayer),
-        Layer.provide(Layer.mock(Feedback.FeedbackService)({})),
-        Layer.provide(
-          Layer.mock(McpSessionRegistry.McpSessionRegistry)({
-            resolve: (token) => Effect.succeed(token === "agentToken" ? agentScope : undefined),
-          }),
-        ),
-        Layer.provide(
-          Layer.succeed(McpHttpServer.McpClientAuthenticator)({
-            authenticate: (request) =>
-              Effect.succeed(
-                request.headers.authorization === "Bearer cliToken" ? cliScope : undefined,
-              ),
-          }),
-        ),
-      );
-      yield* HttpRouter.serve(serverLayer, { disableListenLog: true, disableLogger: true }).pipe(
-        Layer.build,
-      );
-      const httpClient = yield* HttpClient.HttpClient;
-      const rpc = (token: string, method: string, params: object) =>
-        Effect.gen(function* () {
-          const headers = {
-            accept: "application/json, text/event-stream",
-            authorization: `Bearer ${token}`,
-          };
-          const initialize = yield* httpClient.post("/mcp", {
-            headers,
-            body: HttpBody.text(
-              `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"probe","version":"1.0.0"}}}`,
-              "application/json",
-            ),
-          });
-          const response = yield* httpClient.post("/mcp", {
-            headers: {
-              ...headers,
-              "mcp-session-id": initialize.headers["mcp-session-id"]!,
-              "mcp-protocol-version": "2025-06-18",
-            },
-            body: HttpBody.text(
-              JSON.stringify({ jsonrpc: "2.0", id: 2, method, params }),
-              "application/json",
-            ),
-          });
-          // tool_search answers as a stream, its result after the list_changed notice.
-          const text = yield* response.text;
-          const messages = text.startsWith("data:")
-            ? text
-                .split("\n")
-                .filter((line) => line.startsWith("data:"))
-                .map((line) => JSON.parse(line.slice(5)) as { readonly id?: number })
-            : [JSON.parse(text) as { readonly id?: number }];
-          return messages.find((message) => message.id === 2) as {
-            readonly result?: {
-              readonly tools?: ReadonlyArray<{ readonly name: string }>;
-              readonly structuredContent?: { readonly tools?: ReadonlyArray<{ name: string }> };
-              readonly content?: ReadonlyArray<{ readonly text: string }>;
-            };
-            readonly error?: unknown;
-          };
-        });
-      const listed = (token: string) =>
-        rpc(token, "tools/list", {}).pipe(
-          Effect.map((body) => body.result?.tools?.map((tool) => tool.name)),
-        );
-      // Only provider sessions can search.
-      const found = rpc("agentToken", "tools/call", {
-        name: "tool_search",
-        arguments: { query: "t3_feedback feedback report" },
-      }).pipe(
-        Effect.map((body) => body.result?.structuredContent?.tools?.map((tool) => tool.name)),
-      );
-      const report = (token: string) =>
-        rpc(token, "tools/call", {
-          name: "t3_feedback",
-          arguments: { kind: "bug", subject: "", expected: "a", actual: "b", workaround: "" },
-        });
-
-      expect(yield* found).toEqual([]);
-      for (const token of ["agentToken", "cliToken"]) {
-        expect(yield* listed(token)).toEqual([]);
-        // `t3 feedback` turns exactly this answer into the Labs message.
-        expect(yield* report(token)).toMatchObject({
-          error: { code: -32602, message: "Tool 't3_feedback' not found" },
-        });
-      }
-
-      yield* settings.updateSettings({ agentFeedback: { mode: "on-request" } });
-      expect(yield* found).toEqual(expect.arrayContaining(["t3_feedback"]));
-      for (const token of ["agentToken", "cliToken"]) {
-        expect(yield* listed(token)).toEqual(["t3_feedback"]);
-      }
-    }),
-  ).pipe(Effect.provide(NodeHttpServer.layerTest)),
-);
-
 it.effect(
   "lists watch tools only to threads that are not delegated children, and forge tools only where the project has a forge",
   () =>
@@ -1975,7 +1842,7 @@ it.effect(
 );
 
 it.effect(
-  "narrows an OAuth client's modes to the T3-Mode-Limit it sends, and never widens them",
+  "narrows an OAuth client's modes to the fcode-Mode-Limit it sends, and never widens them",
   () =>
     Effect.scoped(
       Effect.gen(function* () {
@@ -1984,7 +1851,7 @@ it.effect(
           environmentId,
           requestNamespace: "client:linked",
           thread: undefined,
-          client: { sessionId: "linked", label: "T3 Code · laptop", access: "auto" },
+          client: { sessionId: "linked", label: "fcode · laptop", access: "auto" },
           capabilities: new Set(["orchestration"]),
           issuedAt: 1,
         };
@@ -2057,13 +1924,13 @@ it.effect(
             ]),
           ),
         );
-        /** Starts a thread as the client, with `limit` as T3-Mode-Limit; the HTTP status or the outcome. */
+        /** Starts a thread as the client, with `limit` as fcode-Mode-Limit; the HTTP status or the outcome. */
         const start = (limit: string | undefined, args: Record<string, string> = {}) =>
           Effect.gen(function* () {
             const headers = {
               accept: "application/json, text/event-stream",
               authorization: `Bearer ${clientToken}`,
-              ...(limit === undefined ? {} : { "t3-mode-limit": limit }),
+              ...(limit === undefined ? {} : { "fcode-mode-limit": limit }),
             };
             const initialize = yield* httpClient.post("/mcp", {
               headers,
@@ -2181,7 +2048,7 @@ it.effect("lists optional tools to a deferring client only after tool_search loa
           const headers = {
             accept: "application/json, text/event-stream",
             authorization: `Bearer ${token}`,
-            ...(deferred ? { "t3-tool-exposure": "deferred" } : {}),
+            ...(deferred ? { "fcode-tool-exposure": "deferred" } : {}),
           };
           const initialize = yield* httpClient.post("/mcp", {
             headers,

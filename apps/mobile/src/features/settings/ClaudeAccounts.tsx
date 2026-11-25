@@ -1,16 +1,16 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@fcode/client-runtime/errors";
 import { useGT } from "gt-react-native";
 import type { MenuAction } from "@react-native-menu/menu";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@fcode/client-runtime/state/runtime";
 import {
   isManagedSettingPath,
   type ProviderInstanceId,
   type ProviderInstanceMutation,
   type ServerProvider,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { m } from "../../i18n/messages";

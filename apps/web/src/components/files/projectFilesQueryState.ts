@@ -1,4 +1,4 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { msg } from "gt-react";
 import {
@@ -6,8 +6,8 @@ import {
   type ProjectListEntriesResult,
   ProjectReadFileError,
   type ProjectReadFileResult,
-  T3_PROJECT_FILE_NAME,
-} from "@t3tools/contracts";
+  FCODE_PROJECT_FILE_NAME,
+} from "@fcode/contracts";
 import * as Cause from "effect/Cause";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
@@ -78,7 +78,7 @@ export function getProjectFileQueryAtom(
     input: {
       cwd,
       relativePath: relativePath ?? EMPTY_PROJECT_FILE_PATH,
-      ...(relativePath === T3_PROJECT_FILE_NAME ? { allowMissing: true } : {}),
+      ...(relativePath === FCODE_PROJECT_FILE_NAME ? { allowMissing: true } : {}),
     },
   });
 }

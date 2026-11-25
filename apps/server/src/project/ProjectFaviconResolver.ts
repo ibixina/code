@@ -1,4 +1,4 @@
-import { safeDecodeURIComponent } from "@t3tools/shared/markdownLinks";
+import { safeDecodeURIComponent } from "@fcode/shared/markdownLinks";
 import * as Cache from "effect/Cache";
 import * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
@@ -14,7 +14,7 @@ import * as PlatformError from "effect/PlatformError";
 import * as Schema from "effect/Schema";
 
 import * as WorkspacePaths from "../workspace/WorkspacePaths.ts";
-import * as T3ProjectFileLoader from "./T3ProjectFileLoader.ts";
+import * as FcodeProjectFileLoader from "./FcodeProjectFileLoader.ts";
 
 const FAVICON_CACHE_CAPACITY = 512;
 const ICON_SOURCE_SCAN_BYTES = 128 * 1024;
@@ -121,7 +121,7 @@ export class ProjectFaviconResolver extends Context.Service<
     /** Forgets cached lookups for a workspace whose files changed, such as a finished clone. */
     readonly invalidate: (cwd: string) => Effect.Effect<void>;
   }
->()("t3/project/ProjectFaviconResolver") {}
+>()("fcode/project/ProjectFaviconResolver") {}
 
 function* extractIconHrefs(source: string): Generator<string> {
   for (const [tag] of source.matchAll(HTML_LINK_RE)) {
@@ -181,7 +181,7 @@ export const make = Effect.gen(function* () {
   const fileSystem = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
   const workspacePaths = yield* WorkspacePaths.WorkspacePaths;
-  const projectFileLoader = yield* T3ProjectFileLoader.T3ProjectFileLoader;
+  const projectFileLoader = yield* FcodeProjectFileLoader.FcodeProjectFileLoader;
 
   const resolveIconHref = (href: string): ReadonlyArray<string> => {
     // `data:`, `https:` and `//host` icons name no project file, and a long data URL fails `stat`.

@@ -24,8 +24,8 @@ import type {
   IssueTrackerScope,
   IssueViewerPermissions,
   StandaloneIssueTrackerDescriptor,
-} from "@t3tools/contracts";
-import { IssueTrackerKind as IssueTrackerKindSchema } from "@t3tools/contracts";
+} from "@fcode/contracts";
+import { IssueTrackerKind as IssueTrackerKindSchema } from "@fcode/contracts";
 import type { IssueLink } from "../shared/definition.ts";
 
 /**

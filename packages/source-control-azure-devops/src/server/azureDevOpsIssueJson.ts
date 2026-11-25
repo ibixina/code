@@ -16,9 +16,9 @@ import type {
   IssueReaction,
   IssueReactionContent,
   IssueState,
-} from "@t3tools/contracts";
-import { decodeJsonResult } from "@t3tools/shared/schemaJson";
-import type { TrackerIssueSummary } from "@t3tools/source-control-core/server/IssueTracker";
+} from "@fcode/contracts";
+import { decodeJsonResult } from "@fcode/shared/schemaJson";
+import type { TrackerIssueSummary } from "@fcode/source-control-core/server/IssueTracker";
 
 /** Lowercased names of the states a project treats as finished, read by `closedStateNames`. */
 export type ClosedStates = ReadonlySet<string>;

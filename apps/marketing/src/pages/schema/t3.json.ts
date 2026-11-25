@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-import { buildT3ProjectFileJsonSchema } from "@t3tools/shared/t3ProjectFile";
+import { buildFcodeProjectFileJsonSchema as buildT3ProjectFileJsonSchema } from "@fcode/shared/fcodeProjectFile";
 
 export const GET: APIRoute = () =>
   new Response(`${JSON.stringify(buildT3ProjectFileJsonSchema(), null, 2)}\n`, {

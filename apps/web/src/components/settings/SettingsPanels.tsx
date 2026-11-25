@@ -1,4 +1,4 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import { m as resolveMessage } from "~/i18n/messages";
 import { useAtomValue } from "@effect/atom-react";
 import { NotificationSettings } from "./NotificationSettings";
@@ -15,7 +15,7 @@ import {
   ProviderDriverKind,
   type ProviderInstanceId,
   type SidebarProjectGroupingMode,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   DEFAULT_UNIFIED_SETTINGS,
   type DiffLayout,
@@ -26,14 +26,14 @@ import {
   SidebarProjectSortOrder,
   ScreenReaderAnnouncements,
   ToolCallVisibility,
-} from "@t3tools/contracts/settings";
+} from "@fcode/contracts/settings";
 import {
   managedUpdatesDenial,
   managedUpdatesMessage,
-} from "@t3tools/client-runtime/contract-labels";
-import { desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
-import { createModelSelection, pickModelSelection } from "@t3tools/shared/model";
-import { resolvePastedPath } from "@t3tools/shared/path";
+} from "@fcode/client-runtime/contract-labels";
+import { desktopUpdateChannelOf } from "@fcode/shared/cliRelease";
+import { createModelSelection, pickModelSelection } from "@fcode/shared/model";
+import { resolvePastedPath } from "@fcode/shared/path";
 import * as Equal from "effect/Equal";
 import * as Schema from "effect/Schema";
 import { APP_VERSION, HOSTED_APP_CHANNEL, HOSTED_APP_CHANNEL_LABEL } from "../../branding";
@@ -72,7 +72,7 @@ import { ProjectDefaultsSettings } from "./ProjectDefaultsSettings";
 import { ThreadTitleInstructionsSettings } from "./ThreadTitleInstructionsSettings";
 import { SnoozePresetsRow } from "./SnoozePresetsSettings";
 import { useDesktopUpdateState } from "../../state/desktopUpdate";
-import { managedTelemetryOffMessage, usePrimaryManagedPolicy } from "../../state/managedPolicy";
+import { usePrimaryManagedPolicy } from "../../state/managedPolicy";
 import {
   getTextGenerationModelOptionsByInstance,
   resolveAppModelSelectionState,
@@ -118,7 +118,7 @@ import {
   SettingsSection,
 } from "./settingsLayout";
 import { useSearchableSetting } from "./settingsSearch";
-import { nativeLanguageName, SYSTEM_LANGUAGE } from "@t3tools/client-runtime/locales";
+import { nativeLanguageName, SYSTEM_LANGUAGE } from "@fcode/client-runtime/locales";
 import { SUPPORTED_LOCALES } from "../../i18n/locales";
 import { BackgroundActivitySettingsRow } from "./BackgroundActivitySettings";
 import { AdvancedSettings } from "./AdvancedSettings";
@@ -2526,11 +2526,9 @@ export function MaintenanceSettingsPanel() {
 export function AboutSettingsPanel() {
   const setting = useSearchableSetting();
   const gt = useGT();
-  const messages = useMessages();
   const primaryPolicy = usePrimaryManagedPolicy();
   // The Welcome page sets up this computer, so it needs one.
   const primaryEnvironmentId = usePrimaryEnvironmentId();
-  const telemetryOff = managedTelemetryOffMessage(primaryPolicy, messages);
   return (
     <SettingsPageContainer>
       <SettingsSection id="about" title={gt("App")}>
@@ -2584,11 +2582,7 @@ export function AboutSettingsPanel() {
       <SettingsSection id="legal" title={gt("Legal")}>
         <SettingsRow
           {...setting("privacy-policy")}
-          description={
-            telemetryOff === undefined
-              ? gt("How we handle your data, including the anonymous usage data T3 Code collects.")
-              : gt("How we handle your data. {telemetryOff}", { telemetryOff })
-          }
+          description={gt("The upstream fcode privacy policy. This build sends no usage data.")}
           control={
             <Button
               render={<a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer noopener" />}
@@ -2601,7 +2595,7 @@ export function AboutSettingsPanel() {
         />
         <SettingsRow
           {...setting("open-source-licenses")}
-          description={gt("Notices for dependencies, assets, and optional tools used by T3 Code.")}
+          description={gt("Notices for dependencies, assets, and optional tools used by fcode.")}
           control={
             <Button
               render={<Link to="/settings/open-source-licenses" />}

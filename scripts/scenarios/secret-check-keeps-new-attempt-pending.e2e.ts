@@ -1,11 +1,11 @@
 /// <reference lib="dom" />
-import { SecretProviderId, SecretProviderKind } from "@t3tools/contracts";
+import { SecretProviderId, SecretProviderKind } from "@fcode/contracts";
 import { expect } from "e2e";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 
-import { T3_HOME } from "../e2e.config.ts";
-import { environmentId, rpcClient, runPromise, test, WEB } from "./t3.ts";
+import { FCODE_HOME } from "../e2e.config.ts";
+import { environmentId, rpcClient, runPromise, test, WEB } from "./fcode.ts";
 
 const PROVIDER = SecretProviderId.make("scenario");
 const REFERENCE_A = "op://Scenario/GitHub/first";
@@ -23,16 +23,16 @@ declare global {
 test(
   "An earlier check of the same reference leaves the new check pending",
   WEB,
-  async ({ t3, app, browser, screen }) => {
+  async ({ fcode, app, browser, screen }) => {
     const origin = app.baseUrl ?? "";
     const environment = await runPromise(environmentId(origin));
-    await t3.project("demo");
+    await fcode.project("demo");
     await runPromise(
       Effect.gen(function* () {
         const fs = yield* FileSystem.FileSystem;
-        yield* fs.writeFileString(`${T3_HOME}/bin/op`, "#!/bin/sh\nexit 1\n");
-        yield* fs.chmod(`${T3_HOME}/bin/op`, 0o755);
-        const client = yield* rpcClient(T3_HOME, origin);
+        yield* fs.writeFileString(`${FCODE_HOME}/bin/op`, "#!/bin/sh\nexit 1\n");
+        yield* fs.chmod(`${FCODE_HOME}/bin/op`, 0o755);
+        const client = yield* rpcClient(FCODE_HOME, origin);
         yield* client["server.updateSettings"]({
           patch: {
             secretProviders: {
@@ -101,7 +101,7 @@ test(
       };
     });
 
-    await t3.open(`/settings/source-control?machine=${encodeURIComponent(environment)}`);
+    await fcode.open(`/settings/source-control?machine=${encodeURIComponent(environment)}`);
     await screen.getByRole("button", "Toggle GitHub details", { exact: true }).tap();
     const input = screen.getByRole("textbox", "GitHub token reference", { exact: true });
     const check = screen.getByRole("button", "Check GitHub token", { exact: true });

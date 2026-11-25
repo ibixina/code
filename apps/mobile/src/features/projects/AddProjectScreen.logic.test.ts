@@ -1,5 +1,5 @@
-import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connection";
-import { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentConnectionPhase } from "@fcode/client-runtime/connection";
+import { EnvironmentId } from "@fcode/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { newTaskFlowKey } from "../threads/new-task-flow-state";

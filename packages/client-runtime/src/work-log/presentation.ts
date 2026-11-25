@@ -8,29 +8,29 @@ import {
   type ToolActivityIcon,
   type OrchestrationV2TurnItem,
   type ThreadId,
-} from "@t3tools/contracts";
-import type { ToolCallVisibility } from "@t3tools/contracts/settings";
+} from "@fcode/contracts";
+import type { ToolCallVisibility } from "@fcode/contracts/settings";
 import {
-  resolveT3McpSummaryAction,
-  resolveT3McpToolDefinition,
-  type T3McpToolDefinition,
-  type T3McpToolSummaryAction,
-} from "@t3tools/shared/t3McpToolPresentation";
-import { classifyMarkdownImageSource } from "@t3tools/client-runtime/markdown-images";
-import { resolveMediaSource } from "@t3tools/client-runtime/media-source";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
-import { isWorkspaceImagePreviewPath } from "@t3tools/shared/mediaPreview";
-import { formatTokens } from "@t3tools/shared/usageFormat";
-import { classifyToolActivity } from "@t3tools/shared/toolActivity";
-import { toolOutputIndicatesFailure } from "@t3tools/shared/toolOutput";
+  resolveFcodeMcpSummaryAction,
+  resolveFcodeMcpToolDefinition,
+  type FcodeMcpToolDefinition,
+  type FcodeMcpToolSummaryAction,
+} from "@fcode/shared/fcodeMcpToolPresentation";
+import { classifyMarkdownImageSource } from "@fcode/client-runtime/markdown-images";
+import { resolveMediaSource } from "@fcode/client-runtime/media-source";
+import { sourceControlClients } from "@fcode/client-runtime/source-control-clients";
+import { isWorkspaceImagePreviewPath } from "@fcode/shared/mediaPreview";
+import { formatTokens } from "@fcode/shared/usageFormat";
+import { classifyToolActivity } from "@fcode/shared/toolActivity";
+import { toolOutputIndicatesFailure } from "@fcode/shared/toolOutput";
 
 import {
-  summarizeT3ToolCalls,
-  t3ToolResultIndicatesFailure,
-  type T3ToolSummaryCall,
-} from "@t3tools/client-runtime/t3ToolSummary";
+  summarizeFcodeToolCalls,
+  fcodeToolResultIndicatesFailure,
+  type FcodeToolSummaryCall,
+} from "@fcode/client-runtime/fcodeToolSummary";
 import { mFallback, msg } from "gt-i18n";
-import { t3ToolSentence } from "./t3ToolSentences.ts";
+import { fcodeToolSentence } from "./fcodeToolSentences.ts";
 import type { MFunctionType } from "gt-i18n/types";
 
 export type WorkLogToolLifecycleStatus = RuntimeItemStatus | "stopped" | "idle";
@@ -87,7 +87,7 @@ export function contextCompactionLabel(
 }
 
 export interface WorkLogPresentationEntry {
-  readonly questionAnswer?: import("@t3tools/contracts").UserInputAttachmentAnswerPayload;
+  readonly questionAnswer?: import("@fcode/contracts").UserInputAttachmentAnswerPayload;
   readonly id: string;
   readonly createdAt: string;
   readonly label: string;
@@ -148,7 +148,7 @@ function workEntryToolName(
     return `${data.server}.${data.tool}`;
   }
   if (typeof data?.toolName === "string") return data.toolName;
-  return resolveT3McpToolDefinition(entry.toolTitle) ? entry.toolTitle : entry.label;
+  return resolveFcodeMcpToolDefinition(entry.toolTitle) ? entry.toolTitle : entry.label;
 }
 
 function workEntryToolInput(
@@ -171,7 +171,7 @@ function workEntryToolOutput(
     : (data?.output ?? data?.result ?? data?.rawOutput ?? data?.content);
 }
 
-function t3ToolStatusKey(status: string | undefined) {
+function fcodeToolStatusKey(status: string | undefined) {
   return status === "inProgress" ||
     status === "completed" ||
     status === "failed" ||
@@ -181,8 +181,8 @@ function t3ToolStatusKey(status: string | undefined) {
     : "other";
 }
 
-function resolveT3McpToolPresentation(
-  definition: T3McpToolDefinition | null,
+function resolveFcodeMcpToolPresentation(
+  definition: FcodeMcpToolDefinition | null,
   status: string | undefined,
   data: unknown,
   resolve: MFunctionType,
@@ -214,9 +214,9 @@ function resolveT3McpToolPresentation(
     number > 0
       ? number
       : null;
-  const sentence = t3ToolSentence(definition.labels);
-  const statusKey = t3ToolStatusKey(status);
-  // A tool added to the shared table after `t3ToolSentences.ts` was generated.
+  const sentence = fcodeToolSentence(definition.labels);
+  const statusKey = fcodeToolStatusKey(status);
+  // A tool added to the shared table after `fcodeToolSentences.ts` was generated.
   const [action, running, completed] = definition.labels;
   const fallbackVerb =
     status === "inProgress"
@@ -300,14 +300,14 @@ export function resolveWorkEntryToolPresentation(
   fallbackStatus?: "inProgress" | "completed",
   resolve: MFunctionType = mFallback,
 ) {
-  const definition = resolveT3McpToolDefinition(
+  const definition = resolveFcodeMcpToolDefinition(
     workEntryToolName(entry),
     workEntryToolInput(entry),
   );
   const status = entry.toolLifecycleStatus ?? fallbackStatus;
-  return resolveT3McpToolPresentation(
+  return resolveFcodeMcpToolPresentation(
     definition,
-    definition && t3ToolResultIndicatesFailure(workEntryToolOutput(entry)) ? "failed" : status,
+    definition && fcodeToolResultIndicatesFailure(workEntryToolOutput(entry)) ? "failed" : status,
     entry.toolData,
     resolve,
   );
@@ -342,8 +342,8 @@ function workEntryIndicatesToolFailureFromOutput(
   // "that exit code 2 is expected" as a failed tool.
   if (!workLogEntryIsToolLike(entry) || entry.itemType === "reasoning") return false;
   if (
-    resolveT3McpToolDefinition(workEntryToolName(entry)) &&
-    t3ToolResultIndicatesFailure(workEntryToolOutput(entry))
+    resolveFcodeMcpToolDefinition(workEntryToolName(entry)) &&
+    fcodeToolResultIndicatesFailure(workEntryToolOutput(entry))
   ) {
     return true;
   }
@@ -660,7 +660,7 @@ function joinClauses(items: ReadonlyArray<string>, resolve: MFunctionType): stri
   );
 }
 
-function t3ToolSummaryCall(entry: WorkLogPresentationEntry): T3ToolSummaryCall {
+function fcodeToolSummaryCall(entry: WorkLogPresentationEntry): FcodeToolSummaryCall {
   return {
     input: workEntryToolInput(entry),
     output: workEntryToolOutput(entry),
@@ -675,7 +675,7 @@ function t3ToolSummaryCall(entry: WorkLogPresentationEntry): T3ToolSummaryCall {
   };
 }
 
-function summaryActionPriority(action: ToolGroupAction | T3McpToolSummaryAction): number {
+function summaryActionPriority(action: ToolGroupAction | FcodeMcpToolSummaryAction): number {
   switch (action) {
     case "command":
     case "edit":
@@ -738,35 +738,35 @@ export function summarizeToolGroup(
   }
   entries = toolEntries;
   const groups = new Map<
-    ToolGroupAction | T3McpToolSummaryAction,
+    ToolGroupAction | FcodeMcpToolSummaryAction,
     {
       action: ToolGroupAction;
-      t3Action: T3McpToolSummaryAction | null;
+      fcodeAction: FcodeMcpToolSummaryAction | null;
       entries: WorkLogPresentationEntry[];
     }
   >();
   const sources = new Map<string, ToolActivitySource>();
   for (const entry of entries) {
-    const t3Action = resolveT3McpSummaryAction(
+    const fcodeAction = resolveFcodeMcpSummaryAction(
       workEntryToolName(entry),
-      t3ToolSummaryCall(entry).input,
+      fcodeToolSummaryCall(entry).input,
     );
-    if (entry.toolSource && t3Action === null) {
+    if (entry.toolSource && fcodeAction === null) {
       sources.set(entry.toolSource.key, entry.toolSource);
       continue;
     }
     const action = toolGroupAction(entry);
-    const key = t3Action ?? action;
+    const key = fcodeAction ?? action;
     const group = groups.get(key);
     if (group) group.entries.push(entry);
-    else groups.set(key, { action, t3Action, entries: [entry] });
+    else groups.set(key, { action, fcodeAction, entries: [entry] });
   }
   const summaries = [...groups].map(([action, group], index) => ({
     index,
     count: group.entries.length,
     priority: summaryActionPriority(action),
-    ...(group.t3Action
-      ? summarizeT3ToolCalls(group.t3Action, group.entries.map(t3ToolSummaryCall), resolve)
+    ...(group.fcodeAction
+      ? summarizeFcodeToolCalls(group.fcodeAction, group.entries.map(fcodeToolSummaryCall), resolve)
       : {
           label: toolGroupActionLabel(
             group.action,
@@ -800,7 +800,7 @@ export function summarizeToolGroup(
   const sourcedCount = entries.filter(
     (entry) =>
       entry.toolSource !== undefined &&
-      resolveT3McpToolDefinition(workEntryToolName(entry)) === null,
+      resolveFcodeMcpToolDefinition(workEntryToolName(entry)) === null,
   ).length;
   const remainingCount =
     entries.length - sourcedCount - selected.reduce((count, group) => count + group.count, 0);

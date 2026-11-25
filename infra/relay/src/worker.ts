@@ -1,5 +1,4 @@
 import * as Alchemy from "alchemy";
-import * as Axiom from "@alchemy.run/axiom";
 import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Drizzle from "@alchemy.run/drizzle/Postgres";
 import * as Config from "effect/Config";
@@ -15,13 +14,12 @@ import * as Option from "effect/Option";
 import * as Redacted from "effect/Redacted";
 import * as Stream from "effect/Stream";
 import * as Etag from "effect/http/Etag";
-import * as HttpMiddleware from "effect/http/HttpMiddleware";
 import * as HttpPlatform from "effect/http/HttpPlatform";
 import * as HttpRouter from "effect/http/HttpRouter";
 import * as HttpApiBuilder from "effect/http-api/HttpApiBuilder";
 import * as HttpApiScalar from "effect/http-api/HttpApiScalar";
 
-import { RelayApi } from "@t3tools/contracts/relay";
+import { RelayApi } from "@fcode/contracts/relay";
 
 import {
   RELAY_HTTP_ROUTER_CONFIG,
@@ -31,7 +29,6 @@ import {
 import * as CloudMintSigner from "./auth/CloudMintSigner.ts";
 import * as RelayHttpApi from "./http/Api.ts";
 import { ManagedEndpointZone, RelayApiZone, RelayDeploymentConfig } from "./zone.ts";
-import { RelayObservability } from "./observability.ts";
 import * as Observability from "./observability.ts";
 import * as DeliveryAttempts from "./agentActivity/DeliveryAttempts.ts";
 import * as AgentActivityRows from "./agentActivity/AgentActivityRows.ts";
@@ -76,7 +73,6 @@ import * as AccountDeletion from "./accounts/AccountDeletion.ts";
 import * as HeldHooks from "./hooks/HeldHooks.ts";
 import * as HookInbox from "./hooks/HookInbox.ts";
 import * as HookInboxObject from "./hooks/HookInboxObject.ts";
-import * as MobileTelemetry from "./mobileTelemetry/MobileTelemetry.ts";
 
 const layerWebcrypto = Layer.mergeAll(
   Digest.layerWebCrypto,
@@ -128,13 +124,7 @@ export const layer = Api.make(
       // to PlanetScale `us-west` the request pays that distance once.
       placement: { region: "aws:us-west-2" },
       domain: relayPublicDomain,
-      // Workers Logs bills per GB, and every request, queue batch, and DO call is
-      // an invocation log. Axiom traces carry the full detail; keep a sample for
-      // crashes and limit errors that never export a span.
-      observability: {
-        enabled: true,
-        logs: { enabled: true, invocationLogs: true, headSamplingRate: 0.01 },
-      },
+      observability: { enabled: false },
     })),
     Effect.orDie,
   ),
@@ -148,7 +138,6 @@ export const layer = Api.make(
     const relayApiZone = yield* RelayApiZone;
     const managedEndpointZone = yield* ManagedEndpointZone;
     const randomApnsDeliveryJobSigningSecret = yield* ApnsDeliveryJobSigningSecret;
-    const observability = yield* RelayObservability;
 
     const apnsEnabled = yield* Config.Boolean("APNS_ENABLED").pipe(Config.withDefault(true));
     const apnsCredentials = apnsEnabled
@@ -179,13 +168,13 @@ export const layer = Api.make(
         (value) => Redacted.value(value).trim().length > 0,
       ),
     );
-    const t3ChatLinkSecret = Option.getOrUndefined(
+    const fcodeChatLinkSecret = Option.getOrUndefined(
       Option.filter(
         yield* Config.option(Config.Redacted("T3CHAT_LINK_SECRET")),
         (value) => Redacted.value(value).trim().length > 0,
       ),
     );
-    const t3ChatBaseUrl = yield* Config.String("T3CHAT_URL").pipe(
+    const fcodeChatBaseUrl = yield* Config.String("T3CHAT_URL").pipe(
       Config.withDefault("https://t3.chat"),
     );
 
@@ -224,22 +213,6 @@ export const layer = Api.make(
       },
     });
     const hookInboxes = yield* HookInboxObject.HookInboxObject;
-    const mobileTelemetryRateLimit = yield* Cloudflare.RateLimit("MOBILE_TELEMETRY_RATE_LIMIT", {
-      namespaceId: 1003,
-      simple: {
-        limit: MobileTelemetry.MOBILE_TELEMETRY_RATE_LIMIT.limit,
-        period: MobileTelemetry.MOBILE_TELEMETRY_RATE_LIMIT.periodSeconds,
-      },
-    });
-    const mobileSourceMaps = yield* Cloudflare.R2.ReadBucket(observability.mobileSourceMaps);
-    const mobileTelemetryToken = yield* observability.mobileTelemetryIngestToken.token;
-    const mobileTracesUrl = yield* observability.traces.otelTracesEndpoint;
-    const mobileTracesDataset = yield* observability.traces.name;
-    const mobileLogsUrl = yield* observability.mobileLogs.otelLogsEndpoint;
-    const mobileLogsDataset = yield* observability.mobileLogs.name;
-    const mobileMetricsUrl = yield* observability.mobileMetrics.otelMetricsEndpoint;
-    const mobileMetricsDataset = yield* observability.mobileMetrics.name;
-
     const alchemyRuntimeContext: Alchemy.BaseRuntimeContext = yield* Cloudflare.Worker;
 
     const loadSettings = Effect.gen(function* () {
@@ -259,8 +232,8 @@ export const layer = Api.make(
         managedEndpointCleanupMode,
         legacyManagedEndpointCleanupMode,
         ...(legacyTunnelGraceMinutes === undefined ? {} : { legacyTunnelGraceMinutes }),
-        ...(t3ChatLinkSecret
-          ? { t3Chat: { baseUrl: t3ChatBaseUrl, linkSecret: t3ChatLinkSecret } }
+        ...(fcodeChatLinkSecret
+          ? { fcodeChat: { baseUrl: fcodeChatBaseUrl, linkSecret: fcodeChatLinkSecret } }
           : {}),
       });
     });
@@ -391,63 +364,12 @@ export const layer = Api.make(
     });
 
     // `fetch` rebuilds its layers per request; the source map cache must outlive one.
-    const mobileSourceMapLookups = yield* MobileTelemetry.SourceMaps.pipe(
-      Effect.provide(MobileTelemetry.layerSourceMaps),
-      Effect.provideService(MobileTelemetry.SourceMapObjects, {
-        get: (key) =>
-          mobileSourceMaps.get(key).pipe(
-            Effect.map((object) =>
-              object === null
-                ? undefined
-                : {
-                    size: object.size,
-                    text: object.text().pipe(
-                      Effect.provideService(Alchemy.RuntimeContext, alchemyRuntimeContext),
-                      Effect.mapError(
-                        (cause) => new MobileTelemetry.SourceMapObjectError({ key, cause }),
-                      ),
-                    ),
-                  },
-            ),
-            Effect.provideService(Alchemy.RuntimeContext, alchemyRuntimeContext),
-            Effect.mapError((cause) => new MobileTelemetry.SourceMapObjectError({ key, cause })),
-          ),
-      }),
-    );
-    const layerMobileTelemetry = MobileTelemetry.layer.pipe(
-      Layer.provide(
-        Layer.mergeAll(
-          Layer.effect(
-            MobileTelemetry.MobileTelemetrySettings,
-            Effect.gen(function* () {
-              return MobileTelemetry.MobileTelemetrySettings.of({
-                axiomToken: yield* mobileTelemetryToken,
-                destinations: {
-                  traces: { url: yield* mobileTracesUrl, dataset: yield* mobileTracesDataset },
-                  logs: { url: yield* mobileLogsUrl, dataset: yield* mobileLogsDataset },
-                  metrics: { url: yield* mobileMetricsUrl, dataset: yield* mobileMetricsDataset },
-                },
-              });
-            }),
-          ),
-          Layer.succeed(MobileTelemetry.MobileTelemetryRateLimiter, {
-            allow: allowWith(
-              mobileTelemetryRateLimit,
-              "relay.mobile_telemetry.rate_limiter_failed_open",
-            ),
-          }),
-          Layer.succeed(MobileTelemetry.SourceMaps, mobileSourceMapLookups),
-        ),
-      ),
-    );
-
     const layerApp = Layer.mergeAll(
       layerRelayApi,
       HookForwarder.layerApi.pipe(
         Layer.provide(HookForwarder.layer),
         Layer.provide(layerHookRateLimiter),
       ),
-      MobileTelemetry.layerApi.pipe(Layer.provide(layerMobileTelemetry)),
       AccountDeletion.layerApi,
     ).pipe(
       Layer.provideMerge(RelayHttpApi.layerClientAuth),
@@ -589,23 +511,7 @@ export const layer = Api.make(
         Layer.provideMerge(ManagedTunnelBinding.ManagedTunnelBinding),
         Layer.provideMerge(Cloudflare.DNS.ReadWriteDnsHttp),
         Layer.provideMerge(Cloudflare.Workers.RateLimitBinding),
-        Layer.provideMerge(Cloudflare.R2.ReadBucketBinding),
         Layer.provideMerge(HookInboxObject.layer),
-        // Disable the duplicate runtime span; ours applies route/header/token redaction and rejects sender traceparent.
-        Layer.provideMerge(
-          Alchemy.Telemetry.layer(Layer.succeed(HttpMiddleware.TracerDisabledWhen)(() => true)),
-        ),
-        Layer.provideMerge(
-          Layer.unwrap(
-            Effect.map(RelayObservability, (observability) =>
-              Axiom.Telemetry({
-                serviceName: "t3code-relay",
-                token: observability.workerIngestToken,
-                traces: observability.traces,
-              }),
-            ),
-          ),
-        ),
       ),
     ),
   ),

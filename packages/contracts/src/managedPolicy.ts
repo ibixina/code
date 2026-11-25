@@ -41,8 +41,8 @@ export const ManagedProviderLimits = Schema.Struct({
 export type ManagedProviderLimits = typeof ManagedProviderLimits.Type;
 
 /**
- * How T3 Code updates itself. `auto` is the default: it checks, and installs only when a user
- * asks. `off` never checks, for machines that get T3 Code through MDM.
+ * How fcode updates itself. `auto` is the default: it checks, and installs only when a user
+ * asks. `off` never checks, for machines that get fcode through MDM.
  */
 export const ManagedUpdatesMode = Schema.Literals(["auto", "off"]);
 export type ManagedUpdatesMode = typeof ManagedUpdatesMode.Type;
@@ -75,10 +75,10 @@ export const ManagedPolicyLimits = Schema.Struct({
   maxRuntimeMode: Schema.optionalKey(RuntimeMode),
   /** Clients the server accepts. Without `remote`, nothing off this machine can pair. */
   clients: Schema.optionalKey(Schema.NonEmptyArray(ManagedPolicyClient)),
-  /** `false` turns T3 Connect off and unlinks this machine. */
+  /** `false` turns fcode Connect off and unlinks this machine. */
   connect: Schema.optionalKey(Schema.Boolean),
   webhookTasks: Schema.optionalKey(Schema.Boolean),
-  /** Can only turn product analytics off, never force it on. */
+  /** Accepted so existing policy files still load; this build collects no usage data. */
   telemetry: Schema.optionalKey(Schema.Boolean),
   browserCookieImport: Schema.optionalKey(Schema.Boolean),
   /** `false` turns the preview tunnel off: no client reaches this machine's loopback ports. */
@@ -97,7 +97,6 @@ export const ManagedPolicySummaryLimits = Schema.Struct({
   /** `false` also when `clients` leaves out `remote`, since Connect is remote access. */
   connect: Schema.optionalKey(Schema.Boolean),
   webhookTasks: Schema.optionalKey(Schema.Boolean),
-  telemetry: Schema.optionalKey(Schema.Boolean),
   browserCookieImport: Schema.optionalKey(Schema.Boolean),
   previewTunnel: Schema.optionalKey(Schema.Boolean),
   worktreeLayoutCommands: Schema.optionalKey(Schema.Boolean),
@@ -149,7 +148,7 @@ export type ManagedPolicySummary = typeof ManagedPolicySummary.Type;
 
 /** The message every surface shows when the policy stops an update. */
 export function managedUpdatesMessage(organization: string): string {
-  return `${organization} manages T3 Code updates.`;
+  return `${organization} manages fcode updates.`;
 }
 
 /** The message when the policy allows only stable releases. */
@@ -212,7 +211,7 @@ export function clampManagedRuntimeMode(
 
 const CAPABILITY_LABELS = {
   remoteClients: "connecting from other devices",
-  connect: "T3 Connect",
+  connect: "fcode Connect",
   webhookTasks: "webhook tasks",
   browserCookieImport: "importing browser cookies",
   previewTunnel: "opening this machine's local servers on other devices",

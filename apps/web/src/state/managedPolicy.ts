@@ -1,4 +1,4 @@
-import type { EnvironmentId, ManagedPolicySummary, ProviderDriverKind } from "@t3tools/contracts";
+import type { EnvironmentId, ManagedPolicySummary, ProviderDriverKind } from "@fcode/contracts";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "../i18n/messages";
@@ -31,20 +31,6 @@ export function firstManagedDenial(
     if (denial !== undefined) return denial;
   }
   return undefined;
-}
-
-/** What usage-data notices say when the policy turns product analytics off. */
-export function managedTelemetryOffMessage(
-  policy: ManagedPolicySummary | undefined,
-  resolve: MessageResolver = m,
-): string | undefined {
-  return policy?.limits?.telemetry === false
-    ? resolve(
-        msg("{organization} turned off anonymous usage data.", {
-          organization: policy.organization,
-        }),
-      )
-    : undefined;
 }
 
 export interface ManagedInstanceLocks {

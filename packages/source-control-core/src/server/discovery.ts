@@ -7,9 +7,9 @@ import {
   type SourceControlProviderDiscoveryItem,
   type SourceControlProviderInfo,
   type SourceControlProviderKind,
-} from "@t3tools/contracts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { SpawnExecutableResolution } from "@t3tools/shared/shell";
+} from "@fcode/contracts";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import { SpawnExecutableResolution } from "@fcode/shared/shell";
 import type * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";

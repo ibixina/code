@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { expect } from "e2e";
 
-import { test, WEB } from "./t3.ts";
+import { test, WEB } from "./fcode.ts";
 
 declare global {
   interface Window {
@@ -12,9 +12,9 @@ declare global {
 test(
   "An earlier theme file cannot become the draft after its replacement is rejected",
   WEB,
-  async ({ t3, app, browser, screen }) => {
-    await t3.project("demo");
-    await t3.open("/settings/appearance");
+  async ({ fcode, app, browser, screen }) => {
+    await fcode.project("demo");
+    await fcode.open("/settings/appearance");
     await screen.getByRole("button", "Add theme", { exact: true }).tap();
     const dialog = screen.getByRole("dialog", "Add a theme");
 

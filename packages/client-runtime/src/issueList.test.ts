@@ -5,7 +5,7 @@ import type {
   IssueTrackerKind,
   IssueTrackerSummary,
   ProjectId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {

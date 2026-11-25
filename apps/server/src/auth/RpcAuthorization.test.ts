@@ -25,7 +25,7 @@ import {
   RunId,
   WS_METHODS,
   WsRpcGroup,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { describe, expect, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -52,13 +52,6 @@ describe("RPC authorization scopes", () => {
     ]) {
       expect(requiredScopeForRpcMethod(method)).toBe(AuthOrchestrationOperateScope);
     }
-  });
-
-  it("lets only a session that operates threads approve sending a feedback report", () => {
-    // Guest links have no RPC session, and read-only sessions lack this scope.
-    expect(requiredScopeForRpcMethod(WS_METHODS.agentFeedbackAnswerRequest)).toBe(
-      AuthOrchestrationOperateScope,
-    );
   });
 
   it("keeps triage, which seeds an agent that reads logs and the database, behind operate scope", () => {
@@ -550,7 +543,7 @@ describe("settings mutation authorization", () => {
   );
 
   it.effect(
-    "does not let a settings grant manage providers or turn off T3 Connect device approval",
+    "does not let a settings grant manage providers or turn off fcode Connect device approval",
     () =>
       Effect.gen(function* () {
         let handled = false;

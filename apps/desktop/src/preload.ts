@@ -7,7 +7,7 @@ import type {
   DesktopPreviewRecordingInputEvent,
   DesktopPreviewTabState,
   DesktopSnapShotEvent,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { exposeClerkBridge } from "@clerk/electron/preload";
 import { contextBridge, ipcRenderer, webFrame, webUtils } from "electron";
 
@@ -43,7 +43,7 @@ try {
   }
 } catch {}
 
-// oxlint-disable-next-line t3code/no-global-process-runtime -- Electron exposes the client platform in its sandboxed preload process.
+// oxlint-disable-next-line fcode/no-global-process-runtime -- Electron exposes the client platform in its sandboxed preload process.
 const clientPlatform = process.platform;
 
 if (clientPlatform === "darwin") {
@@ -112,10 +112,6 @@ contextBridge.exposeInMainWorld("desktopBridge", {
       return null;
     }
     return result as ReturnType<DesktopBridge["getAppBranding"]>;
-  },
-  getRelayTelemetryEnabled: () => {
-    const enabled = ipcRenderer.sendSync(IpcChannels.GET_RELAY_TELEMETRY_ENABLED_CHANNEL);
-    return enabled === null ? null : enabled === true;
   },
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   getClientPlatform: () => clientPlatform,

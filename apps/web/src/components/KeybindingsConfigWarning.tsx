@@ -1,11 +1,11 @@
 import { m } from "../i18n/messages";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import {
   AuthOrchestrationOperateScope,
   type EditorId,
   type EnvironmentId,
-} from "@t3tools/contracts";
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+} from "@fcode/contracts";
+import { squashAtomCommandFailure } from "@fcode/client-runtime/state/runtime";
 import { T, useGT, Var } from "gt-react";
 
 import { useOpenInPreferredEditor } from "../editorPreferences";

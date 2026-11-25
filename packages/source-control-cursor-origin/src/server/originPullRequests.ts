@@ -14,9 +14,9 @@ import type {
   PullRequestChecksState,
   PullRequestMergeability,
   PullRequestState,
-} from "@t3tools/contracts";
-import { SourceControlProviderKind } from "@t3tools/contracts";
-import { quoteGitPatchPath } from "@t3tools/shared/gitPatchPath";
+} from "@fcode/contracts";
+import { SourceControlProviderKind } from "@fcode/contracts";
+import { quoteGitPatchPath } from "@fcode/shared/gitPatchPath";
 import { parseChangeRequestUrl } from "../shared/definition.ts";
 
 const Int64 = Schema.Union([Schema.Number, Schema.NumberFromString]);

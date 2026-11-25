@@ -5,20 +5,20 @@ import {
   PROVIDER_SEND_TURN_SUPPORTED_IMAGE_MIME_TYPES,
   type ChatAttachment,
   type EnvironmentId,
-} from "@t3tools/contracts";
-import { parseScopedThreadKey } from "@t3tools/client-runtime/environment";
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
-import { resolveAssetUrl } from "@t3tools/client-runtime/state/assets";
+} from "@fcode/contracts";
+import { parseScopedThreadKey } from "@fcode/client-runtime/environment";
+import { errorDisplayMessage } from "@fcode/client-runtime/errors";
+import { resolveAssetUrl } from "@fcode/client-runtime/state/assets";
 import {
   attachmentUploadError,
   createAttachmentUploadRegistry,
-} from "@t3tools/client-runtime/state/attachment-uploads";
+} from "@fcode/client-runtime/state/attachment-uploads";
 import {
   deletePendingAttachmentUpload,
   runAttachmentUploadCycle,
   verifyPersistedAttachmentUpload,
   type PersistedAttachmentVerification,
-} from "@t3tools/client-runtime/state/attachments";
+} from "@fcode/client-runtime/state/attachments";
 import { create } from "zustand";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";

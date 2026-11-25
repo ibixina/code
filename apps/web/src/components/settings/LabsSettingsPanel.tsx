@@ -1,19 +1,16 @@
-import { msg } from "gt-react";
-import { managedCapabilityDenial } from "@t3tools/client-runtime/contract-labels";
+import { managedCapabilityDenial } from "@fcode/client-runtime/contract-labels";
 import { useAuth } from "@clerk/react";
 import { Link } from "@tanstack/react-router";
 import {
-  AgentFeedbackMode,
   DEFAULT_WORKFLOW_SKIPPED_RUNS_KEPT,
   MAX_WORKFLOW_SKIPPED_RUNS_KEPT,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { T, useGT, useMessages } from "gt-react";
 
 import { hasCloudPublicConfig } from "~/cloud/publicConfig";
-import { useT3ConnectAuthPrompt } from "../clerk/useT3ConnectAuthPrompt";
+import { useFcodeConnectAuthPrompt } from "../clerk/useFcodeConnectAuthPrompt";
 import { Button } from "../ui/button";
 import { NumberField, NumberFieldGroup, NumberFieldInput } from "../ui/number-field";
-import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
 import { commitNumberFieldOnEnter } from "./commitNumberFieldOnEnter";
 import { ScopedSwitch } from "./ScopedSwitch";
@@ -39,7 +36,7 @@ export function LabsSettingsPanel() {
     <SettingsPageContainer>
       <SettingsSection id="beta" title={gt("Beta")}>
         <BoringSidebarRow />
-        {/* Clerk is only mounted when this build has T3 Connect. */}
+        {/* Clerk is only mounted when this build has fcode Connect. */}
         {hasCloudPublicConfig() ? <GuestLinksRowWithSignIn /> : <GuestLinksRow />}
         <LinkedEnvironmentsRow />
         <WorkflowsRow />
@@ -47,7 +44,6 @@ export function LabsSettingsPanel() {
         <PromptSuggestionsRow />
         <SimlockHostsRow />
         <FastWorktreeCheckoutRow />
-        <AgentFeedbackRow />
       </SettingsSection>
     </SettingsPageContainer>
   );
@@ -108,19 +104,19 @@ function BoringSidebarMultilineRow() {
   );
 }
 
-/** Signed out of T3 Connect, the row offers to sign in instead of its switch. */
+/** Signed out of fcode Connect, the row offers to sign in instead of its switch. */
 function GuestLinksRowWithSignIn() {
   const searchableSetting = useSearchableSetting();
   const gt = useGT();
   const { isSignedIn } = useAuth();
-  const { openAuthPrompt } = useT3ConnectAuthPrompt();
+  const { openAuthPrompt } = useFcodeConnectAuthPrompt();
   // `isSignedIn` is undefined until Clerk loads.
   if (isSignedIn !== false) return <GuestLinksRow />;
   return (
     <SettingsRow
       {...searchableSetting("guest-links")}
       description={gt(
-        "Share a thread with a guest who watches it live in a browser and sends messages you approve. Sign in to T3 Connect to use guest links.",
+        "Share a thread with a guest who watches it live in a browser and sends messages you approve. Sign in to fcode Connect to use guest links.",
       )}
       control={
         <Button size="sm" variant="outline" onClick={openAuthPrompt}>
@@ -139,7 +135,7 @@ function GuestLinksRow() {
   const messages = useMessages();
   const scope = useOptionalSettingsScope();
   const primaryPolicy = usePrimaryManagedPolicy();
-  // Guests arrive through T3 Connect, so a policy that turns Connect off turns this off too.
+  // Guests arrive through fcode Connect, so a policy that turns Connect off turns this off too.
   const connectDenial = firstManagedDenial(
     scope
       ? scope.connectedEnvironments.map((environment) => environment.serverConfig?.managedPolicy)
@@ -151,12 +147,12 @@ function GuestLinksRow() {
       serverScoped
       {...searchableSetting("guest-links")}
       settingKeys={["guestSharingEnabled"]}
-      // Turning guest links off still works without T3 Connect.
+      // Turning guest links off still works without fcode Connect.
       managed={settings.guestSharingEnabled ? undefined : connectDenial}
       description={
         <T>
           Share a thread with a guest who watches it live in a browser and sends messages you
-          approve. Needs T3 Connect: sign in and link this machine in{" "}
+          approve. Needs fcode Connect: sign in and link this machine in{" "}
           <Link to="/settings/access" className="underline underline-offset-2">
             Sharing & access
           </Link>
@@ -220,7 +216,7 @@ function WorkflowsRow() {
       {...searchableSetting("workflows-beta")}
       settingKeys={["workflowsEnabled"]}
       description={gt(
-        "Run multi-step workflows from files in the workflows folder of this server's T3 home. Open them from the command palette. While off, nothing in that folder runs; runs wait until it is on again.",
+        "Run multi-step workflows from files in the workflows folder of this server's fcode home. Open them from the command palette. While off, nothing in that folder runs; runs wait until it is on again.",
       )}
       control={
         <ScopedSwitch
@@ -341,7 +337,7 @@ function SimlockHostsRow() {
           <Link to="/settings/devices" className="underline underline-offset-2">
             Devices
           </Link>
-          . An alpha that may change or break. T3 Code never installs Simlock.
+          . An alpha that may change or break. fcode never installs Simlock.
         </T>
       }
       control={
@@ -381,7 +377,7 @@ function FastWorktreeCheckoutRow() {
       {...searchableSetting("worktree-fast-checkout")}
       settingKeys={["fastWorktreeCheckout"]}
       description={gt(
-        "On a Mac, clone new worktrees from a checkout cached in the T3 home folder instead of writing every file. Uses Git’s normal checkout when it can’t. Turning it off deletes the cache.",
+        "On a Mac, clone new worktrees from a checkout cached in the fcode home folder instead of writing every file. Uses Git’s normal checkout when it can’t. Turning it off deletes the cache.",
       )}
       control={
         <ScopedSwitch
@@ -390,77 +386,6 @@ function FastWorktreeCheckoutRow() {
           onCheckedChange={(checked) => updateSettings({ fastWorktreeCheckout: Boolean(checked) })}
           aria-label={gt("Fast worktree checkout")}
         />
-      }
-    />
-  );
-}
-
-/** Shows only when every machine in scope honors it; older servers drop the setting. */
-const AGENT_FEEDBACK_MODES = AgentFeedbackMode.literals;
-const AGENT_FEEDBACK_MODE_LABELS: Record<AgentFeedbackMode, string> = {
-  off: msg("Off"),
-  "on-request": msg("When I ask"),
-  auto: msg("Automatic"),
-};
-const AGENT_FEEDBACK_MODE_DESCRIPTIONS: Record<AgentFeedbackMode, string> = {
-  off: msg("Agents send no feedback to the T3 team."),
-  "on-request": msg(
-    "When you ask, agents show you a short report about T3 Code and send it to the T3 team if you approve.",
-  ),
-  auto: msg(
-    "Agents also report T3 Code problems they hit on their own, such as a T3 tool that failed.",
-  ),
-};
-
-function AgentFeedbackRow() {
-  const searchableSetting = useSearchableSetting();
-  const { scope, connectedEnvironments } = useSettingsScope();
-  const settings = useScopedSettings();
-  const updateSettings = useUpdateScopedSettings();
-  const gt = useGT();
-  const m = useMessages();
-  const mixed = useScopedSettingsMixed(["agentFeedback"]);
-  if (
-    scope.kind === "project" ||
-    scope.kind === "checkout" ||
-    connectedEnvironments.length === 0 ||
-    connectedEnvironments.some(
-      (environment) => environment.serverConfig?.environment.capabilities.agentFeedback !== true,
-    )
-  )
-    return null;
-  return (
-    <SettingsRow
-      serverScoped
-      {...searchableSetting("agent-feedback")}
-      settingKeys={["agentFeedback"]}
-      description={
-        mixed
-          ? gt("The selected machines use different agent feedback modes.")
-          : m(AGENT_FEEDBACK_MODE_DESCRIPTIONS[settings.agentFeedback.mode])
-      }
-      control={
-        <Select
-          value={mixed ? null : settings.agentFeedback.mode}
-          onValueChange={(mode) => {
-            if (mode !== null) updateSettings({ agentFeedback: { mode } });
-          }}
-        >
-          <SelectTrigger size="sm" className="w-full sm:w-40" aria-label={gt("Agent feedback")}>
-            <SelectValue>
-              {(mode: AgentFeedbackMode | null) =>
-                mode === null ? gt("Mixed") : m(AGENT_FEEDBACK_MODE_LABELS[mode])
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectPopup align="end" alignItemWithTrigger={false}>
-            {AGENT_FEEDBACK_MODES.map((mode) => (
-              <SelectItem key={mode} hideIndicator value={mode}>
-                {m(AGENT_FEEDBACK_MODE_LABELS[mode])}
-              </SelectItem>
-            ))}
-          </SelectPopup>
-        </Select>
       }
     />
   );

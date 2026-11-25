@@ -1,5 +1,5 @@
-import type { ThreadId } from "@t3tools/contracts";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+import type { ThreadId } from "@fcode/contracts";
+import * as NodeSqliteClient from "@fcode/shared/nodeSqliteClient";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
@@ -49,7 +49,7 @@ export interface ProjectionMaintenanceV2Shape {
 export class ProjectionMaintenanceV2 extends Context.Service<
   ProjectionMaintenanceV2,
   ProjectionMaintenanceV2Shape
->()("t3/orchestration-v2/ProjectionMaintenance/ProjectionMaintenanceV2") {}
+>()("fcode/orchestration-v2/ProjectionMaintenance/ProjectionMaintenanceV2") {}
 
 // Reconnect replay and command-id retries read this tail; older cursors resync from a snapshot.
 const RETAINED_EVENT_HISTORY = Duration.days(1);

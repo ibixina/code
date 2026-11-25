@@ -1,5 +1,5 @@
 import * as Console from "effect/Console";
-import type { ManagedPolicyDocument } from "@t3tools/contracts";
+import type { ManagedPolicyDocument } from "@fcode/contracts";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
@@ -42,14 +42,14 @@ const describePolicy = (
   return `${lines.join("\n")}\n`;
 };
 
-/** Whether the server running from this T3 home loaded the installed policy, which waits for a restart. */
+/** Whether the server running from this fcode home loaded the installed policy, which waits for a restart. */
 export const describeRunningServer = Effect.fn("cli.policy.describeRunningServer")(function* (
   statePath: string,
   installed: Effect.Success<ReturnType<typeof ManagedPolicy.loadedPolicy>>,
 ) {
   const state = yield* readPersistedServerRuntimeState(statePath);
   if (Option.isNone(state) || !isProcessAlive(state.value.pid)) {
-    return "No T3 Code server is running from this T3 home. The installed policy applies when one starts.";
+    return "No fcode server is running from this fcode home. The installed policy applies when one starts.";
   }
   const { pid, startedAt, managedPolicy: loaded } = state.value;
   const server = `The running server (pid ${pid}, started ${startedAt})`;
@@ -65,7 +65,7 @@ export const describeRunningServer = Effect.fn("cli.policy.describeRunningServer
     loaded === null
       ? "no policy"
       : `${loaded.organization}'s policy from ${loaded.source} (fingerprint ${loaded.fingerprint})`;
-  return `${server} loaded ${what}. Restart T3 Code to apply the installed policy.`;
+  return `${server} loaded ${what}. Restart fcode to apply the installed policy.`;
 });
 
 const showCommand = Command.make("show", projectLocationFlags).pipe(
@@ -113,7 +113,7 @@ const checkCommand = Command.make("check", {
 const SAMPLE_POLICY: ManagedPolicyDocument = {
   schemaVersion: 1,
   organization: "Example Corp",
-  limits: { maxRuntimeMode: "auto-accept-edits", clients: ["desktop"], telemetry: false },
+  limits: { maxRuntimeMode: "auto-accept-edits", clients: ["desktop"] },
 };
 
 const templatesCommand = Command.make("templates", {
@@ -154,9 +154,9 @@ const templatesCommand = Command.make("templates", {
       }
       const outputDir = yield* expandHomePath(directory);
       const files = [
-        [path.join(outputDir, "windows", "t3code.admx"), windowsAdmx()],
-        [path.join(outputDir, "windows", "en-US", "t3code.adml"), windowsAdml()],
-        [path.join(outputDir, "macos", "t3code.mobileconfig"), profile.profile],
+        [path.join(outputDir, "windows", "fcode.admx"), windowsAdmx()],
+        [path.join(outputDir, "windows", "en-US", "fcode.adml"), windowsAdml()],
+        [path.join(outputDir, "macos", "fcode.mobileconfig"), profile.profile],
       ] as const;
       for (const [file, contents] of files) {
         yield* fs.makeDirectory(path.dirname(file), { recursive: true });

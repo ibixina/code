@@ -21,7 +21,7 @@ import {
   isSecretReference,
   type SecretReference,
   withIdleCompaction,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Cache from "effect/Cache";
 import * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
@@ -29,7 +29,7 @@ import * as Deferred from "effect/Deferred";
 import * as Duration from "effect/Duration";
 import * as Equal from "effect/Equal";
 import * as Effect from "effect/Effect";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+import * as NodeSqliteClient from "@fcode/shared/nodeSqliteClient";
 import * as Exit from "effect/Exit";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
@@ -43,17 +43,17 @@ import * as Semaphore from "effect/Semaphore";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as SqlClient from "effect/sql/SqlClient";
-import { writeFileStringAtomically } from "@t3tools/shared/atomicWrite";
-import { resolveSymlinkTarget } from "@t3tools/shared/symlink";
+import { writeFileStringAtomically } from "@fcode/shared/atomicWrite";
+import { resolveSymlinkTarget } from "@fcode/shared/symlink";
 import * as ServerConfig from "./config.ts";
-import { type DeepPartial, deepMerge } from "@t3tools/shared/Struct";
-import { fromJsonStringPretty, fromLenientJson } from "@t3tools/shared/schemaJson";
+import { type DeepPartial, deepMerge } from "@fcode/shared/Struct";
+import { fromJsonStringPretty, fromLenientJson } from "@fcode/shared/schemaJson";
 import {
   applyServerSettingsPatch,
   deriveLegacyProjectOverrides,
   fallbackTextGenerationModelSelection,
   isModelSelectionProviderEnabled,
-} from "@t3tools/shared/serverSettings";
+} from "@fcode/shared/serverSettings";
 import * as ServerSecretStore from "./auth/ServerSecretStore.ts";
 import * as ManagedPolicy from "./policy/ManagedPolicy.ts";
 import { secretProviderDefinitions } from "./secrets/secretProviderDefinitions.ts";
@@ -75,7 +75,7 @@ import {
 export {
   resolveReviewGuideModelSelection,
   resolveSourceControlWriterModelSelection,
-} from "@t3tools/shared/serverSettings";
+} from "@fcode/shared/serverSettings";
 
 const encodeServerSettings = Schema.encodeEffect(ServerSettings);
 const encodeServerSettingsJson = Schema.encodeUnknownEffect(fromJsonStringPretty(ServerSettings));
@@ -298,7 +298,7 @@ export class ServerSettingsService extends Context.Service<
     /** Subscribe before reading a snapshot to retain changes before lazy stream startup. */
     readonly subscribeChanges: Effect.Effect<Stream.Stream<ServerSettings>, never, Scope.Scope>;
   }
->()("t3/serverSettings/ServerSettingsService") {
+>()("fcode/serverSettings/ServerSettingsService") {
   static readonly layerTest = (
     overrides: DeepPartial<ServerSettings> = {},
     managedPolicy?: ManagedPolicySummary,
@@ -399,19 +399,6 @@ const PersistedServerSettings = Schema.Struct({
 const decodeSettingsFileJsonExit = Schema.decodeUnknownExit(fromLenientJson(Schema.Unknown));
 const decodePersistedServerSettingsExit = Schema.decodeUnknownExit(PersistedServerSettings);
 
-/**
- * The settings on disk with the managed policy laid over them, read without the service: no
- * database, no write, no legacy migration. A missing or unreadable file reads as the defaults.
- */
-export const readServerSettingsFromDisk = Effect.gen(function* () {
-  const { settingsPath } = yield* ServerConfig.ServerConfig;
-  const fs = yield* FileSystem.FileSystem;
-  const { settings: managed } = yield* ManagedPolicy.ManagedPolicy;
-  const raw = yield* fs.readFileString(settingsPath).pipe(Effect.option);
-  return managed.applyLocks(
-    Option.isNone(raw) ? managed.defaults : decodeSettingsFile(raw.value, managed).settings,
-  );
-}).pipe(Effect.withSpan("ServerSettings.readServerSettingsFromDisk"));
 const LegacyProviderSettingsJson = fromLenientJson(
   Schema.Struct({
     providers: Schema.optionalKey(Schema.Record(Schema.String, Schema.Unknown)),

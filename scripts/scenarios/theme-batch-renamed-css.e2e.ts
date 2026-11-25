@@ -1,13 +1,13 @@
 import { expect } from "e2e";
 
-import { test, WEB } from "./t3.ts";
+import { test, WEB } from "./fcode.ts";
 
 test(
   "Renaming same-named themes during a batch import preserves their CSS",
   WEB,
-  async ({ t3, app, screen, browser }) => {
-    await t3.project("demo");
-    await t3.open("/settings/appearance");
+  async ({ fcode, app, screen, browser }) => {
+    await fcode.project("demo");
+    await fcode.open("/settings/appearance");
     await screen.getByRole("button", "Add theme", { exact: true }).tap();
 
     await browser.evaluate(() => {

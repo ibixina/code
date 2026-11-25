@@ -190,7 +190,7 @@ export const Organization = Schema.Struct({
 export interface Organization extends Schema.Struct.Type<typeof Organization.fields> {}
 
 /** A team is the primary organizational unit in Linear. Issues belong to teams, and each team has its own workflow states, cycles, labels, and settings. Teams can be public (visible to all workspace members), private (visible only to team members), or restricted (visible only within an enclosing private-team boundary). Teams can also have sub-teams that inherit settings from their parent. */
-export const T3ViewerTeamsNodesTeam = Schema.Struct({
+export const FcodeViewerTeamsNodesTeam = Schema.Struct({
   /** The unique identifier of the entity. */
   id: Shared.ID,
   /** The team's unique key, used as a prefix in issue identifiers (e.g., 'ENG' in 'ENG-123') and in URLs. */
@@ -198,15 +198,15 @@ export const T3ViewerTeamsNodesTeam = Schema.Struct({
   /** The team's name. */
   name: Schema.String
 })
-export interface T3ViewerTeamsNodesTeam extends Schema.Struct.Type<typeof T3ViewerTeamsNodesTeam.fields> {}
+export interface FcodeViewerTeamsNodesTeam extends Schema.Struct.Type<typeof FcodeViewerTeamsNodesTeam.fields> {}
 
-export const T3ViewerTeamsTeamConnection = Schema.Struct({
-  nodes: Schema.Array(T3ViewerTeamsNodesTeam)
+export const FcodeViewerTeamsTeamConnection = Schema.Struct({
+  nodes: Schema.Array(FcodeViewerTeamsNodesTeam)
 })
-export interface T3ViewerTeamsTeamConnection extends Schema.Struct.Type<typeof T3ViewerTeamsTeamConnection.fields> {}
+export interface FcodeViewerTeamsTeamConnection extends Schema.Struct.Type<typeof FcodeViewerTeamsTeamConnection.fields> {}
 
-/** `query T3Viewer` */
-export const T3Viewer = GraphQL.query("T3Viewer", {
+/** `query FcodeViewer` */
+export const FcodeViewer = GraphQL.query("FcodeViewer", {
   document: {
     variables: [],
     selections: [
@@ -224,12 +224,12 @@ export const T3Viewer = GraphQL.query("T3Viewer", {
     /** The authenticated user's workspace. */
     organization: Organization,
     /** All teams whose issues the user can access. This includes public teams and private teams the user is a member of. This may differ from `administrableTeams`, which returns teams whose settings the user can change but whose issues they don't necessarily have access to. */
-    teams: T3ViewerTeamsTeamConnection
+    teams: FcodeViewerTeamsTeamConnection
   })
 })
-export declare namespace T3Viewer {
-  export type Variables = typeof T3Viewer.variables.Type
-  export type Result = typeof T3Viewer.result.Type
+export declare namespace FcodeViewer {
+  export type Variables = typeof FcodeViewer.variables.Type
+  export type Result = typeof FcodeViewer.result.Type
 }
 
 export const IssueConnection = Schema.Struct({
@@ -238,8 +238,8 @@ export const IssueConnection = Schema.Struct({
 })
 export interface IssueConnection extends Schema.Struct.Type<typeof IssueConnection.fields> {}
 
-/** `query T3Issues` */
-export const T3Issues = GraphQL.query("T3Issues", {
+/** `query FcodeIssues` */
+export const FcodeIssues = GraphQL.query("FcodeIssues", {
   document: {
     variables: [
       { name: "first", body: "Int!" },
@@ -270,9 +270,9 @@ export const T3Issues = GraphQL.query("T3Issues", {
     issues: IssueConnection
   })
 })
-export declare namespace T3Issues {
-  export type Variables = typeof T3Issues.variables.Type
-  export type Result = typeof T3Issues.result.Type
+export declare namespace FcodeIssues {
+  export type Variables = typeof FcodeIssues.variables.Type
+  export type Result = typeof FcodeIssues.result.Type
 }
 
 export const TeamStatesWorkflowStateConnection = Schema.Struct({
@@ -348,7 +348,7 @@ export const IssueHistoryConnection = Schema.Struct({
 export interface IssueHistoryConnection extends Schema.Struct.Type<typeof IssueHistoryConnection.fields> {}
 
 /** An issue is the core work item in Linear. Issues belong to a team, have a workflow status, can be assigned to users, carry a priority level, and can be organized into projects and cycles. Issues support sub-issues (parent-child hierarchy up to 10 levels deep), labels, due dates, estimates, and SLA tracking. They can also be linked to other issues via relations, attached to releases, and tracked through their full history of changes. */
-export const T3IssueIssueIssue = Schema.Struct({
+export const FcodeIssueIssueIssue = Schema.Struct({
   /** The unique identifier of the entity. */
   id: Shared.ID,
   /** Issue's human readable identifier (e.g. ENG-123). */
@@ -393,10 +393,10 @@ export const T3IssueIssueIssue = Schema.Struct({
   /** History entries associated with the issue. */
   history: IssueHistoryConnection
 })
-export interface T3IssueIssueIssue extends Schema.Struct.Type<typeof T3IssueIssueIssue.fields> {}
+export interface FcodeIssueIssueIssue extends Schema.Struct.Type<typeof FcodeIssueIssueIssue.fields> {}
 
-/** `query T3Issue` */
-export const T3Issue = GraphQL.query("T3Issue", {
+/** `query FcodeIssue` */
+export const FcodeIssue = GraphQL.query("FcodeIssue", {
   document: {
     variables: [
       { name: "id", body: "String!" },
@@ -422,23 +422,23 @@ export const T3Issue = GraphQL.query("T3Issue", {
   },
   result: Schema.Struct({
     /** One specific issue, looked up by its unique identifier. */
-    issue: T3IssueIssueIssue
+    issue: FcodeIssueIssueIssue
   })
 })
-export declare namespace T3Issue {
-  export type Variables = typeof T3Issue.variables.Type
-  export type Result = typeof T3Issue.result.Type
+export declare namespace FcodeIssue {
+  export type Variables = typeof FcodeIssue.variables.Type
+  export type Result = typeof FcodeIssue.result.Type
 }
 
 /** An issue is the core work item in Linear. Issues belong to a team, have a workflow status, can be assigned to users, carry a priority level, and can be organized into projects and cycles. Issues support sub-issues (parent-child hierarchy up to 10 levels deep), labels, due dates, estimates, and SLA tracking. They can also be linked to other issues via relations, attached to releases, and tracked through their full history of changes. */
-export const T3CommentsIssueIssue = Schema.Struct({
+export const FcodeCommentsIssueIssue = Schema.Struct({
   /** Comments associated with the issue, including inline comments on the issue's description. */
   comments: CommentConnection
 })
-export interface T3CommentsIssueIssue extends Schema.Struct.Type<typeof T3CommentsIssueIssue.fields> {}
+export interface FcodeCommentsIssueIssue extends Schema.Struct.Type<typeof FcodeCommentsIssueIssue.fields> {}
 
-/** `query T3Comments` */
-export const T3Comments = GraphQL.query("T3Comments", {
+/** `query FcodeComments` */
+export const FcodeComments = GraphQL.query("FcodeComments", {
   document: {
     variables: [
       { name: "id", body: "String!" },
@@ -463,12 +463,12 @@ export const T3Comments = GraphQL.query("T3Comments", {
   },
   result: Schema.Struct({
     /** One specific issue, looked up by its unique identifier. */
-    issue: T3CommentsIssueIssue
+    issue: FcodeCommentsIssueIssue
   })
 })
-export declare namespace T3Comments {
-  export type Variables = typeof T3Comments.variables.Type
-  export type Result = typeof T3Comments.result.Type
+export declare namespace FcodeComments {
+  export type Variables = typeof FcodeComments.variables.Type
+  export type Result = typeof FcodeComments.result.Type
 }
 
 export const NodesStatesWorkflowStateConnection = Schema.Struct({
@@ -514,7 +514,7 @@ export const TemplateConnection = Schema.Struct({
 export interface TemplateConnection extends Schema.Struct.Type<typeof TemplateConnection.fields> {}
 
 /** A team is the primary organizational unit in Linear. Issues belong to teams, and each team has its own workflow states, cycles, labels, and settings. Teams can be public (visible to all workspace members), private (visible only to team members), or restricted (visible only within an enclosing private-team boundary). Teams can also have sub-teams that inherit settings from their parent. */
-export const T3TeamTeamsNodesTeam = Schema.Struct({
+export const FcodeTeamTeamsNodesTeam = Schema.Struct({
   /** The unique identifier of the entity. */
   id: Shared.ID,
   /** The team's unique key, used as a prefix in issue identifiers (e.g., 'ENG' in 'ENG-123') and in URLs. */
@@ -530,15 +530,15 @@ export const T3TeamTeamsNodesTeam = Schema.Struct({
   /** Templates associated with the team. */
   templates: TemplateConnection
 })
-export interface T3TeamTeamsNodesTeam extends Schema.Struct.Type<typeof T3TeamTeamsNodesTeam.fields> {}
+export interface FcodeTeamTeamsNodesTeam extends Schema.Struct.Type<typeof FcodeTeamTeamsNodesTeam.fields> {}
 
-export const T3TeamTeamsTeamConnection = Schema.Struct({
-  nodes: Schema.Array(T3TeamTeamsNodesTeam)
+export const FcodeTeamTeamsTeamConnection = Schema.Struct({
+  nodes: Schema.Array(FcodeTeamTeamsNodesTeam)
 })
-export interface T3TeamTeamsTeamConnection extends Schema.Struct.Type<typeof T3TeamTeamsTeamConnection.fields> {}
+export interface FcodeTeamTeamsTeamConnection extends Schema.Struct.Type<typeof FcodeTeamTeamsTeamConnection.fields> {}
 
-/** `query T3Team` */
-export const T3Team = GraphQL.query("T3Team", {
+/** `query FcodeTeam` */
+export const FcodeTeam = GraphQL.query("FcodeTeam", {
   document: {
     variables: [
       { name: "key", body: "String!" }
@@ -560,14 +560,14 @@ export const T3Team = GraphQL.query("T3Team", {
   },
   result: Schema.Struct({
     /** All teams whose issues the user can access. This includes public teams and private teams the user is a member of. This may differ from `administrableTeams`, which returns teams whose settings the user can change but whose issues they don't necessarily have access to. */
-    teams: T3TeamTeamsTeamConnection,
+    teams: FcodeTeamTeamsTeamConnection,
     /** All issue labels. Returns a paginated list of labels visible to the authenticated user, including both workspace-level and team-scoped labels. */
     issueLabels: NodesLabelsIssueLabelConnection
   })
 })
-export declare namespace T3Team {
-  export type Variables = typeof T3Team.variables.Type
-  export type Result = typeof T3Team.result.Type
+export declare namespace FcodeTeam {
+  export type Variables = typeof FcodeTeam.variables.Type
+  export type Result = typeof FcodeTeam.result.Type
 }
 
 /** An issue is the core work item in Linear. Issues belong to a team, have a workflow status, can be assigned to users, carry a priority level, and can be organized into projects and cycles. Issues support sub-issues (parent-child hierarchy up to 10 levels deep), labels, due dates, estimates, and SLA tracking. They can also be linked to other issues via relations, attached to releases, and tracked through their full history of changes. */
@@ -588,8 +588,8 @@ export const IssueCreateIssuePayload = Schema.Struct({
 })
 export interface IssueCreateIssuePayload extends Schema.Struct.Type<typeof IssueCreateIssuePayload.fields> {}
 
-/** `mutation T3IssueCreate` */
-export const T3IssueCreate = GraphQL.mutation("T3IssueCreate", {
+/** `mutation FcodeIssueCreate` */
+export const FcodeIssueCreate = GraphQL.mutation("FcodeIssueCreate", {
   document: {
     variables: [
       { name: "input", body: "IssueCreateInput!" }
@@ -607,9 +607,9 @@ export const T3IssueCreate = GraphQL.mutation("T3IssueCreate", {
     issueCreate: IssueCreateIssuePayload
   })
 })
-export declare namespace T3IssueCreate {
-  export type Variables = typeof T3IssueCreate.variables.Type
-  export type Result = typeof T3IssueCreate.result.Type
+export declare namespace FcodeIssueCreate {
+  export type Variables = typeof FcodeIssueCreate.variables.Type
+  export type Result = typeof FcodeIssueCreate.result.Type
 }
 
 /** The result of an issue mutation, containing the created or updated issue and a success indicator. */
@@ -619,8 +619,8 @@ export const IssueUpdateIssuePayload = Schema.Struct({
 })
 export interface IssueUpdateIssuePayload extends Schema.Struct.Type<typeof IssueUpdateIssuePayload.fields> {}
 
-/** `mutation T3IssueUpdate` */
-export const T3IssueUpdate = GraphQL.mutation("T3IssueUpdate", {
+/** `mutation FcodeIssueUpdate` */
+export const FcodeIssueUpdate = GraphQL.mutation("FcodeIssueUpdate", {
   document: {
     variables: [
       { name: "id", body: "String!" },
@@ -640,9 +640,9 @@ export const T3IssueUpdate = GraphQL.mutation("T3IssueUpdate", {
     issueUpdate: IssueUpdateIssuePayload
   })
 })
-export declare namespace T3IssueUpdate {
-  export type Variables = typeof T3IssueUpdate.variables.Type
-  export type Result = typeof T3IssueUpdate.result.Type
+export declare namespace FcodeIssueUpdate {
+  export type Variables = typeof FcodeIssueUpdate.variables.Type
+  export type Result = typeof FcodeIssueUpdate.result.Type
 }
 
 /** The result of a comment mutation. */
@@ -652,8 +652,8 @@ export const CommentPayload = Schema.Struct({
 })
 export interface CommentPayload extends Schema.Struct.Type<typeof CommentPayload.fields> {}
 
-/** `mutation T3CommentCreate` */
-export const T3CommentCreate = GraphQL.mutation("T3CommentCreate", {
+/** `mutation FcodeCommentCreate` */
+export const FcodeCommentCreate = GraphQL.mutation("FcodeCommentCreate", {
   document: {
     variables: [
       { name: "input", body: "CommentCreateInput!" }
@@ -671,9 +671,9 @@ export const T3CommentCreate = GraphQL.mutation("T3CommentCreate", {
     commentCreate: CommentPayload
   })
 })
-export declare namespace T3CommentCreate {
-  export type Variables = typeof T3CommentCreate.variables.Type
-  export type Result = typeof T3CommentCreate.result.Type
+export declare namespace FcodeCommentCreate {
+  export type Variables = typeof FcodeCommentCreate.variables.Type
+  export type Result = typeof FcodeCommentCreate.result.Type
 }
 
 /** The result of a reaction mutation. */
@@ -683,8 +683,8 @@ export const ReactionPayload = Schema.Struct({
 })
 export interface ReactionPayload extends Schema.Struct.Type<typeof ReactionPayload.fields> {}
 
-/** `mutation T3ReactionCreate` */
-export const T3ReactionCreate = GraphQL.mutation("T3ReactionCreate", {
+/** `mutation FcodeReactionCreate` */
+export const FcodeReactionCreate = GraphQL.mutation("FcodeReactionCreate", {
   document: {
     variables: [
       { name: "input", body: "ReactionCreateInput!" }
@@ -702,9 +702,9 @@ export const T3ReactionCreate = GraphQL.mutation("T3ReactionCreate", {
     reactionCreate: ReactionPayload
   })
 })
-export declare namespace T3ReactionCreate {
-  export type Variables = typeof T3ReactionCreate.variables.Type
-  export type Result = typeof T3ReactionCreate.result.Type
+export declare namespace FcodeReactionCreate {
+  export type Variables = typeof FcodeReactionCreate.variables.Type
+  export type Result = typeof FcodeReactionCreate.result.Type
 }
 
 /** A generic payload return from entity deletion mutations. */
@@ -714,8 +714,8 @@ export const DeletePayload = Schema.Struct({
 })
 export interface DeletePayload extends Schema.Struct.Type<typeof DeletePayload.fields> {}
 
-/** `mutation T3ReactionDelete` */
-export const T3ReactionDelete = GraphQL.mutation("T3ReactionDelete", {
+/** `mutation FcodeReactionDelete` */
+export const FcodeReactionDelete = GraphQL.mutation("FcodeReactionDelete", {
   document: {
     variables: [
       { name: "id", body: "String!" }
@@ -733,20 +733,20 @@ export const T3ReactionDelete = GraphQL.mutation("T3ReactionDelete", {
     reactionDelete: DeletePayload
   })
 })
-export declare namespace T3ReactionDelete {
-  export type Variables = typeof T3ReactionDelete.variables.Type
-  export type Result = typeof T3ReactionDelete.result.Type
+export declare namespace FcodeReactionDelete {
+  export type Variables = typeof FcodeReactionDelete.variables.Type
+  export type Result = typeof FcodeReactionDelete.result.Type
 }
 
 /** An issue is the core work item in Linear. Issues belong to a team, have a workflow status, can be assigned to users, carry a priority level, and can be organized into projects and cycles. Issues support sub-issues (parent-child hierarchy up to 10 levels deep), labels, due dates, estimates, and SLA tracking. They can also be linked to other issues via relations, attached to releases, and tracked through their full history of changes. */
-export const T3IssueReactionsIssueIssue = Schema.Struct({
+export const FcodeIssueReactionsIssueIssue = Schema.Struct({
   /** Reactions associated with the issue. */
   reactions: Schema.Array(LinearReaction)
 })
-export interface T3IssueReactionsIssueIssue extends Schema.Struct.Type<typeof T3IssueReactionsIssueIssue.fields> {}
+export interface FcodeIssueReactionsIssueIssue extends Schema.Struct.Type<typeof FcodeIssueReactionsIssueIssue.fields> {}
 
-/** `query T3IssueReactions` */
-export const T3IssueReactions = GraphQL.query("T3IssueReactions", {
+/** `query FcodeIssueReactions` */
+export const FcodeIssueReactions = GraphQL.query("FcodeIssueReactions", {
   document: {
     variables: [
       { name: "id", body: "String!" }
@@ -764,12 +764,12 @@ export const T3IssueReactions = GraphQL.query("T3IssueReactions", {
   },
   result: Schema.Struct({
     /** One specific issue, looked up by its unique identifier. */
-    issue: T3IssueReactionsIssueIssue
+    issue: FcodeIssueReactionsIssueIssue
   })
 })
-export declare namespace T3IssueReactions {
-  export type Variables = typeof T3IssueReactions.variables.Type
-  export type Result = typeof T3IssueReactions.result.Type
+export declare namespace FcodeIssueReactions {
+  export type Variables = typeof FcodeIssueReactions.variables.Type
+  export type Result = typeof FcodeIssueReactions.result.Type
 }
 
 /** An issue is the core work item in Linear. Issues belong to a team, have a workflow status, can be assigned to users, carry a priority level, and can be organized into projects and cycles. Issues support sub-issues (parent-child hierarchy up to 10 levels deep), labels, due dates, estimates, and SLA tracking. They can also be linked to other issues via relations, attached to releases, and tracked through their full history of changes. */
@@ -788,8 +788,8 @@ export const Comment = Schema.Struct({
 })
 export interface Comment extends Schema.Struct.Type<typeof Comment.fields> {}
 
-/** `query T3CommentReactions` */
-export const T3CommentReactions = GraphQL.query("T3CommentReactions", {
+/** `query FcodeCommentReactions` */
+export const FcodeCommentReactions = GraphQL.query("FcodeCommentReactions", {
   document: {
     variables: [
       { name: "id", body: "String!" }
@@ -810,10 +810,10 @@ export const T3CommentReactions = GraphQL.query("T3CommentReactions", {
     comment: Comment
   })
 })
-export declare namespace T3CommentReactions {
-  export type Variables = typeof T3CommentReactions.variables.Type
-  export type Result = typeof T3CommentReactions.result.Type
+export declare namespace FcodeCommentReactions {
+  export type Variables = typeof FcodeCommentReactions.variables.Type
+  export type Result = typeof FcodeCommentReactions.result.Type
 }
 
 /** Every operation in LinearApi.graphql. */
-export const LinearApiGraphQLGroup = GraphQLGroup.make(T3Viewer, T3Issues, T3Issue, T3Comments, T3Team, T3IssueCreate, T3IssueUpdate, T3CommentCreate, T3ReactionCreate, T3ReactionDelete, T3IssueReactions, T3CommentReactions)
+export const LinearApiGraphQLGroup = GraphQLGroup.make(FcodeViewer, FcodeIssues, FcodeIssue, FcodeComments, FcodeTeam, FcodeIssueCreate, FcodeIssueUpdate, FcodeCommentCreate, FcodeReactionCreate, FcodeReactionDelete, FcodeIssueReactions, FcodeCommentReactions)

@@ -1,6 +1,6 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it } from "@effect/vitest";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Option from "effect/Option";
@@ -25,7 +25,7 @@ const environmentFor = (
     baseDir: input.baseDir,
     stateDir: path.join(input.baseDir, "userdata"),
     desktopSettingsPath: path.join(input.baseDir, "userdata", "desktop-settings.json"),
-    serverRoot: "/opt/T3 Code/resources/app.asar",
+    serverRoot: "/opt/fcode/resources/app.asar",
     appImagePath: Option.none(),
   } as unknown as DesktopEnvironment.DesktopEnvironment["Service"]);
 
@@ -42,7 +42,7 @@ const commandIn = (
   Effect.gen(function* () {
     const path = yield* Path.Path;
     const fs = yield* FileSystem.FileSystem;
-    const baseDir = input.baseDir ?? path.join(input.home, ".t3");
+    const baseDir = input.baseDir ?? path.join(input.home, ".fcode");
     yield* fs.makeDirectory(path.join(baseDir, "userdata"), { recursive: true });
     const make = DesktopCliCommand.make.pipe(
       Effect.provideService(
@@ -67,8 +67,8 @@ const fakePowerShell = (initial: string, inherited: Record<string, string> = {})
       const env = { ...(options.extendEnv ? inherited : {}), ...options.env };
       let exitCode = 0;
       let stdout = "";
-      if (env.T3_SET === "1") {
-        registry.path = env.T3_PATH ?? "";
+      if (env.FCODE_SET === "1") {
+        registry.path = env.FCODE_PATH ?? "";
         registry.writes += 1;
       } else if (registry.failReads) {
         exitCode = 1;
@@ -101,7 +101,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
       const command = yield* commandIn({ home, env });
-      const link = path.join(home, ".local", "bin", "t3");
+      const link = path.join(home, ".local", "bin", "fcode");
 
       expect(yield* command.state).toEqual({
         supported: true,
@@ -113,9 +113,9 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       expect((yield* command.state).installedPath).toBe(link);
       const installed = yield* command.install;
       expect(installed.installedPath).toBe(link);
-      expect(installed.launcherPath).toBe(path.join(home, ".t3", "bin", "t3"));
+      expect(installed.launcherPath).toBe(path.join(home, ".fcode", "bin", "fcode"));
       expect(installed.pathSetup).toEqual({ file: "~/.zshrc", added: false });
-      expect(yield* fs.readLink(link)).toBe(path.join(home, ".t3", "bin", "t3"));
+      expect(yield* fs.readLink(link)).toBe(path.join(home, ".fcode", "bin", "fcode"));
       expect((yield* command.install).installedPath).toBe(link);
 
       // Add to PATH appends one line, once, and keeps a final line with no newline intact.
@@ -129,12 +129,12 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       yield* Effect.all([command.addToPath, command.addToPath], { concurrency: "unbounded" });
       expect((yield* command.addToPath).pathSetup).toEqual({ file: "~/.zshrc", added: true });
       expect(yield* fs.readFileString(zshrc)).toBe(
-        '# mine\n# Added by T3 Code\nexport PATH="$PATH:$HOME/.local/bin"\n',
+        '# mine\n# Added by fcode\nexport PATH="$PATH:$HOME/.local/bin"\n',
       );
 
       expect((yield* command.uninstall).installedPath).toBeNull();
       expect(yield* fs.exists(link)).toBe(false);
-      expect(yield* fs.exists(path.join(home, ".t3", "bin", "t3"))).toBe(true);
+      expect(yield* fs.exists(path.join(home, ".fcode", "bin", "fcode"))).toBe(true);
       // Removed stays removed: first launch never installs again.
       yield* command.installOnFirstLaunch;
       expect(yield* fs.exists(link)).toBe(false);
@@ -145,81 +145,81 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       yield* later.install;
       yield* later.uninstall;
       yield* later.installOnFirstLaunch;
-      expect(yield* fs.exists(path.join(laterHome, ".local", "bin", "t3"))).toBe(false);
+      expect(yield* fs.exists(path.join(laterHome, ".local", "bin", "fcode"))).toBe(false);
 
-      // An app that ran before left its settings or launcher. Its user may have removed t3 or
+      // An app that ran before left its settings or launcher. Its user may have removed fcode or
       // chosen another, so first launch leaves it to Settings, where Install still works.
-      for (const left of ["userdata/desktop-settings.json", "bin/t3"]) {
+      for (const left of ["userdata/desktop-settings.json", "bin/fcode"]) {
         const upgradedHome = yield* fs.makeTempDirectoryScoped();
-        const leftFile = path.join(upgradedHome, ".t3", left);
+        const leftFile = path.join(upgradedHome, ".fcode", left);
         yield* fs.makeDirectory(path.dirname(leftFile), { recursive: true });
         yield* fs.writeFileString(leftFile, `#!/bin/sh\n# ${DesktopCliShim.MARKER}\n`);
         const upgraded = yield* commandIn({ home: upgradedHome, env });
         yield* upgraded.installOnFirstLaunch;
-        const upgradedLink = path.join(upgradedHome, ".local", "bin", "t3");
+        const upgradedLink = path.join(upgradedHome, ".local", "bin", "fcode");
         expect(yield* fs.exists(upgradedLink)).toBe(false);
         expect((yield* upgraded.install).installedPath).toBe(upgradedLink);
       }
     }),
   );
 
-  it.effect("never replaces or removes a t3 it did not create", () =>
+  it.effect("never replaces or removes a fcode it did not create", () =>
     Effect.gen(function* () {
       const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
       const command = yield* commandIn({ home, env });
-      const theirs = path.join(home, ".local", "bin", "t3");
+      const theirs = path.join(home, ".local", "bin", "fcode");
       yield* fs.makeDirectory(path.dirname(theirs), { recursive: true });
-      yield* fs.writeFileString(theirs, "npm's t3\n");
+      yield* fs.writeFileString(theirs, "npm's fcode\n");
       yield* fs.makeDirectory(path.join(home, "bin"), { recursive: true });
-      yield* fs.symlink(path.join(home, "gone"), path.join(home, "bin", "t3"));
+      yield* fs.symlink(path.join(home, "gone"), path.join(home, "bin", "fcode"));
 
       const error = yield* Effect.flip(command.install);
-      expect(error.message).toContain("Another t3 command is already in");
+      expect(error.message).toContain("Another fcode command is already in");
       yield* command.uninstall;
-      expect(yield* fs.readFileString(theirs)).toBe("npm's t3\n");
-      expect(yield* fs.readLink(path.join(home, "bin", "t3"))).toBe(path.join(home, "gone"));
+      expect(yield* fs.readFileString(theirs)).toBe("npm's fcode\n");
+      expect(yield* fs.readLink(path.join(home, "bin", "fcode"))).toBe(path.join(home, "gone"));
 
-      // A fresh install beside someone else's t3 (even off PATH or a dangling link) adds no second
-      // t3 in ~/bin.
+      // A fresh install beside someone else's fcode (even off PATH or a dangling link) adds no second
+      // fcode in ~/bin.
       for (const dangling of [false, true]) {
         const besideHome = yield* fs.makeTempDirectoryScoped();
-        const other = path.join(besideHome, ".local", "bin", "t3");
+        const other = path.join(besideHome, ".local", "bin", "fcode");
         yield* fs.makeDirectory(path.dirname(other), { recursive: true });
         yield* dangling
           ? fs.symlink(path.join(besideHome, "gone"), other)
-          : fs.writeFileString(other, "npm's t3\n");
+          : fs.writeFileString(other, "npm's fcode\n");
         yield* (yield* commandIn({ home: besideHome })).installOnFirstLaunch;
-        expect(yield* fs.exists(path.join(besideHome, "bin", "t3"))).toBe(false);
+        expect(yield* fs.exists(path.join(besideHome, "bin", "fcode"))).toBe(false);
       }
 
-      const launcher = path.join(home, ".t3", "bin", "t3");
-      yield* fs.writeFileString(launcher, "npm's t3\n");
+      const launcher = path.join(home, ".fcode", "bin", "fcode");
+      yield* fs.writeFileString(launcher, "npm's fcode\n");
       env.PATH = path.dirname(launcher);
       expect(yield* command.state).toMatchObject({ onPath: false, shadowedBy: launcher });
       expect((yield* Effect.flip(command.install)).message).toContain("Could not set up");
       yield* command.uninstall;
-      expect(yield* fs.readFileString(launcher)).toBe("npm's t3\n");
+      expect(yield* fs.readFileString(launcher)).toBe("npm's fcode\n");
     }),
   );
 
-  it.effect("finds and removes a link left by a previous T3 home", () =>
+  it.effect("finds and removes a link left by a previous fcode home", () =>
     Effect.gen(function* () {
       const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
-      const before = yield* commandIn({ home, baseDir: path.join(home, "old-t3"), env });
+      const before = yield* commandIn({ home, baseDir: path.join(home, "old-fcode"), env });
       const link = (yield* before.install).installedPath;
 
-      const after = yield* commandIn({ home, baseDir: path.join(home, "new-t3"), env });
+      const after = yield* commandIn({ home, baseDir: path.join(home, "new-fcode"), env });
       // A first launch leaves another home's command alone; only Install takes it over.
       yield* after.installOnFirstLaunch;
-      expect(yield* fs.readLink(link!)).toBe(path.join(home, "old-t3", "bin", "t3"));
+      expect(yield* fs.readLink(link!)).toBe(path.join(home, "old-fcode", "bin", "fcode"));
       // On PATH, it runs the other home's launcher. Settings offers Install (not Remove, and not
-      // "another t3 runs first"), which updates that link in place.
+      // "another fcode runs first"), which updates that link in place.
       env.PATH = path.dirname(link!);
       expect(yield* after.state).toMatchObject({ installedPath: null, onPath: false });
       expect((yield* after.state).shadowedBy).toBeUndefined();
@@ -228,41 +228,41 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       expect((yield* after.state).pathSetup).toBeUndefined();
       yield* Effect.flip(after.addToPath);
       expect(yield* fs.exists(path.join(home, ".zshrc"))).toBe(false);
-      // Behind another t3 the install fails, and the old link still works.
+      // Behind another fcode the install fails, and the old link still works.
       const shadow = path.join(home, "shadow");
       yield* fs.makeDirectory(shadow);
-      yield* fs.writeFileString(path.join(shadow, "t3"), "#!/bin/sh\n", { mode: 0o755 });
+      yield* fs.writeFileString(path.join(shadow, "fcode"), "#!/bin/sh\n", { mode: 0o755 });
       env.PATH = shadow;
       yield* Effect.flip(after.install);
-      expect(yield* fs.readLink(link!)).toBe(path.join(home, "old-t3", "bin", "t3"));
+      expect(yield* fs.readLink(link!)).toBe(path.join(home, "old-fcode", "bin", "fcode"));
       // Install takes it over, also with its folder first on PATH.
       env.PATH = path.dirname(link!);
       expect((yield* after.install).installedPath).toBe(link);
-      expect(yield* fs.readLink(link!)).toBe(path.join(home, "new-t3", "bin", "t3"));
+      expect(yield* fs.readLink(link!)).toBe(path.join(home, "new-fcode", "bin", "fcode"));
       env.PATH = "";
       yield* after.uninstall;
-      expect(yield* fs.exists(path.join(home, ".local", "bin", "t3"))).toBe(false);
-      expect(yield* fs.exists(path.join(home, "bin", "t3"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, ".local", "bin", "fcode"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, "bin", "fcode"))).toBe(false);
 
       // A folder already on PATH wins, even written with a trailing slash.
       env.PATH = `${path.join(home, "bin")}/`;
-      expect((yield* after.install).installedPath).toBe(path.join(home, "bin", "t3"));
+      expect((yield* after.install).installedPath).toBe(path.join(home, "bin", "fcode"));
 
       // An old link of ours is updated where it is, not moved to a folder that may be off PATH.
-      yield* fs.writeFileString(path.join(home, "bin", "t3.staging"), "mine");
-      yield* fs.remove(path.join(home, "bin", "t3"));
-      yield* fs.symlink(path.join(home, "old-t3", "bin", "t3"), path.join(home, "bin", "t3"));
+      yield* fs.writeFileString(path.join(home, "bin", "fcode.staging"), "mine");
+      yield* fs.remove(path.join(home, "bin", "fcode"));
+      yield* fs.symlink(path.join(home, "old-fcode", "bin", "fcode"), path.join(home, "bin", "fcode"));
       env.PATH = "";
-      expect((yield* after.install).installedPath).toBe(path.join(home, "bin", "t3"));
-      expect(yield* fs.readLink(path.join(home, "bin", "t3"))).toBe(
-        path.join(home, "new-t3", "bin", "t3"),
+      expect((yield* after.install).installedPath).toBe(path.join(home, "bin", "fcode"));
+      expect(yield* fs.readLink(path.join(home, "bin", "fcode"))).toBe(
+        path.join(home, "new-fcode", "bin", "fcode"),
       );
-      expect(yield* fs.exists(path.join(home, ".local", "bin", "t3"))).toBe(false);
-      expect(yield* fs.readFileString(path.join(home, "bin", "t3.staging"))).toBe("mine");
+      expect(yield* fs.exists(path.join(home, ".local", "bin", "fcode"))).toBe(false);
+      expect(yield* fs.readFileString(path.join(home, "bin", "fcode.staging"))).toBe("mine");
     }),
   );
 
-  it.effect("refuses to install behind another t3 that runs first", () =>
+  it.effect("refuses to install behind another fcode that runs first", () =>
     Effect.gen(function* () {
       const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
       const fs = yield* FileSystem.FileSystem;
@@ -270,26 +270,26 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const home = yield* fs.makeTempDirectoryScoped();
       const shadow = path.join(home, "shadow");
       yield* fs.makeDirectory(shadow);
-      yield* fs.writeFileString(path.join(shadow, "t3"), "#!/bin/sh\n", { mode: 0o755 });
+      yield* fs.writeFileString(path.join(shadow, "fcode"), "#!/bin/sh\n", { mode: 0o755 });
       env.PATH = [shadow, `${path.join(home, ".local", "bin")}/`].join(":");
 
       const command = yield* commandIn({ home, env });
-      const theirs = path.join(shadow, "t3");
+      const theirs = path.join(shadow, "fcode");
       expect((yield* command.state).shadowedBy).toBe(theirs);
       const error = yield* Effect.flip(command.install);
       expect(error.message).toContain(theirs);
       yield* command.installOnFirstLaunch;
-      expect(yield* fs.exists(path.join(home, ".local", "bin", "t3"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, ".local", "bin", "fcode"))).toBe(false);
       expect(yield* fs.readFileString(theirs)).toBe("#!/bin/sh\n");
 
-      // Its folder is already on PATH behind theirs; adding it again would change which t3 runs.
+      // Its folder is already on PATH behind theirs; adding it again would change which fcode runs.
       yield* fs.makeDirectory(path.join(home, ".local", "bin"), { recursive: true });
       yield* fs.symlink(
-        path.join(home, ".t3", "bin", "t3"),
-        path.join(home, ".local", "bin", "t3"),
+        path.join(home, ".fcode", "bin", "fcode"),
+        path.join(home, ".local", "bin", "fcode"),
       );
       const behind = yield* command.state;
-      expect(behind.installedPath).toBe(path.join(home, ".local", "bin", "t3"));
+      expect(behind.installedPath).toBe(path.join(home, ".local", "bin", "fcode"));
       expect(behind.pathSetup).toBeUndefined();
       // Off PATH behind theirs, adding the folder would still put ours first.
       env.PATH = shadow;
@@ -297,23 +297,23 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       yield* Effect.flip(command.addToPath);
       expect(yield* fs.exists(path.join(home, ".zshrc"))).toBe(false);
       env.PATH = [shadow, `${path.join(home, ".local", "bin")}/`].join(":");
-      yield* fs.remove(path.join(home, ".local", "bin", "t3"));
+      yield* fs.remove(path.join(home, ".local", "bin", "fcode"));
 
       // A first-launch install that failed is not retried behind the user's back.
       yield* fs.remove(theirs);
       yield* command.installOnFirstLaunch;
-      expect(yield* fs.exists(path.join(home, ".local", "bin", "t3"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, ".local", "bin", "fcode"))).toBe(false);
       const installed = yield* command.install;
       expect(installed).toMatchObject({
         onPath: true,
-        installedPath: path.join(home, ".local", "bin", "t3"),
+        installedPath: path.join(home, ".local", "bin", "fcode"),
       });
       expect(installed.shadowedBy).toBeUndefined();
     }),
   );
 
   it.effect.skipIf(HostProcess.Platform.defaultValue() === "win32")(
-    "skips a t3 directory or a file this user cannot execute",
+    "skips a fcode directory or a file this user cannot execute",
     () =>
       Effect.gen(function* () {
         const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
@@ -323,36 +323,36 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
         const folder = path.join(home, "folder");
         const plain = path.join(home, "plain");
         const shadow = path.join(home, "shadow");
-        yield* fs.makeDirectory(path.join(folder, "t3"), { recursive: true });
+        yield* fs.makeDirectory(path.join(folder, "fcode"), { recursive: true });
         yield* fs.makeDirectory(plain);
-        yield* fs.writeFileString(path.join(plain, "t3"), "notes\n");
+        yield* fs.writeFileString(path.join(plain, "fcode"), "notes\n");
         // Root can execute mode 0o601; other users must honor the owner permissions.
-        yield* fs.chmod(path.join(plain, "t3"), process.getuid?.() === 0 ? 0o600 : 0o601);
+        yield* fs.chmod(path.join(plain, "fcode"), process.getuid?.() === 0 ? 0o600 : 0o601);
         yield* fs.makeDirectory(shadow);
-        yield* fs.writeFileString(path.join(shadow, "t3"), "#!/bin/sh\n", { mode: 0o755 });
+        yield* fs.writeFileString(path.join(shadow, "fcode"), "#!/bin/sh\n", { mode: 0o755 });
         env.PATH = [folder, plain, shadow, path.join(home, ".local", "bin")].join(":");
 
         const command = yield* commandIn({ home, env });
-        expect((yield* command.state).shadowedBy).toBe(path.join(shadow, "t3"));
+        expect((yield* command.state).shadowedBy).toBe(path.join(shadow, "fcode"));
 
         const error = yield* Effect.flip(command.install);
-        expect(error.message).toContain(path.join(shadow, "t3"));
+        expect(error.message).toContain(path.join(shadow, "fcode"));
 
         yield* fs.remove(shadow, { recursive: true });
         expect(yield* command.install).toMatchObject({
           onPath: true,
-          installedPath: path.join(home, ".local", "bin", "t3"),
+          installedPath: path.join(home, ".local", "bin", "fcode"),
         });
       }),
   );
 
-  it.effect("does not treat its own launcher as another t3 when its folder is first on PATH", () =>
+  it.effect("does not treat its own launcher as another fcode when its folder is first on PATH", () =>
     Effect.gen(function* () {
       const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
-      const launcher = path.join(home, ".t3", "bin", "t3");
+      const launcher = path.join(home, ".fcode", "bin", "fcode");
       env.PATH = [path.dirname(launcher), path.join(home, ".local", "bin")].join(":");
 
       const command = yield* commandIn({ home, env });
@@ -361,7 +361,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       expect(yield* fs.exists(launcher)).toBe(true);
       expect(installed).toMatchObject({
         onPath: true,
-        installedPath: path.join(home, ".local", "bin", "t3"),
+        installedPath: path.join(home, ".local", "bin", "fcode"),
       });
       expect(installed.shadowedBy).toBeUndefined();
       expect(yield* command.state).toEqual(installed);
@@ -390,8 +390,8 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
 
       registry.failReads = false;
       const launcherDir = DesktopCliShim.launcherPath(
-        environmentFor(yield* Path.Path, { home, baseDir: `${home}/.t3`, platform: "win32" }),
-      ).replace(/[\\/]t3\.cmd$/, "");
+        environmentFor(yield* Path.Path, { home, baseDir: `${home}/.fcode`, platform: "win32" }),
+      ).replace(/[\\/]fcode\.cmd$/, "");
       yield* command.install;
       expect(registry.path).toBe(`${userPath};${launcherDir}`);
       yield* command.uninstall;
@@ -400,14 +400,14 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       // A `;` in the folder would split it into two PATH entries, so nothing is written.
       const split = fakePowerShell(userPath);
       const semicolon = yield* commandIn(
-        { home, baseDir: `${home}\\T3;Home`, platform: "win32" },
+        { home, baseDir: `${home}\\fcode;Home`, platform: "win32" },
         split.spawner,
       );
       expect((yield* Effect.flip(semicolon.install)).message).toContain('has a ";"');
       expect(split.registry).toMatchObject({ path: userPath, writes: 0 });
 
-      // An inherited T3_SET=1 never turns a read into a write of the whole PATH.
-      const inherited = fakePowerShell(userPath, { T3_SET: "1", T3_PATH: "C:\\other" });
+      // An inherited FCODE_SET=1 never turns a read into a write of the whole PATH.
+      const inherited = fakePowerShell(userPath, { FCODE_SET: "1", FCODE_PATH: "C:\\other" });
       const reader = yield* commandIn({ home, platform: "win32" }, inherited.spawner);
       yield* reader.install;
       expect(inherited.registry).toMatchObject({ path: `${userPath};${launcherDir}`, writes: 1 });
@@ -421,7 +421,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const home = yield* fs.makeTempDirectoryScoped();
       const launcherDir = path.dirname(
         DesktopCliShim.launcherPath(
-          environmentFor(path, { home, baseDir: path.join(home, ".t3"), platform: "win32" }),
+          environmentFor(path, { home, baseDir: path.join(home, ".fcode"), platform: "win32" }),
         ),
       );
       const userPath = `C:\\Tools;${launcherDir}`;
@@ -432,11 +432,11 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       yield* command.uninstall;
       expect(registry.path).toBe(userPath);
 
-      // A fresh install beside a standalone t3.cmd (from `t3 install`), even off PATH, leaves
+      // A fresh install beside a standalone fcode.cmd (from `fcode install`), even off PATH, leaves
       // PATH alone.
       const besideHome = yield* fs.makeTempDirectoryScoped();
       yield* fs.makeDirectory(path.join(besideHome, ".local", "bin"), { recursive: true });
-      yield* fs.writeFileString(path.join(besideHome, ".local", "bin", "t3.cmd"), "@echo off\r\n");
+      yield* fs.writeFileString(path.join(besideHome, ".local", "bin", "fcode.cmd"), "@echo off\r\n");
       const beside = fakePowerShell("C:\\Tools");
       yield* (yield* commandIn({ home: besideHome, platform: "win32" }, beside.spawner))
         .installOnFirstLaunch;

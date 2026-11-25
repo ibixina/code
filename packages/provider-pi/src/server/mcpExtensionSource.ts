@@ -1,32 +1,32 @@
-// No T3 imports inside the string; resolve Pi and typebox from the user's Pi install.
-import { T3_CODE_ORCHESTRATION_INSTRUCTIONS } from "@t3tools/provider-core/server/orchestrationInstructions";
-import { PULL_REQUEST_LINKING_INSTRUCTIONS } from "@t3tools/provider-core/server/runtimeInstructions";
+// No fcode imports inside the string; resolve Pi and typebox from the user's Pi install.
+import { FCODE_ORCHESTRATION_INSTRUCTIONS } from "@fcode/provider-core/server/orchestrationInstructions";
+import { PULL_REQUEST_LINKING_INSTRUCTIONS } from "@fcode/provider-core/server/runtimeInstructions";
 
-export const PI_T3_MCP_EXTENSION_FILENAME = "pi-t3-mcp-extension.ts";
+export const PI_FCODE_MCP_EXTENSION_FILENAME = "pi-fcode-mcp-extension.ts";
 
-export const T3_MCP_URL_ENV = "T3_MCP_URL";
-export const T3_MCP_BEARER_ENV = "T3_MCP_BEARER_TOKEN";
-export const T3_PI_RUNTIME_MODE_ENV = "T3_PI_RUNTIME_MODE";
-export const T3_PI_MCP_EXTENSION_PATH_ENV = "T3_PI_MCP_EXTENSION_PATH";
-export const PI_T3_SERVICE_TIER_COMMAND = "t3-service-tier";
+export const FCODE_MCP_URL_ENV = "FCODE_MCP_URL";
+export const FCODE_MCP_BEARER_ENV = "FCODE_MCP_BEARER_TOKEN";
+export const FCODE_PI_RUNTIME_MODE_ENV = "FCODE_PI_RUNTIME_MODE";
+export const FCODE_PI_MCP_EXTENSION_PATH_ENV = "FCODE_PI_MCP_EXTENSION_PATH";
+export const PI_FCODE_SERVICE_TIER_COMMAND = "fcode-service-tier";
 
 // These tools trigger file-change approvals, bypassed by Auto-accept edits.
 export const PI_FILE_CHANGE_TOOLS = ["edit", "write"] as const;
 
-export const PI_T3_MCP_EXTENSION_SOURCE = `\
+export const PI_FCODE_MCP_EXTENSION_SOURCE = `\
 import { stripFrontmatter, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import * as NodeCrypto from "node:crypto";
 import * as NodeFSP from "node:fs/promises";
 import * as NodePath from "node:path";
 import { Type } from "typebox";
 
-const URL_ENV = ${JSON.stringify(T3_MCP_URL_ENV)};
-const TOKEN_ENV = ${JSON.stringify(T3_MCP_BEARER_ENV)};
-const RUNTIME_MODE_ENV = ${JSON.stringify(T3_PI_RUNTIME_MODE_ENV)};
-const EXTENSION_PATH_ENV = ${JSON.stringify(T3_PI_MCP_EXTENSION_PATH_ENV)};
-const ORCHESTRATION_INSTRUCTIONS = ${JSON.stringify(T3_CODE_ORCHESTRATION_INSTRUCTIONS.trim())};
+const URL_ENV = ${JSON.stringify(FCODE_MCP_URL_ENV)};
+const TOKEN_ENV = ${JSON.stringify(FCODE_MCP_BEARER_ENV)};
+const RUNTIME_MODE_ENV = ${JSON.stringify(FCODE_PI_RUNTIME_MODE_ENV)};
+const EXTENSION_PATH_ENV = ${JSON.stringify(FCODE_PI_MCP_EXTENSION_PATH_ENV)};
+const ORCHESTRATION_INSTRUCTIONS = ${JSON.stringify(FCODE_ORCHESTRATION_INSTRUCTIONS.trim())};
 const PULL_REQUEST_LINKING_INSTRUCTIONS = ${JSON.stringify(PULL_REQUEST_LINKING_INSTRUCTIONS)};
-const SERVICE_TIER_COMMAND = ${JSON.stringify(PI_T3_SERVICE_TIER_COMMAND)};
+const SERVICE_TIER_COMMAND = ${JSON.stringify(PI_FCODE_SERVICE_TIER_COMMAND)};
 const PROTOCOL = "2025-06-18";
 const READ_ONLY_TOOLS = new Set(["read", "grep", "find", "ls"]);
 const FILE_CHANGE_TOOLS = new Set(${JSON.stringify(PI_FILE_CHANGE_TOOLS)});
@@ -64,7 +64,7 @@ function runtimeMode(): RuntimeMode {
     : "full-access";
 }
 
-// T3 keys "Always allow this session" on this text, so a cut summary ends with the
+// fcode keys "Always allow this session" on this text, so a cut summary ends with the
 // full input's hash: calls that differ only past the cut get separate grants.
 function toolInputSummary(input: unknown): string {
   let text: string;
@@ -226,7 +226,7 @@ function createMcpClient(endpoint: string, token: string) {
         {
           protocolVersion: PROTOCOL,
           capabilities: {},
-          clientInfo: { name: "t3-pi-mcp", version: "1.0.0" },
+          clientInfo: { name: "fcode-pi-mcp", version: "1.0.0" },
         },
         signal,
       );
@@ -252,9 +252,9 @@ function createMcpClient(endpoint: string, token: string) {
   };
 }
 
-export default async function t3McpExtension(pi: ExtensionAPI) {
+export default async function fcodeMcpExtension(pi: ExtensionAPI) {
   // RPC has no trust prompt, so Pi skips an untrusted folder's protected resources. Session
-  // replacement reruns this factory without project_trust, and T3 drops notices outside a turn,
+  // replacement reruns this factory without project_trust, and fcode drops notices outside a turn,
   // so check each session's first turn. An explicit --no-approve is deliberate and stays quiet.
   let projectTrustChecked = false;
   pi.on("before_agent_start", (_event, ctx) => {
@@ -262,7 +262,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
     projectTrustChecked = true;
     if (ctx.isProjectTrusted() || process.argv.some((arg) => arg === "--no-approve" || arg === "-na")) return;
     ctx.ui.notify(
-      \`Pi did not load project settings, extensions, skills, prompts, MCP servers or system prompt files for \${ctx.cwd} because the folder is not trusted. To load them, run the configured Pi binary there with the same PI_CODING_AGENT_DIR (if set), trust the folder or its parent with /trust, then start a new thread in that same worktree. To trust every project, add --approve to Pi's launch arguments in T3 Code settings; to keep them off without this notice, add --no-approve.\`,
+      \`Pi did not load project settings, extensions, skills, prompts, MCP servers or system prompt files for \${ctx.cwd} because the folder is not trusted. To load them, run the configured Pi binary there with the same PI_CODING_AGENT_DIR (if set), trust the folder or its parent with /trust, then start a new thread in that same worktree. To trust every project, add --approve to Pi's launch arguments in fcode settings; to keep them off without this notice, add --no-approve.\`,
       "warning",
     );
   });
@@ -299,11 +299,11 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
     };
   });
 
-  // Pi has no service tier setting, so T3 sets one through this command before each turn.
+  // Pi has no service tier setting, so fcode sets one through this command before each turn.
   // Only a tier the active model advertises is sent; Standard sends none.
   let serviceTier: string | undefined;
   pi.registerCommand(SERVICE_TIER_COMMAND, {
-    description: "Set the service tier T3 Code sends with provider requests",
+    description: "Set the service tier fcode sends with provider requests",
     handler: async (args) => {
       serviceTier = args.trim() || undefined;
     },
@@ -340,7 +340,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
     if (changed) return replacement;
   });
 
-  // Pi deliberately leaves permission policy to extensions. T3's injected
+  // Pi deliberately leaves permission policy to extensions. fcode's injected
   // bridge uses Pi's public blocking tool hook so the shared runtime modes
   // keep their normal meaning without replacing or shadowing Pi's runtime.
   // Only Pi's own search is known to be read-only. An extension that replaces
@@ -356,7 +356,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
     const extensionPath = env(EXTENSION_PATH_ENV);
     if (extensionPath === undefined || !readOnlyMcpTools.has(name) || typeof pi.getAllTools !== "function") return false;
     // A user extension may own the same name. Only our registered HTTP bridge
-    // may inherit the canonical T3 server's read-only annotation.
+    // may inherit the canonical fcode server's read-only annotation.
     return pi.getAllTools().some((tool) => tool.name === name &&
       typeof tool.sourceInfo?.path === "string" &&
       NodePath.resolve(tool.sourceInfo.path) === NodePath.resolve(extensionPath));
@@ -377,7 +377,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
       { signal: ctx.signal },
     );
     if (!approved) {
-      return { block: true, reason: \`\${event.toolName} was declined in T3 Code.\` };
+      return { block: true, reason: \`\${event.toolName} was declined in fcode.\` };
     }
   });
 
@@ -386,7 +386,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
   if (endpoint === undefined || token === undefined) {
     pi.on("session_start", async (_event, ctx) => {
       ctx.ui.notify(
-        "t3-code MCP unavailable: T3_MCP_URL or T3_MCP_BEARER_TOKEN is missing.",
+        "fcode MCP unavailable: FCODE_MCP_URL or FCODE_MCP_BEARER_TOKEN is missing.",
         "warning",
       );
     });
@@ -416,7 +416,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
 
   const registerTools = () => {
     // Preserve public names for saved loadouts and tool selectors. The alias,
-    // Pi's own MCP name for T3, reserves it against Pi's configured MCP servers.
+    // Pi's own MCP name for fcode, reserves it against Pi's configured MCP servers.
     // model-only keeps it out of codemode; it hides its own declaration.
     const prefixes = supportsExposure ? ["mcp__t3-code__", ALIAS_PREFIX] : ["mcp__t3-code__"];
     readOnlyMcpTools.clear();
@@ -432,7 +432,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
           label: name,
           // Pi records active declarations in the transcript even when hidden, and
           // estimates context from them. The model sees only the public schema;
-          // T3's server still validates the arguments.
+          // fcode's server still validates the arguments.
           description: isAlias ? "Same as mcp__t3-code__" + name + "." : (tool.description ?? name),
           parameters: jsonSchemaToTypebox(isAlias ? { type: "object" } : tool.inputSchema),
           ...(supportsExposure ? { outputSchema: mcpOutputSchema(tool) } : {}),
@@ -453,12 +453,12 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
             );
             const content = mcpModelContent(result);
             if (isMcpToolError(result) && !content.some((part) => part.type === "text" && part.text.length > 0)) {
-              content.push({ type: "text", text: "MCP tool t3-code/" + name + " returned an error" });
+              content.push({ type: "text", text: "MCP tool fcode/" + name + " returned an error" });
             }
             return {
               content,
               structuredContent: mcpScriptResult(result),
-              details: { server: "t3-code", tool: name },
+              details: { server: "fcode", tool: name },
               ...(isMcpToolError(result) ? { isError: true } : {}),
             };
           },
@@ -483,7 +483,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
   };
 
   // CLI extensions load before builtins, and Pi keeps the first registration
-  // of a tool name. Register now so the bridge owns the T3 namespace even when
+  // of a tool name. Register now so the bridge owns the fcode namespace even when
   // mcp.json configures it; retry a failed connection at session_start.
   await ensureStarted().catch(() => undefined);
 
@@ -495,7 +495,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
     deferOptionalTools = hasToolSearch;
     if (exposureChanged) registerTools();
     // Completion gateways can silently drop calls to undeclared tools named
-    // in history or guidance. Eagerly load T3 schemas, including after tree
+    // in history or guidance. Eagerly load fcode schemas, including after tree
     // restores, while retaining deferred exposure for Pi's allowlist rules.
     // Pi still applies --tools/--exclude-tools to this active loadout.
     const required = [
@@ -545,7 +545,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
       await ensureStarted();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      ctx.ui.notify(\`t3-code MCP unavailable: \${message}\`, "warning");
+      ctx.ui.notify(\`fcode MCP unavailable: \${message}\`, "warning");
     }
   });
 
@@ -556,7 +556,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
     const sections = event.systemPromptOptions?.sections;
     if (sections && typeof sections === "object" && event.systemPromptOptions?.forceSystemPrompt === undefined) {
       // A full prompt override bypasses Pi's later section rendering.
-      sections.t3_code_orchestration = instructions;
+      sections.fcode_orchestration = instructions;
       return undefined;
     }
     return { systemPrompt: event.systemPrompt + "\\n\\n" + instructions };

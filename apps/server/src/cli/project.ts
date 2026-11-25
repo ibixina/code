@@ -6,10 +6,10 @@ import {
   type ProjectMutation,
   type ProjectSnapshot,
   ProjectId,
-} from "@t3tools/contracts";
-import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
-import { splitsSurrogatePair } from "@t3tools/shared/assistantCitations";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+} from "@fcode/contracts";
+import { expandHomePath } from "@fcode/provider-core/server/pathExpansion";
+import { splitsSurrogatePair } from "@fcode/shared/assistantCitations";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import * as Console from "effect/Console";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
@@ -33,7 +33,7 @@ import * as ProjectFaviconResolver from "../project/ProjectFaviconResolver.ts";
 import * as RepositoryIdentityResolver from "../project/RepositoryIdentityResolver.ts";
 import * as ProjectService from "../project/ProjectService.ts";
 import { projectMutationOperation } from "../project/ProjectMutation.ts";
-import * as T3ProjectFileLoader from "../project/T3ProjectFileLoader.ts";
+import * as FcodeProjectFileLoader from "../project/FcodeProjectFileLoader.ts";
 import * as ServerSettings from "../serverSettings.ts";
 import * as ManagedPolicy from "../policy/ManagedPolicy.ts";
 import { discoverFolders, mergeProjectFolders } from "../workspace/WorkspaceFolders.ts";
@@ -205,7 +205,7 @@ const makeProjectCliRuntimeLayer = (layerProjectService: typeof RuntimeLayer.lay
     Layer.provideMerge(
       ProjectFaviconResolver.layer.pipe(
         Layer.provide(WorkspacePaths.layer),
-        Layer.provide(T3ProjectFileLoader.layer),
+        Layer.provide(FcodeProjectFileLoader.layer),
       ),
     ),
     Layer.provideMerge(WorkspacePaths.layer),

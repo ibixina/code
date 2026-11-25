@@ -1,15 +1,15 @@
 /// <reference lib="dom" />
-import type { IssueListResult } from "@t3tools/contracts";
+import type { IssueListResult } from "@fcode/contracts";
 import { expect } from "e2e";
 
 import { SECOND_HOME, startSecondServer } from "./second-server.ts";
-import { makeState, test, WEB } from "./t3.ts";
+import { makeState, test, WEB } from "./fcode.ts";
 
 test(
   "Retrying a failed environment keeps the Issues refresh already in progress",
   WEB,
-  async ({ t3, app, screen, browser }) => {
-    await t3.project("demo");
+  async ({ fcode, app, screen, browser }) => {
+    await fcode.project("demo");
     const server = startSecondServer(app.baseUrl ?? "");
     try {
       const { host, token } = await server.ready;
@@ -114,7 +114,7 @@ test(
         };
       }, new URL(host).host);
 
-      await t3.open("/settings/connections");
+      await fcode.open("/settings/connections");
       await screen.getByRole("button", "Add environment").tap();
       const dialog = screen.getByRole("dialog");
       await dialog.getByPlaceholder("backend.example.com").fill(host);

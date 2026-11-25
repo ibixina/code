@@ -1,4 +1,4 @@
-import { makeProviderSettingsSchema, SourceControlProviderKind } from "@t3tools/contracts";
+import { makeProviderSettingsSchema, SourceControlProviderKind } from "@fcode/contracts";
 import {
   buildCommitUrl,
   changeRequestUrlBelow,
@@ -11,7 +11,7 @@ import {
   parseIssuePath,
   projectChangeRequestHost,
   repositoryUrlFromPagePath,
-} from "@t3tools/source-control-core/shared/definition";
+} from "@fcode/source-control-core/shared/definition";
 
 import { icon } from "./icon.ts";
 

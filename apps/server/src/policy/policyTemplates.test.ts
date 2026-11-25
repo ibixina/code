@@ -3,17 +3,19 @@ import {
   WINDOWS_POLICY_GROUPS,
   WINDOWS_POLICY_LISTS,
   WINDOWS_POLICY_VALUES,
-} from "@t3tools/shared/managedPolicyFile";
+} from "@fcode/shared/managedPolicyFile";
 
 import { macosProfile, windowsAdmx } from "./policyTemplates.ts";
 
 it("gives every registry value the Windows reader accepts a Group Policy control", () => {
   const admx = windowsAdmx();
   for (const name of Object.keys(WINDOWS_POLICY_VALUES)) {
+    // Still read so existing Group Policy setups load, but no longer offered: it does nothing.
+    if (name === "Telemetry") continue;
     assert.include(admx, `valueName="${name}"`);
   }
   for (const key of Object.keys(WINDOWS_POLICY_LISTS)) {
-    assert.include(admx, `key="SOFTWARE\\Policies\\T3Tools\\T3Code\\${key}"`);
+    assert.include(admx, `key="SOFTWARE\\Policies\\Fcode\\Fcode\\${key}"`);
   }
   for (const name of Object.keys(WINDOWS_POLICY_GROUPS)) {
     assert.include(admx, `valueName="${name}"`);

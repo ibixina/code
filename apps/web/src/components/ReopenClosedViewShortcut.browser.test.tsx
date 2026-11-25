@@ -1,5 +1,5 @@
-import type { ResolvedKeybindingsConfig, ScopedThreadRef } from "@t3tools/contracts";
-import { DEFAULT_RESOLVED_KEYBINDINGS } from "@t3tools/shared/keybindings";
+import type { ResolvedKeybindingsConfig, ScopedThreadRef } from "@fcode/contracts";
+import { DEFAULT_RESOLVED_KEYBINDINGS } from "@fcode/shared/keybindings";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -404,9 +404,9 @@ describe("root reopen shortcut", () => {
 
   it("reopens a closed pull request tab from another route with saved list preferences and no foreign search params", async () => {
     setup();
-    window.localStorage.removeItem("t3.pullRequests.preferences");
+    window.localStorage.removeItem("fcode.pullRequests.preferences");
     using _cleanup = {
-      [Symbol.dispose]: () => window.localStorage.removeItem("t3.pullRequests.preferences"),
+      [Symbol.dispose]: () => window.localStorage.removeItem("fcode.pullRequests.preferences"),
     };
     writePullRequestListPreferences({ involvement: "reviewing", state: "merged" });
     useClosedViewStore.getState().remember({

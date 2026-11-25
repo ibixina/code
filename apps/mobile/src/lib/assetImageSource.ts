@@ -1,9 +1,9 @@
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@fcode/client-runtime/source-control-clients";
 import {
   SOURCE_CONTROL_MEDIA_ASSET,
   type AssetResource,
   type EnvironmentId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import type { ImageSource } from "expo-image";
 
 /**
@@ -18,11 +18,11 @@ export function assetImageCacheKey(
 ): string | undefined {
   switch (resource._tag) {
     case "attachment":
-      return `t3-attachment:${JSON.stringify([environmentId, resource.attachmentId])}`;
+      return `fcode-attachment:${JSON.stringify([environmentId, resource.attachmentId])}`;
     case SOURCE_CONTROL_MEDIA_ASSET: {
       const media = sourceControlClients.mediaUrl(resource.url);
       return media?.immutable
-        ? `t3-media:${JSON.stringify([environmentId, media.fetchUrl])}`
+        ? `fcode-media:${JSON.stringify([environmentId, media.fetchUrl])}`
         : undefined;
     }
     case "media-file":
@@ -30,7 +30,7 @@ export function assetImageCacheKey(
     case "draft-workspace-file":
       return fileRevision === undefined
         ? undefined
-        : `t3-file:${JSON.stringify([
+        : `fcode-file:${JSON.stringify([
             environmentId,
             resource._tag === "draft-workspace-file" ? resource.cwd : resource.threadId,
             resource.path,

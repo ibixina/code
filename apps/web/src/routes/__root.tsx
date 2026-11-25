@@ -1,5 +1,5 @@
-import { type ServerLifecycleWelcomePayload } from "@t3tools/contracts";
-import { scopedProjectKey, scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { type ServerLifecycleWelcomePayload } from "@fcode/contracts";
+import { scopedProjectKey, scopeProjectRef } from "@fcode/client-runtime/environment";
 import {
   Outlet,
   Link,
@@ -47,9 +47,8 @@ import {
   deriveLogicalProjectKeyFromSettings,
   derivePhysicalProjectKeyFromPath,
   selectProjectGroupingSettings,
-} from "@t3tools/client-runtime/state/project-grouping";
+} from "@fcode/client-runtime/state/project-grouping";
 import { useUiStateStore } from "../uiStateStore";
-import { configureClientTracing } from "../observability/clientTracing";
 import { resolveInitialServerAuthGateState } from "../environments/primary";
 import { GUEST_PAGE_PATH } from "../guestPage";
 import { hasHostedPairingRequest, isHostedStaticApp } from "../hostedPairing";
@@ -65,7 +64,7 @@ import { shouldResumeSnapShotSetupOnStartup } from "../lib/snapShotSetupResume";
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    // Guest links open on the owner's tunnel host in a browser with no T3 session, and must
+    // Guest links open on the owner's tunnel host in a browser with no fcode session, and must
     // not trigger pairing or an environment connection.
     if (location.pathname === GUEST_PAGE_PATH) {
       return {
@@ -92,10 +91,6 @@ export const Route = createRootRoute({
     }
 
     const authGateState = await resolveInitialServerAuthGateState();
-    if (authGateState.status === "authenticated") {
-      // Idempotent, so every navigation can ask for it.
-      void configureClientTracing();
-    }
     if (
       authGateState.status === "authenticated" &&
       getDesktopSnapShotBridge() &&
@@ -326,7 +321,7 @@ function errorDetails(error: unknown): string {
   try {
     return JSON.stringify(error, null, 2);
   } catch {
-    // oxlint-disable-next-line t3code/no-untranslated-copy -- error report pasted into bug reports
+    // oxlint-disable-next-line fcode/no-untranslated-copy -- error report pasted into bug reports
     return "No additional error details are available.";
   }
 }
@@ -409,7 +404,7 @@ function EventRouter({
     })().catch(() => undefined);
   });
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- expands the bootstrap project in the UI store and navigates the router on a server welcome
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- expands the bootstrap project in the UI store and navigates the router on a server welcome
   useEffect(() => {
     handleWelcome(serverWelcome);
   }, [serverWelcome]);

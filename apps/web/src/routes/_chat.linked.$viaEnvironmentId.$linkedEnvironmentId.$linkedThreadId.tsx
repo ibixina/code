@@ -1,4 +1,4 @@
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId } from "@fcode/contracts";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { LinkedThreadPage } from "../components/chat/LinkedThreadPage";

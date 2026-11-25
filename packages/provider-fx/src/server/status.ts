@@ -2,10 +2,10 @@ import {
   type ServerProviderAuth,
   type ServerProviderModel,
   type ServerProviderSubProvider,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import type { FxSettings } from "../settings.ts";
-import { createModelCapabilities } from "@t3tools/shared/model";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+import { createModelCapabilities } from "@fcode/shared/model";
+import { resolveSpawnCommand } from "@fcode/shared/shell";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
@@ -37,7 +37,7 @@ import {
   providerProbeEnvironment,
   resolveProviderProbeTimeoutMs,
   spawnAndCollect,
-} from "@t3tools/provider-core/server/snapshotProbe";
+} from "@fcode/provider-core/server/snapshotProbe";
 
 const fxPresentation = (fullAccess: boolean) => ({
   displayName: "fx",
@@ -145,7 +145,7 @@ export const buildInitialFxProviderSnapshot = (
       auth: { status: "unknown" },
       message: settings.enabled
         ? "Checking fx CLI availability..."
-        : "fx is disabled in T3 Code settings.",
+        : "fx is disabled in fcode settings.",
     }),
   );
 
@@ -298,7 +298,7 @@ export const checkFxProviderStatus = Effect.fn("checkFxProviderStatus")(function
       version: null,
       status: "warning",
       auth: { status: "unknown" },
-      message: "fx is disabled in T3 Code settings.",
+      message: "fx is disabled in fcode settings.",
     });
   }
 

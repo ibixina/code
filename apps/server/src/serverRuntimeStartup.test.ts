@@ -8,9 +8,9 @@ import {
   CommandId,
   EnvironmentId,
   type ServerLifecycleStreamEvent,
-} from "@t3tools/contracts";
-import { DEFAULT_SIGNAL_EXPORT } from "@t3tools/shared/observability";
-import * as OtelEnvironment from "@t3tools/shared/otelEnvironment";
+} from "@fcode/contracts";
+import { DEFAULT_SIGNAL_EXPORT } from "@fcode/shared/observability";
+import * as OtelEnvironment from "@fcode/shared/otelEnvironment";
 import { HttpServer } from "effect/http";
 import * as NetAddress from "effect/net/NetAddress";
 import * as Deferred from "effect/Deferred";
@@ -45,7 +45,6 @@ import { ServerActivation } from "./serverActivation.ts";
 import * as ServerLifecycleEvents from "./serverLifecycleEvents.ts";
 import * as ServerSettings from "./serverSettings.ts";
 import * as ServerSecretStore from "./auth/ServerSecretStore.ts";
-import * as AnalyticsService from "./telemetry/AnalyticsService.ts";
 
 it.effect.each([
   "disabled-codex",
@@ -209,7 +208,6 @@ it.effect.each([
         prepareTrial: () => Effect.undefined,
       }),
       Layer.mock(GitVcsDriver.GitVcsDriver)({}),
-      Layer.mock(AnalyticsService.AnalyticsService)({}),
       // No provider logins or Connect link, so startup records no owners.
       FileSystem.layerNoop({}),
       Layer.mock(ServerSecretStore.ServerSecretStore)({ get: () => Effect.succeedNone }),

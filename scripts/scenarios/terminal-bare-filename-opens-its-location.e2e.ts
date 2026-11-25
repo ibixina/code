@@ -5,12 +5,12 @@ import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
 
-import { T3_HOME } from "../e2e.config.ts";
-import { runPromise, test, WEB } from "./t3.ts";
+import { FCODE_HOME } from "../e2e.config.ts";
+import { runPromise, test, WEB } from "./fcode.ts";
 
 // gcc prints a file compiled from its own folder by bare name.
 const DIAGNOSTIC = "main.c:1:25: error: 'missing' undeclared";
-const EDITOR_ARGS = `${T3_HOME}/editor-args.txt`;
+const EDITOR_ARGS = `${FCODE_HOME}/editor-args.txt`;
 
 const hostPath = (...segments: ReadonlyArray<string>) =>
   runPromise(Effect.map(Path.Path, (path) => path.join(...segments)));
@@ -28,17 +28,17 @@ const readLines = (file: string) =>
 test(
   "Ctrl+click on a bare compiler filename in the terminal opens that file at its line and column",
   WEB,
-  async ({ t3, app, browser, screen }) => {
+  async ({ fcode, app, browser, screen }) => {
     await runPromise(
       Effect.flatMap(FileSystem.FileSystem, (fs) => fs.remove(EDITOR_ARGS, { force: true })),
     );
-    const project = await t3.project("demo", {
+    const project = await fcode.project("demo", {
       "main.c": "int main(void) { return missing; }\n",
       // Enough rows that the middle of the terminal shows the diagnostic, whatever its height.
       "build.log": `${DIAGNOSTIC}\n`.repeat(200),
     });
-    const thread = await t3.thread({ project, title: "Build", messages: ["Build it"] });
-    await t3.open(thread);
+    const thread = await fcode.thread({ project, title: "Build", messages: ["Build it"] });
+    await fcode.open(thread);
 
     await screen.getByRole("button", "Toggle terminal drawer").tap();
     const input = screen.getByRole("textbox", "Terminal input");

@@ -6,27 +6,27 @@ import {
   ProviderReplayEntry,
   type ProviderReplayEntry as ProviderReplayEntryType,
   type ProviderReplayTranscript,
-} from "@t3tools/contracts";
-import { MuseSettings } from "@t3tools/provider-muse/settings";
+} from "@fcode/contracts";
+import { MuseSettings } from "@fcode/provider-muse/settings";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 
-import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
+import * as TestProviderHost from "@fcode/provider-testing/TestProviderHost";
 import {
   museInitializeParams,
   museServeArgs,
   museWorkspaceRoot,
   type MuseSdkHost,
   type MuseSdkHostOptions,
-} from "@t3tools/provider-muse/testing";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+} from "@fcode/provider-muse/testing";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
 import * as ProviderAdapterRegistry from "../ProviderAdapterRegistry.ts";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
+import * as ProviderContinuationRequests from "@fcode/provider-core/server/ProviderContinuationRequests";
 import type { OrchestratorV2ProviderReplayHarness } from "../testkit/ProviderReplayHarness.ts";
-import { materializeReplayTranscriptWorkspace } from "@t3tools/provider-testing/replayTranscript";
-import { makeMuseAdapterV2 } from "@t3tools/provider-muse/server";
+import { materializeReplayTranscriptWorkspace } from "@fcode/provider-testing/replayTranscript";
+import { makeMuseAdapterV2 } from "@fcode/provider-muse/server";
 
 export const MUSE_PROVIDER_KIND = "muse";
 export const MUSE_MSP_REPLAY_PROTOCOL = "muse.msp-jsonl";
@@ -337,7 +337,7 @@ class MuseReplayController {
       if (host === undefined) return emitted;
       this.cursor += 1;
       emitted = true;
-      // Output a host wrote after T3 released it was never observed.
+      // Output a host wrote after fcode released it was never observed.
       if (!host.open) continue;
       const frame = entry.frame;
       // Responses carry the client's request id; server requests carry their own.

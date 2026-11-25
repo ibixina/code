@@ -1,0 +1,20 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": ["t3highlights"],
+  "ios": {
+    "iosModuleName": "FcodeHighlightsNative"
+  },
+  "android": {
+    "androidNamespace": ["t3highlights"],
+    "androidCxxLibName": "t3highlights"
+  },
+  "autolinking": {
+    "FcodeHighlights": {
+      "all": {
+        "language": "c++",
+        "implementationClassName": "HybridFcodeHighlights"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules", "Vendor"]
+}

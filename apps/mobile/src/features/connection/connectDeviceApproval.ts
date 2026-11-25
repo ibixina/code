@@ -1,4 +1,4 @@
-import type { AuthClientMetadata, AuthPairingLink } from "@t3tools/contracts";
+import type { AuthClientMetadata, AuthPairingLink } from "@fcode/contracts";
 import { msg } from "gt-react-native";
 
 import { m } from "../../i18n/messages";
@@ -41,7 +41,7 @@ export function connectDeviceApprovalPrompts(input: {
           {
             device: describeConnectDevice(device),
             environment: input.environmentLabel,
-            product: "T3 Connect",
+            product: "fcode Connect",
             code: verificationCode,
           },
         ),

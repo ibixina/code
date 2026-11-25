@@ -8,16 +8,16 @@ import {
   type ServerLifecycleWelcomePayload,
   type ServerProvider,
   type ServerSettings,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   AVAILABLE_CONNECTION_STATE,
   presentConnectionState,
   type EnvironmentPresentation,
-} from "@t3tools/client-runtime/connection";
-import { createServerEnvironmentAtoms } from "@t3tools/client-runtime/state/server";
-import { createOutdatedServerUpdateCommand } from "@t3tools/client-runtime/state/outdatedServerUpdate";
-import { createEnvironmentServerConfigsAtom } from "@t3tools/client-runtime/state/shell";
-import { mergeWithDefaultKeybindings } from "@t3tools/shared/keybindings";
+} from "@fcode/client-runtime/connection";
+import { createServerEnvironmentAtoms } from "@fcode/client-runtime/state/server";
+import { createOutdatedServerUpdateCommand } from "@fcode/client-runtime/state/outdatedServerUpdate";
+import { createEnvironmentServerConfigsAtom } from "@fcode/client-runtime/state/shell";
+import { mergeWithDefaultKeybindings } from "@fcode/shared/keybindings";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";
 
@@ -82,14 +82,6 @@ const primaryServerStateAtom = Atom.make((get): PrimaryServerState => {
 export const primaryServerConfigAtom = Atom.make(
   (get): ServerConfig | null => get(primaryServerStateAtom).config,
 ).pipe(Atom.withLabel("web-primary-server-config"));
-
-// The config cache can outlive the session and predate an opt-out.
-export const primaryRelayTracingAllowedAtom = Atom.make((get): boolean | null => {
-  const environmentId = get(primaryEnvironmentIdAtom);
-  const config =
-    environmentId === null ? null : get(environmentSession.initialConfigValueAtom(environmentId));
-  return config === null ? null : config.observability.relayTracingAllowed !== false;
-}).pipe(Atom.withLabel("web-primary-relay-tracing-allowed"));
 
 export const primaryServerConfigEventAtom = Atom.make(
   (get): ServerConfigStreamEvent | null => get(primaryServerStateAtom).latestEvent,

@@ -9,8 +9,8 @@ const COMMAND_CODE_ENTRY_POINTS = [
 ];
 
 /**
- * Agents that take T3's MCP endpoint over ACP HTTP: Command Code cannot start the stdio
- * bridge on Windows, where it spawns MCP commands through cmd.exe and the unquoted T3
+ * Agents that take fcode's MCP endpoint over ACP HTTP: Command Code cannot start the stdio
+ * bridge on Windows, where it spawns MCP commands through cmd.exe and the unquoted fcode
  * executable path splits at the space.
  */
 export function prefersHttpMcpTransport(settings: AcpRegistrySettings): boolean {

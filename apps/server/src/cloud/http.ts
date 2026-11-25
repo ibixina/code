@@ -9,7 +9,7 @@ import {
   EnvironmentHttpForbiddenError,
   EnvironmentHttpInternalServerError,
   EnvironmentHttpUnauthorizedError,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Effect from "effect/Effect";
 import * as HttpEffect from "effect/http/HttpEffect";
 import { HttpServerResponse } from "effect/http";
@@ -21,7 +21,6 @@ import * as ManagedLimits from "../policy/managedLimits.ts";
 import * as CloudLink from "./CloudLink.ts";
 import * as ConnectReachability from "./ConnectReachability.ts";
 import type { RelayRequestError } from "./relayResponse.ts";
-import { traceRelayRequest } from "./traceRelayRequest.ts";
 
 const CLOUD_CREDENTIAL_RESPONSE_HEADERS = {
   "cache-control": "no-store",
@@ -165,11 +164,9 @@ export const layer = HttpApiBuilder.group(
           Effect.tap(() => appendCloudCredentialResponseHeaders),
         ),
       )
-      .handle("t3MintCredential", ({ payload }) =>
-        traceRelayRequest(
-          toHttpError(cloudLink.mintCredential(payload)).pipe(
-            Effect.tap(() => appendCloudCredentialResponseHeaders),
-          ),
+      .handle("fcodeMintCredential", ({ payload }) =>
+        toHttpError(cloudLink.mintCredential(payload)).pipe(
+          Effect.tap(() => appendCloudCredentialResponseHeaders),
         ),
       );
   }),

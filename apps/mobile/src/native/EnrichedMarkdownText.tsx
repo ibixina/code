@@ -1,9 +1,9 @@
-import { decodeComposerContextFragment } from "@t3tools/shared/composerContextClipboard";
+import { decodeComposerContextFragment } from "@fcode/shared/composerContextClipboard";
 import {
   collectComposerContextReferences,
   formatComposerContextHref,
   formatComposerContextReference,
-} from "@t3tools/shared/composerContextReferences";
+} from "@fcode/shared/composerContextReferences";
 import {
   markdownForNativeRendering,
   markdownWithFileEmbeds,
@@ -390,9 +390,9 @@ export function MobileEnrichedMarkdownText(props: SelectableMarkdownTextProps) {
     return {
       linkTextByUrl,
       htmlAttributes: {
-        "data-t3-context-fragment": encodeURIComponent(props.contextClipboardFragment!),
+        "data-fcode-context-fragment": encodeURIComponent(props.contextClipboardFragment!),
       },
-      mimeTypes: { "app.t3.context-fragment": props.contextClipboardFragment! },
+      mimeTypes: { "app.fcode.context-fragment": props.contextClipboardFragment! },
     };
   }, [props.contextClipboardFragment, props.markdown]);
   const { fontScale } = useWindowDimensions();

@@ -3,7 +3,7 @@ import {
   ProjectId,
   type RepositoryIdentity,
   SourceControlProviderKind,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
@@ -21,17 +21,17 @@ describe("findProjectForChangeRequest", () => {
   it("matches a nested GitLab group by the whole path below the host", () => {
     const projects = [
       project({
-        canonicalKey: "gitlab.com/t3tools/platform/t3code",
+        canonicalKey: "gitlab.com/fcode/platform/fcode",
         provider: SourceControlProviderKind.make("gitlab"),
-        displayName: "t3tools/platform/t3code",
-        owner: "t3tools",
-        name: "t3code",
+        displayName: "fcode/platform/fcode",
+        owner: "fcode",
+        name: "fcode",
       }),
     ];
     expect(
       findProjectForChangeRequest(projects, {
         host: "gitlab.com",
-        repository: "t3tools/platform/t3code",
+        repository: "fcode/platform/fcode",
         number: 42,
       }),
     ).toBe(projects[0]);
@@ -43,7 +43,7 @@ describe("findProjectForChangeRequest", () => {
         canonicalKey: "github.com/pingdotgg/t3code",
         provider: SourceControlProviderKind.make("github"),
         owner: "pingdotgg",
-        name: "t3code",
+        name: "fcode",
       }),
     ];
     expect(

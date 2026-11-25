@@ -6,8 +6,8 @@ import {
   type ServerProvider,
   TextGeneratorConfig,
   type TextGeneratorModel,
-} from "@t3tools/contracts";
-import { pickModelSelection } from "@t3tools/shared/model";
+} from "@fcode/contracts";
+import { pickModelSelection } from "@fcode/shared/model";
 import { AsyncResult } from "effect/reactivity";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";

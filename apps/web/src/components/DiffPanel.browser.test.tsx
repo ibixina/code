@@ -1,5 +1,5 @@
 import { RegistryContext } from "@effect/atom-react";
-import { scopedThreadKey } from "@t3tools/client-runtime/environment";
+import { scopedThreadKey } from "@fcode/client-runtime/environment";
 import {
   DEFAULT_CLIENT_SETTINGS,
   EnvironmentId,
@@ -17,7 +17,7 @@ import {
   type ScopedThreadRef,
   type VcsListRefsResult,
   type VcsStatusResult,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as DateTime from "effect/DateTime";
 import { AsyncResult, Atom, AtomRegistry } from "effect/reactivity";
 import { expect, it, vi } from "vite-plus/test";
@@ -286,7 +286,7 @@ it("explains a branch diff whose only changes are hidden test files", async () =
   using context = setup("origin/orphan");
   using _hideTestFiles = {
     [Symbol.dispose]() {
-      window.localStorage.removeItem("t3code.diffHideTestFiles");
+      window.localStorage.removeItem("fcode.diffHideTestFiles");
     },
   };
   const path = "math.test.ts";
@@ -413,7 +413,7 @@ it("shows a turn's repositories in a folder that is not a Git repository", async
     {
       runId: RunId.make("run-1"),
       checkpointTurnCount: 1,
-      checkpointRef: CheckpointRef.make("refs/t3/root-1"),
+      checkpointRef: CheckpointRef.make("refs/fcode/root-1"),
       status: "missing",
       files: [],
       repositories: [repository("api"), repository("web")],

@@ -1,6 +1,6 @@
 import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@fcode/contracts";
 import { it as effectIt } from "@effect/vitest";
 import type * as NodeOS from "node:os";
 import * as Effect from "effect/Effect";
@@ -282,7 +282,7 @@ describe("readIsolatedLinuxBridges", () => {
   effectIt.effect("finds bridges whose ports never reach a NIC, under any name", () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
-      const root = yield* fs.makeTempDirectoryScoped({ prefix: "t3-sysfs-" });
+      const root = yield* fs.makeTempDirectoryScoped({ prefix: "fcode-sysfs-" });
       const dirs = [
         "eth0/device",
         "eth1/device",
@@ -331,7 +331,7 @@ const layerTailscaleUp = Layer.succeed(
   ),
 );
 
-const T3_DESCRIPTOR_BODY = JSON.stringify({
+const FCODE_DESCRIPTOR_BODY = JSON.stringify({
   environmentId: "serve-test",
   label: "Serve test",
   platform: { os: "darwin", arch: "arm64" },
@@ -342,7 +342,7 @@ const T3_DESCRIPTOR_BODY = JSON.stringify({
 const serveProbeResponse = (request: HttpClientRequest.HttpClientRequest, status: number) =>
   HttpClientResponse.fromWeb(
     request,
-    new Response(status === 200 ? T3_DESCRIPTOR_BODY : null, { status }),
+    new Response(status === 200 ? FCODE_DESCRIPTOR_BODY : null, { status }),
   );
 
 const layerServeProbe = (status: number) =>
@@ -362,7 +362,7 @@ const layerServeConfig = (host = "127.0.0.1") =>
       tailscaleServePort: 443,
     })),
   ).pipe(
-    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "t3-direct-" })),
+    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "fcode-direct-" })),
     Layer.provide(NodeServices.layer),
     Layer.merge(
       Layer.succeed(ServerEnvironment.ServerEnvironment, {

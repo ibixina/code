@@ -1,5 +1,5 @@
 import { makeAssistantStreamingFilter } from "./assistantStreaming.ts";
-import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
+import { resolveProjectSettings } from "@fcode/shared/projectSettings";
 import {
   isDelegatedAppThread,
   isOrchestrationV2WorkActive,
@@ -25,7 +25,7 @@ import {
   type RunAttemptId,
   type ThreadId,
   type TurnItemId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Context from "effect/Context";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
@@ -46,17 +46,16 @@ import * as PreviewAgentActivity from "../preview/PreviewAgentActivity.ts";
 import * as ServerSettings from "../serverSettings.ts";
 import * as CheckpointService from "./CheckpointService.ts";
 import * as EventSink from "./EventSink.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import { PROVIDER_STOP_REASON_SIGNAL } from "@t3tools/provider-core/server/subagentProjection";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
+import { PROVIDER_STOP_REASON_SIGNAL } from "@fcode/provider-core/server/subagentProjection";
 import * as ProviderEventIngestor from "./ProviderEventIngestor.ts";
-import * as ProviderUsageAnalytics from "../telemetry/ProviderUsageAnalytics.ts";
 import type { ProjectionStoreV2Error } from "./ProjectionStore.ts";
 import {
   knownProviderFailureMessage,
   makeProviderFailure,
   makeProviderFailureTurnItem,
-} from "@t3tools/provider-core/server/failure";
+} from "@fcode/provider-core/server/failure";
 import { makeInterruptResultTurnItem } from "./runInterruptResult.ts";
 import * as RunFinalizationService from "./RunFinalizationService.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
@@ -103,14 +102,6 @@ function isTerminalProviderTurnStatus(status: OrchestrationV2ProviderTurn["statu
 function isSettledSubagentStatus(status: OrchestrationV2Subagent["status"]): boolean {
   return !isOrchestrationV2WorkActive(status);
 }
-
-/** A provider-native subagent's turns arrive on its parent's run, but the parent agent started them. */
-const NATIVE_SUBAGENT_TURN_ORIGIN: ProviderUsageAnalytics.ProviderTurnOrigin = {
-  createdBy: "agent",
-  creationSource: "provider",
-  scheduled: false,
-  subagent: true,
-};
 
 const backgroundCapableTurnItemTypes: ReadonlySet<OrchestrationV2TurnItem["type"]> = new Set([
   "command_execution",
@@ -700,7 +691,7 @@ export interface RunExecutionServiceV2Shape {
 export class RunExecutionServiceV2 extends Context.Service<
   RunExecutionServiceV2,
   RunExecutionServiceV2Shape
->()("t3/orchestration-v2/RunExecutionService/RunExecutionServiceV2") {}
+>()("fcode/orchestration-v2/RunExecutionService/RunExecutionServiceV2") {}
 
 export const layer: Layer.Layer<
   RunExecutionServiceV2,
@@ -727,7 +718,6 @@ export const layer: Layer.Layer<
     const previewAgentActivity = yield* PreviewAgentActivity.PreviewAgentActivity;
     const turnItemPositions = yield* TurnItemPositionStore.TurnItemPositionStoreV2;
     const finalizationObserver = yield* RunFinalizationService.RunFinalizationObserver;
-    const turnAnalytics = yield* ProviderUsageAnalytics.ProviderTurnAnalytics;
     const threadCommands = yield* ThreadCommandExecutor.ThreadCommandExecutor;
 
     const writeFinalRunEvents = Effect.fn("RunExecutionService.writeFinalRunEvents")(
@@ -742,7 +732,7 @@ export const layer: Layer.Layer<
         readonly loadRunInterruptReason?: () => Effect.Effect<string | undefined, never>;
         readonly openRunOwnedSubagents?: OpenRunOwnedSubagentProjection;
         readonly openRunOwnedSubagentsTerminal?: ProviderTerminalEvent;
-        // Root turn snapshot written with the run when T3 ends the run itself.
+        // Root turn snapshot written with the run when fcode ends the run itself.
         readonly abandonedProviderTurn?: OrchestrationV2ProviderTurn;
         // Stored root tool calls still open when the provider runtime was lost; nothing else ends them.
         readonly lostToolCalls?: ReadonlyArray<OrchestrationV2TurnItem>;
@@ -1077,12 +1067,6 @@ export const layer: Layer.Layer<
         } else {
           yield* eventSink.writeWithEffects(finalization);
         }
-        yield* turnAnalytics.runSettled({
-          runId: input.run.id,
-          status: input.terminal.status,
-          completedAt,
-          childrenRunning: hasOpenSubagentProjection && cascadedSubagentEvents.length === 0,
-        });
         yield* input.refreshAfterTurn;
         return true;
       },
@@ -1118,12 +1102,6 @@ export const layer: Layer.Layer<
           Effect.map(Fiber.join),
         ),
       startRootRun: Effect.fn("RunExecutionService.startRootRun")(function* (input) {
-        const rootTurnOrigin: ProviderUsageAnalytics.ProviderTurnOrigin = {
-          createdBy: input.message.createdBy,
-          creationSource: input.message.creationSource,
-          scheduled: input.message.scheduledTaskId !== undefined,
-          subagent: input.appThread.lineage.relationshipToParent === "subagent",
-        };
         // Startup failure and stream shutdown can report the same attempt.
         const refreshAfterTurn = yield* Effect.cached(
           finalizationObserver.refreshAfterTurn(input.appThread.projectId).pipe(
@@ -1222,25 +1200,6 @@ export const layer: Layer.Layer<
         const latestTurnItemOrdinal = yield* Ref.make(input.providerTurnOrdinal * 100);
         const latestProviderThread = yield* Ref.make(input.providerThread);
         const latestRootProviderTurn = yield* Ref.make<OrchestrationV2ProviderTurn | null>(null);
-        // Later root turns in one attempt are provider continuations, such as Codex goal turns.
-        let firstRootProviderTurnId: ProviderTurnId | undefined;
-        const analyticsContext = {
-          runId: input.run.id,
-          modelSelection: input.modelSelection,
-          runtimeMode: input.runtimePolicy.runtimeMode,
-          interactionMode: input.runtimePolicy.interactionMode,
-          origin: rootTurnOrigin,
-          ...(input.run.restartContinuationOfRunId === undefined
-            ? {}
-            : { restartContinuation: true }),
-        } satisfies ProviderUsageAnalytics.ProviderTurnAnalyticsContext;
-        if (input.attempt.reason === "initial") {
-          yield* turnAnalytics.runStarted({
-            runId: input.run.id,
-            driver: input.providerThread.driver,
-            context: { ...analyticsContext, segment: "initial" },
-          });
-        }
         const routeIdentity: ProviderEventRouteIdentity = {
           threadId: input.run.threadId,
           runId: input.run.id,
@@ -1808,27 +1767,7 @@ export const layer: Layer.Layer<
           const isRootProviderThreadUpdate =
             event.type === "provider_thread.updated" &&
             event.providerThread.id === input.providerThread.id;
-          const nativeChildTurn =
-            event.type === "provider_turn.updated" &&
-            event.providerTurn.providerThreadId !== input.providerThread.id;
-          if (event.type === "provider_turn.updated" && !nativeChildTurn) {
-            firstRootProviderTurnId ??= event.providerTurn.id;
-          }
           const storedEvents = yield* providerEventIngestor.ingestNormalized({
-            analyticsContext: nativeChildTurn
-              ? {
-                  ...analyticsContext,
-                  origin: NATIVE_SUBAGENT_TURN_ORIGIN,
-                  segment: "native_child",
-                }
-              : {
-                  ...analyticsContext,
-                  segment:
-                    event.type === "provider_turn.updated" &&
-                    event.providerTurn.id !== firstRootProviderTurnId
-                      ? "continuation"
-                      : input.attempt.reason,
-                },
             providerSessionId: input.providerSessionId,
             providerInstanceId: input.run.providerInstanceId,
             threadId: input.run.threadId,
@@ -2058,7 +1997,7 @@ export const layer: Layer.Layer<
                     cause: new ProviderAdapter.ProviderAdapterEventStreamError({
                       driver: input.providerThread.driver,
                       providerSessionId: input.providerSessionId,
-                      raisedByT3: true,
+                      raisedByFcode: true,
                       cause: "Provider event stream ended without a root terminal.",
                     }),
                   });
@@ -2120,12 +2059,12 @@ export const layer: Layer.Layer<
                     runId: input.run.id,
                     cause,
                   });
-                  // An adapter fails its stream when its runtime is gone. A failed write, or a session T3
+                  // An adapter fails its stream when its runtime is gone. A failed write, or a session fcode
                   // released or saw end, leaves work that can still report or that the releaser settles.
                   const runtimeLost =
                     isRunExecutionIngestError(squashed) &&
                     isProviderEventStreamError(squashed.cause) &&
-                    squashed.cause.raisedByT3 !== true;
+                    squashed.cause.raisedByFcode !== true;
                   if (yield* Ref.get(rootRunFinalized)) {
                     if (runtimeLost) yield* endWorkLostAfterRootRun(completedAt);
                     return;

@@ -1,6 +1,6 @@
-import { resolveAssetUrl } from "@t3tools/client-runtime/state/assets";
-import { executeAtomQuery } from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentId } from "@t3tools/contracts";
+import { resolveAssetUrl } from "@fcode/client-runtime/state/assets";
+import { executeAtomQuery } from "@fcode/client-runtime/state/runtime";
+import type { EnvironmentId } from "@fcode/contracts";
 
 import { appAtomRegistry, subscribeAtomChanges } from "./rpc/atomRegistry";
 import { assetEnvironment } from "./state/assets";

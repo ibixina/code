@@ -1,17 +1,17 @@
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopeThreadRef } from "@fcode/client-runtime/environment";
 import {
   isActiveSubagentStatus,
   type RuntimeSubagent,
   type SubagentWorkflowGroup,
-} from "@t3tools/client-runtime/state/subagentRuntime";
+} from "@fcode/client-runtime/state/subagentRuntime";
 import {
   ThreadId,
   type EnvironmentId,
   type OrchestrationV2Subagent,
   type ServerProvider,
-} from "@t3tools/contracts";
-import { deriveSubagentElapsedMs } from "@t3tools/shared/orchestrationTiming";
-import { formatDuration } from "@t3tools/shared/orchestrationTimingCopy";
+} from "@fcode/contracts";
+import { deriveSubagentElapsedMs } from "@fcode/shared/orchestrationTiming";
+import { formatDuration } from "@fcode/shared/orchestrationTimingCopy";
 import { T, useGT, useMessages } from "gt-react-native";
 import { useState, type ReactNode } from "react";
 import { ScrollView, View } from "react-native";
@@ -214,7 +214,7 @@ function WorkflowMemberRow(props: {
             <Text
               textRole="footnote"
               numberOfLines={1}
-              className="min-w-0 shrink font-t3-medium text-foreground"
+              className="min-w-0 shrink font-fcode-medium text-foreground"
             >
               {presentation.title}
             </Text>
@@ -228,7 +228,7 @@ function WorkflowMemberRow(props: {
             </Text>
             <Text
               textRole="label"
-              className={cn("shrink-0 font-t3-medium", SUBAGENT_TONE_TEXT_CLASS[presentation.tone])}
+              className={cn("shrink-0 font-fcode-medium", SUBAGENT_TONE_TEXT_CLASS[presentation.tone])}
             >
               {presentation.statusLabel}
             </Text>

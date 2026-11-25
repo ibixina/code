@@ -1,13 +1,13 @@
 import { expect } from "e2e";
 
-import { test, WEB } from "./t3.ts";
+import { test, WEB } from "./fcode.ts";
 
 test(
   "A replayed turn streams a reply, shows its tool calls, and finishes",
   WEB,
-  async ({ t3, app, screen }) => {
-    await t3.project("demo", { "src/math.ts": "export const sum = 1 + 1;\n" });
-    await t3.open();
+  async ({ fcode, app, screen }) => {
+    await fcode.project("demo", { "src/math.ts": "export const sum = 1 + 1;\n" });
+    await fcode.open();
 
     await screen.getByRole("textbox").fill("Give me a short tour");
     await screen.getByRole("textbox").press("Enter");

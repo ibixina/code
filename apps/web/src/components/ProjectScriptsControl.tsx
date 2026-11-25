@@ -1,19 +1,19 @@
 import { m } from "../i18n/messages";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import { ThreadDetailsControl } from "./chat/ThreadDetailsControl";
 import {
   AuthSettingsWriteScope,
   type EnvironmentId,
   type ProjectScript,
-  type T3ProjectFileScript,
-} from "@t3tools/contracts";
+  type FcodeProjectFileScript,
+} from "@fcode/contracts";
 import { useAtomValue } from "@effect/atom-react";
-import { DEFAULT_RESOLVED_KEYBINDINGS } from "@t3tools/shared/keybindings";
+import { DEFAULT_RESOLVED_KEYBINDINGS } from "@fcode/shared/keybindings";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import { projectScriptMenuLabel } from "@t3tools/shared/projectScriptsCopy";
+} from "@fcode/client-runtime/state/runtime";
+import { projectScriptMenuLabel } from "@fcode/shared/projectScriptsCopy";
 import { ChevronDownIcon, DownloadIcon, PlusIcon, SettingsIcon, WrenchIcon } from "lucide-react";
 import React, { useState } from "react";
 import { T, useGT, useMessages, Var } from "gt-react";
@@ -60,7 +60,7 @@ import {
 
 export type { NewProjectScriptInput, ProjectScriptActionResult };
 
-const NO_FILE_SCRIPTS: ReadonlyArray<T3ProjectFileScript> = [];
+const NO_FILE_SCRIPTS: ReadonlyArray<FcodeProjectFileScript> = [];
 
 interface ProjectScriptsControlProps {
   displayMode?: "toolbar" | "panel";
@@ -68,7 +68,7 @@ interface ProjectScriptsControlProps {
   onRequestMenuClose?: () => void;
   environmentId: EnvironmentId;
   scripts: ReadonlyArray<ProjectScript>;
-  fileScripts?: ReadonlyArray<T3ProjectFileScript>;
+  fileScripts?: ReadonlyArray<FcodeProjectFileScript>;
   onActionsMenuOpen?: () => void;
   preferredScriptId?: string | null;
   onRunScript?: ((script: ProjectScript) => void) | undefined;
@@ -144,7 +144,7 @@ export default function ProjectScriptsControl({
   const submitScript = (scriptId: string | null, input: NewProjectScriptInput) =>
     scriptId === null ? onAddScript(input) : onUpdateScript(scriptId, input);
 
-  const importFileScript = async (fileScript: T3ProjectFileScript) => {
+  const importFileScript = async (fileScript: FcodeProjectFileScript) => {
     const requestId = ++editorRequestIdRef.current;
     const payload: NewProjectScriptInput = {
       name: fileScript.name,
@@ -185,7 +185,7 @@ export default function ProjectScriptsControl({
       <MenuGroup>
         <MenuGroupLabel>
           <T>
-            From <Var>t3.json</Var>
+            From <Var>fcode.json</Var>
           </T>
         </MenuGroupLabel>
         {importableScripts.map((fileScript) => (
@@ -199,7 +199,7 @@ export default function ProjectScriptsControl({
             <MenuShortcut>
               <DownloadIcon
                 className="size-3.5"
-                aria-label={gt("Import", { $context: "verb, import an action from t3.json" })}
+                aria-label={gt("Import", { $context: "verb, import an action from fcode.json" })}
               />
             </MenuShortcut>
           </MenuItem>

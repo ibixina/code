@@ -9,11 +9,10 @@ import type {
   Todo as OpenCodeTodo,
   ToolPart,
 } from "@opencode-ai/sdk/v2";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { getModelSelectionStringOptionValue } from "@t3tools/shared/model";
-import { causeErrorTag } from "@t3tools/shared/observability";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import { getModelSelectionStringOptionValue } from "@fcode/shared/model";
+import { causeErrorTag } from "@fcode/shared/observability";
 import {
-  type AgentFeedbackMode,
   defaultInstanceIdForDriver,
   type ModelSelection,
   type OrchestrationV2AppThread,
@@ -38,7 +37,7 @@ import {
   type RuntimeRequestId,
   type ThreadId,
   settingsSecretLiteral,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import { OpenCodeSettings } from "../settings.ts";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
@@ -56,35 +55,35 @@ import * as Semaphore from "effect/Semaphore";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
-import { brokenVersionDetail } from "@t3tools/provider-core/server/compatibility";
-import * as ProviderHost from "@t3tools/provider-core/server/ProviderHost";
-import { mcpToolPresentation } from "@t3tools/provider-core/server/mcpToolPresentation";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import * as ProviderEventLoggers from "@t3tools/provider-core/server/ProviderEventLoggers";
+import { brokenVersionDetail } from "@fcode/provider-core/server/compatibility";
+import * as ProviderHost from "@fcode/provider-core/server/ProviderHost";
+import { mcpToolPresentation } from "@fcode/provider-core/server/mcpToolPresentation";
+import * as McpProviderSessions from "@fcode/provider-core/server/McpProviderSessions";
+import * as ProviderEventLoggers from "@fcode/provider-core/server/ProviderEventLoggers";
 import {
   structuralProtocolMethod,
   summarizeNativeProtocolPayload,
-} from "@t3tools/provider-core/server/nativeProtocolLogging";
-import { mergeProviderInstanceEnvironment } from "@t3tools/provider-core/server/instanceEnvironment";
-import { t3OrchestrationSystemPrompt } from "@t3tools/provider-core/server/orchestrationInstructions";
-import { buildRuntimeInstructions } from "@t3tools/provider-core/server/runtimeInstructions";
+} from "@fcode/provider-core/server/nativeProtocolLogging";
+import { mergeProviderInstanceEnvironment } from "@fcode/provider-core/server/instanceEnvironment";
+import { fcodeOrchestrationSystemPrompt } from "@fcode/provider-core/server/orchestrationInstructions";
+import { buildRuntimeInstructions } from "@fcode/provider-core/server/runtimeInstructions";
 import * as OpenCodeRuntime from "./OpenCodeRuntime.ts";
 import { readableProviderErrorMessage } from "./providerErrorMessage.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
-import { makeProviderFailure } from "@t3tools/provider-core/server/failure";
-import { turnScopedSelectionTransition } from "@t3tools/provider-core/server/selectionTransition";
-import { providerMessageTextWithAttachmentPaths } from "@t3tools/provider-core/server/attachmentPrompt";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
+import * as ProviderContinuationRequests from "@fcode/provider-core/server/ProviderContinuationRequests";
+import { makeProviderFailure } from "@fcode/provider-core/server/failure";
+import { turnScopedSelectionTransition } from "@fcode/provider-core/server/selectionTransition";
+import { providerMessageTextWithAttachmentPaths } from "@fcode/provider-core/server/attachmentPrompt";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
 import {
   ProviderAdapterDriverCreateError,
   type ProviderAdapterDriver,
   type ProviderAdapterDriverCreateInput,
-} from "@t3tools/provider-core/server/adapterDriver";
+} from "@fcode/provider-core/server/adapterDriver";
 import {
   makeSubagentChildThread,
   subagentThreadTitle,
-} from "@t3tools/provider-core/server/subagentProjection";
+} from "@fcode/provider-core/server/subagentProjection";
 import { openCodeCommandFailed, openCodeToolOutput, openCodeToolTurnItem } from "./toolItems.ts";
 
 export const OPENCODE_PROVIDER = ProviderDriverKind.make("opencode");
@@ -297,7 +296,6 @@ interface ActiveOpenCodeTurn {
   readonly appThread: OrchestrationV2AppThread;
   readonly modelSelection: ModelSelection;
   readonly runtimePolicy: ProviderAdapter.ProviderAdapterV2RuntimePolicy;
-  readonly agentFeedback: AgentFeedbackMode;
   readonly providerTurnId: OrchestrationV2ProviderTurn["id"];
   readonly providerThreadId: OrchestrationV2ProviderTurn["providerThreadId"];
   readonly runOrdinal: number;
@@ -409,7 +407,7 @@ interface OpenCodeSubagentContext {
   launch: ToolPart | null;
 }
 
-/** Root work OpenCode began with no T3 turn, such as a background task's result; held until a run admits it. */
+/** Root work OpenCode began with no fcode turn, such as a background task's result; held until a run admits it. */
 interface OpenCodeWake {
   readonly events: Array<OpenCodeEvent>;
   // A user message alone can be a late update; only a busy root is work worth a run.
@@ -1093,15 +1091,15 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
         });
 
         const mcpSession = yield* mcpSessions.read(input.threadId);
-        const hasT3Mcp = mcpSession !== undefined && !connection.external;
-        const orchestrationSystemPrompt = t3OrchestrationSystemPrompt(
-          hasT3Mcp,
+        const hasFcodeMcp = mcpSession !== undefined && !connection.external;
+        const orchestrationSystemPrompt = fcodeOrchestrationSystemPrompt(
+          hasFcodeMcp,
           mcpSession?.capabilities?.has("device") === true,
         );
-        if (hasT3Mcp) {
+        if (hasFcodeMcp) {
           yield* OpenCodeRuntime.runOpenCodeSdk("mcp.add", () =>
             client.mcp.add({
-              name: "t3-code",
+              name: "fcode",
               config: {
                 type: "remote",
                 url: mcpSession.endpoint,
@@ -2515,7 +2513,6 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
             appThread: state.appThread,
             modelSelection: state.appThread.modelSelection,
             runtimePolicy: state.parentSubagent.parentTurn.runtimePolicy,
-            agentFeedback: state.parentSubagent.parentTurn.agentFeedback,
             providerTurnId,
             providerThreadId: providerTurn.providerThreadId,
             runOrdinal: state.parentSubagent.parentTurn.runOrdinal,
@@ -2902,7 +2899,7 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
             onRunEndedWithoutStarting: () => stopWake(state, wake),
           });
 
-        // Callers hold eventPermit. A root user message with no T3 turn starts a wake; its work stays
+        // Callers hold eventPermit. A root user message with no fcode turn starts a wake; its work stays
         // held, with that of children no turn has claimed yet, until startTurn takes it.
         const acceptEvent = Effect.fnUntraced(function* (event: OpenCodeEvent) {
           const sessionId = sessionWorkEventSessionId(event);
@@ -3517,7 +3514,6 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
               buildRuntimeInstructions({
                 harness: "OpenCode",
                 model: turn.modelSelection.model,
-                agentFeedback: hasT3Mcp ? turn.agentFeedback : "off",
                 runtimePolicy: turn.runtimePolicy,
               }),
             ]
@@ -3791,7 +3787,6 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
                 appThread: turnInput.appThread,
                 modelSelection: turnInput.modelSelection,
                 runtimePolicy: turnInput.runtimePolicy,
-                agentFeedback: turnInput.agentFeedback ?? "off",
                 providerTurnId,
                 providerThreadId: turnInput.providerThread.id,
                 runOrdinal: turnInput.runOrdinal,

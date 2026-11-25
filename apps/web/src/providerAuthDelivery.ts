@@ -1,5 +1,5 @@
-import { runAtomCommand } from "@t3tools/client-runtime/state/runtime";
-import { readCodexAuthDelivery } from "@t3tools/shared/codexAuthHandoff";
+import { runAtomCommand } from "@fcode/client-runtime/state/runtime";
+import { readCodexAuthDelivery } from "@fcode/shared/codexAuthHandoff";
 import { msg } from "gt-react";
 
 import { toastManager } from "./components/ui/toast";

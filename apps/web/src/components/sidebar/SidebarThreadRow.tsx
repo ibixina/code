@@ -1,5 +1,5 @@
 import { useAtomMount, useAtomValue } from "@effect/atom-react";
-import { asLaunchingThread } from "@t3tools/client-runtime/state/thread-inbox";
+import { asLaunchingThread } from "@fcode/client-runtime/state/thread-inbox";
 import { ThreadHoverCard, ThreadHoverCardPopup } from "../ThreadHoverCard";
 import { ThreadTerminalStatusButton } from "../ThreadStatusIndicators";
 import { discardComposerDraft } from "../../lib/discardComposerDraft";
@@ -8,7 +8,7 @@ import { contextMenuSourceOf } from "../../contextMenuSource";
 import { requestCustomSnooze } from "../CustomSnoozeDialog";
 import { useSupportsMultiplePullRequests } from "~/hooks/useSupportsMultiplePullRequests";
 import { useDeadlinePassed } from "~/hooks/useDeadline";
-import { resolveThreadCurrentPullRequestLink } from "@t3tools/client-runtime/thread-pull-requests";
+import { resolveThreadCurrentPullRequestLink } from "@fcode/client-runtime/thread-pull-requests";
 import { useDraggable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,28 +16,28 @@ import {
   canSnooze,
   hasQueuedTurnStart,
   QUEUED_TURN_START_GRACE_MS,
-} from "@t3tools/client-runtime/state/thread-settled";
-import { formatDiffCount } from "@t3tools/client-runtime/diff-count";
+} from "@fcode/client-runtime/state/thread-settled";
+import { formatDiffCount } from "@fcode/client-runtime/diff-count";
 import {
   resolveSettledThreadTimestamp,
   resolveThreadActivityTimestamp,
-} from "@t3tools/client-runtime/state/thread-sort";
-import { type EnvironmentThreadSearchMatch } from "@t3tools/client-runtime/state/thread-search";
+} from "@fcode/client-runtime/state/thread-sort";
+import { type EnvironmentThreadSearchMatch } from "@fcode/client-runtime/state/thread-search";
 import {
   formatWorkingDurationLabel,
   resolveThreadProviderStack,
-} from "@t3tools/client-runtime/state/models";
-import { scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime/environment";
-import { toServerClock } from "@t3tools/client-runtime/clock";
+} from "@fcode/client-runtime/state/models";
+import { scopeThreadRef, scopedThreadKey } from "@fcode/client-runtime/environment";
+import { toServerClock } from "@fcode/client-runtime/clock";
 import {
   AuthOrchestrationOperateScope,
   type ContextMenuSource,
   type EnvironmentId,
   type EnvironmentMachineKind,
   type ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 
-import type { TimestampFormat } from "@t3tools/contracts/settings";
+import type { TimestampFormat } from "@fcode/contracts/settings";
 import {
   AlarmClockIcon,
   AlarmClockOffIcon,
@@ -90,7 +90,7 @@ import {
 } from "../../state/session";
 import { formatRelativeTime, parseTimestampDate } from "../../timestampFormat";
 import type { SidebarThreadSummary } from "../../types";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentProject } from "@fcode/client-runtime/state/shell";
 import { cn } from "~/lib/utils";
 import { textDirection } from "~/textDirection";
 import { EnvironmentMachineIcon } from "../EnvironmentMachineIcon";
@@ -617,6 +617,7 @@ type SidebarThreadRowProps = {
   sweepAction: SidebarSweepAction | null;
   snoozeWakeLabelText: string | null;
   wokeAt: string | null;
+  returnedUpdatedAt?: string | undefined;
   isActive: boolean;
   // Set on the active row only; scrolls it into view when a reveal is owed.
   revealRef?: ((row: HTMLElement, threadKey: string) => (() => void) | undefined) | undefined;
@@ -802,6 +803,10 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
   const isUnread = hasUnseenCompletion({ ...thread, lastVisitedAt });
   const status = resolveSidebarRowStatus({ ...thread, lastVisitedAt });
   const lastVisitedDate = lastVisitedAt === undefined ? null : parseTimestampDate(lastVisitedAt);
+  const returnedAtDate =
+    props.returnedUpdatedAt === undefined ? null : parseTimestampDate(props.returnedUpdatedAt);
+  const isUnseenReturn =
+    returnedAtDate !== null && (lastVisitedDate === null || lastVisitedDate < returnedAtDate);
   const wokeAtDate = props.wokeAt === null ? null : parseTimestampDate(props.wokeAt);
   const isWoke =
     wokeAtDate !== null &&
@@ -809,7 +814,7 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
     thread.settledOverride !== "settled";
   const shouldRecede = shouldRecedeSidebarThread({
     status,
-    isUnread,
+    isUnread: isUnread || isUnseenReturn,
     isWoke,
     isActive: props.isActive,
     isSelected,
@@ -1050,9 +1055,11 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
         ? "bg-sidebar-row-selected text-sidebar-foreground light:ring-1 light:ring-inset light:ring-sidebar-border/70"
         : hasUnsentDraft
           ? cn(draftSurfaceClassName, "text-sidebar-foreground")
-          : shouldRecede
-            ? "text-sidebar-muted-foreground/75 hover:bg-sidebar-row-hover hover:text-sidebar-foreground"
-            : "bg-transparent text-sidebar-foreground hover:bg-sidebar-row-hover",
+          : isUnread || isUnseenReturn
+            ? "bg-success/12 text-sidebar-foreground hover:bg-success/18"
+            : shouldRecede
+              ? "text-sidebar-muted-foreground/75 hover:bg-sidebar-row-hover hover:text-sidebar-foreground"
+              : "bg-transparent text-sidebar-foreground hover:bg-sidebar-row-hover",
     shouldRecede &&
       (status === "preparing" || status === "working") &&
       "opacity-70 transition-opacity hover:opacity-100 focus-within:opacity-100 motion-reduce:transition-none",

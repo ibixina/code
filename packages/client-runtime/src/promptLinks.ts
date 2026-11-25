@@ -8,10 +8,10 @@ import {
   type ThreadLinkedPullRequest,
   type ThreadId,
   type ThreadPullRequestLink,
-} from "@t3tools/contracts";
-import { resolveSelectableModel, type SelectableModelOption } from "@t3tools/shared/model";
+} from "@fcode/contracts";
+import { resolveSelectableModel, type SelectableModelOption } from "@fcode/shared/model";
 import type { AsyncResult } from "effect/reactivity";
-import type { PromptLinkPullRequest, PromptLinkRepository } from "@t3tools/shared/promptLinks";
+import type { PromptLinkPullRequest, PromptLinkRepository } from "@fcode/shared/promptLinks";
 import {
   threadPullRequestKeyOf,
   threadPullRequestsOf,

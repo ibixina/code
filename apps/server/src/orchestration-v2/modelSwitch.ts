@@ -3,9 +3,9 @@ import {
   type ModelSelection,
   type OrchestrationV2ThreadProjection,
   type OrchestrationV2TurnItem,
-} from "@t3tools/contracts";
-import { modelSelectionsEqual } from "@t3tools/shared/model";
-import { runRanAfter } from "@t3tools/shared/orchestrationV2ThreadError";
+} from "@fcode/contracts";
+import { modelSelectionsEqual } from "@fcode/shared/model";
+import { runRanAfter } from "@fcode/shared/orchestrationV2ThreadError";
 
 /**
  * Clients hide pending queued messages, fold async answers into their question, and replace

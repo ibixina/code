@@ -3,8 +3,8 @@ import {
   AuthRelayReadScope,
   type EnvironmentCloudLinkStateResult,
   type EnvironmentId,
-} from "@t3tools/contracts";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+} from "@fcode/contracts";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import * as Cause from "effect/Cause";
 import { useGT, useMessages } from "gt-react";
 import { AsyncResult, Atom } from "effect/reactivity";
@@ -60,7 +60,7 @@ export function useCloudLinkState(environmentId: EnvironmentId | null) {
     const cause = Cause.squash(result.cause);
     error =
       (cause instanceof Error ? thrownErrorMessage(cause, resolve) : null) ??
-      gt("Could not read T3 Connect link state.");
+      gt("Could not read fcode Connect link state.");
   }
 
   return {

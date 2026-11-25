@@ -2,8 +2,8 @@ import {
   connectionErrorText,
   connectionStatusText,
   type EnvironmentConnectionPresentation,
-} from "@t3tools/client-runtime/connection";
-import type { MarkedText } from "@t3tools/client-runtime/errors";
+} from "@fcode/client-runtime/connection";
+import type { MarkedText } from "@fcode/client-runtime/errors";
 
 import { m, type MessageResolver } from "../../i18n/messages";
 

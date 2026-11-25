@@ -6,7 +6,7 @@ import type {
   PullRequestDetail,
   PullRequestReaction,
   PullRequestReactionContent,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 
 export function canReactPullRequestComment(
   detail: Pick<PullRequestDetail, "provider" | "capabilities">,

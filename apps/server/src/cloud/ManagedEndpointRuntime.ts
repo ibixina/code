@@ -1,7 +1,7 @@
-import type { RelayManagedEndpointRuntimeConfig } from "@t3tools/contracts/relay";
-import { RotatingFileSink, RotatingFileSinkError } from "@t3tools/shared/logging";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import * as RelayClient from "@t3tools/shared/relayClient";
+import type { RelayManagedEndpointRuntimeConfig } from "@fcode/contracts/relay";
+import { RotatingFileSink, RotatingFileSinkError } from "@fcode/shared/logging";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import * as RelayClient from "@fcode/shared/relayClient";
 import * as Clock from "effect/Clock";
 import * as Config from "effect/Config";
 import * as Context from "effect/Context";
@@ -88,7 +88,7 @@ export class CloudManagedEndpointRuntime extends Context.Service<
     readonly tunnelConnected: Stream.Stream<void>;
     readonly withLinkStateLock: <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
   }
->()("t3/cloud/ManagedEndpointRuntime/CloudManagedEndpointRuntime") {}
+>()("fcode/cloud/ManagedEndpointRuntime/CloudManagedEndpointRuntime") {}
 
 interface ActiveConnector {
   readonly child: ChildProcessSpawner.ChildProcessHandle;
@@ -233,7 +233,7 @@ export const make = Effect.gen(function* () {
   const relayClientLedger = yield* RelayClientLedger.RelayClientLedger;
   const secrets = yield* ServerSecretStore.ServerSecretStore;
   const httpClient = HttpClient.withScope(yield* HttpClient.HttpClient);
-  // Without T3 Connect no connector ever runs, whoever asks for one.
+  // Without fcode Connect no connector ever runs, whoever asks for one.
   const connectAllowed = ManagedLimits.allowsConnect(yield* ManagedPolicy.ManagedPolicy);
   const activeRef = yield* Ref.make<ActiveConnector | null>(null);
   const desiredConfigRef = yield* Ref.make<RelayManagedEndpointRuntimeConfig | null>(null);

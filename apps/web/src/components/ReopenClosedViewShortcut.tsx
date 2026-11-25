@@ -1,12 +1,12 @@
 import { m } from "../i18n/messages";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@fcode/client-runtime/errors";
 import { useAtomValue } from "@effect/atom-react";
 import {
   scopeProjectRef,
   scopedThreadKey,
   scopeThreadRef,
-} from "@t3tools/client-runtime/environment";
-import type { ScopedThreadRef } from "@t3tools/contracts";
+} from "@fcode/client-runtime/environment";
+import type { ScopedThreadRef } from "@fcode/contracts";
 import { linkOptions, useNavigate, useParams, useRouter } from "@tanstack/react-router";
 import { useGT } from "gt-react";
 import { useEffect, useEffectEvent, useRef } from "react";
@@ -218,7 +218,7 @@ export function ReopenClosedViewShortcut() {
       });
   });
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- subscribes to window keydown and the desktop menu action for the reopen closed view shortcut
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- subscribes to window keydown and the desktop menu action for the reopen closed view shortcut
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (
@@ -253,7 +253,7 @@ export function ReopenClosedViewShortcut() {
     };
   }, [keybindings, previewOpen, terminalOpen]);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- registers forwarded shortcut chords with the desktop preview bridge and clears them on cleanup
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- registers forwarded shortcut chords with the desktop preview bridge and clears them on cleanup
   useEffect(() => {
     const preview = window.desktopBridge?.preview;
     if (!preview) return;

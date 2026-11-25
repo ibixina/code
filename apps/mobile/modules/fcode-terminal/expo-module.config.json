@@ -1,0 +1,10 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["FcodeTerminalModule"],
+    "podspecPath": "FcodeTerminalNative.podspec"
+  },
+  "android": {
+    "modules": ["expo.modules.t3terminal.FcodeTerminalModule"]
+  }
+}

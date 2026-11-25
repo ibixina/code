@@ -22,7 +22,7 @@ const NativeSidebarTabBar = requireNativeView<
     onSelectionChange: (event: NativeSyntheticEvent<{ tab: string }>) => void;
     onCompose: () => void;
   }
->("T3NativeControls", "SidebarTabBar");
+>("FcodeNativeControls", "SidebarTabBar");
 
 /**
  * The workspace tab bar wherever it's drawn. A sidebar column hosts it so it slides with the

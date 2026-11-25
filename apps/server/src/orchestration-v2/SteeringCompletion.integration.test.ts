@@ -21,12 +21,12 @@ import {
   TurnItemId,
   type ModelSelection,
   type OrchestrationV2DomainEvent,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import {
   expandAssistantCitationsForProvider,
   serializeAssistantCitation,
-} from "@t3tools/shared/assistantCitations";
-import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
+} from "@fcode/shared/assistantCitations";
+import { projectComposerContextForProvider } from "@fcode/shared/composerContextReferences";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -48,9 +48,9 @@ import * as ServerSettings from "../serverSettings.ts";
 import * as SqlitePersistence from "../persistence/Sqlite.ts";
 import * as CommandReceiptStore from "./CommandReceiptStore.ts";
 import { userFacingDispatchErrorMessage } from "./UserFacingErrors.ts";
-import { checkpointWorkspace } from "@t3tools/provider-testing/replayWorkspace";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
+import { checkpointWorkspace } from "@fcode/provider-testing/replayWorkspace";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
+import * as ProviderContinuationRequests from "@fcode/provider-core/server/ProviderContinuationRequests";
 
 const driver = ProviderDriverKind.make("codex");
 const instanceId = ProviderInstanceId.make("codex");
@@ -1328,27 +1328,6 @@ it.effect("restarts the turn for an image when native steering takes text only",
       const before = yield* orchestrator.getThreadProjection(threadId);
       const originalStart = before.runs[0]!.startedAt;
       assert.isNotNull(originalStart);
-      // A feedback card the run showed before the restart, still waiting for the user.
-      const card = {
-        type: "feedback_request.record" as const,
-        threadId,
-        runId: before.runs[0]!.id,
-        nodeId: before.runs[0]!.rootNodeId!,
-        turnItemId: TurnItemId.make("turn-item:feedback-request:steer"),
-        preview: {
-          kind: "bug" as const,
-          subject: "general",
-          expected: "a",
-          actual: "b",
-          workaround: "",
-          trace: null,
-        },
-      };
-      yield* orchestrator.dispatch({
-        ...card,
-        commandId: CommandId.make("feedback-pending"),
-        feedbackStatus: "pending",
-      });
       yield* TestClock.adjust("10 seconds");
       yield* orchestrator.dispatch({
         type: "message.dispatch",
@@ -1389,21 +1368,8 @@ it.effect("restarts the turn for an image when native steering takes text only",
           ["look at this", 1],
         ],
       );
-      // The restart replaced the root, and the user's answer can still close the card.
-      assert.notEqual(after.runs[0]?.rootNodeId, card.nodeId);
-      yield* orchestrator.dispatch({
-        ...card,
-        commandId: CommandId.make("feedback-sent"),
-        feedbackStatus: "sent",
-      });
-      const closed = (yield* orchestrator.getThreadProjection(threadId)).turnItems.find(
-        (item) => item.id === card.turnItemId,
-      );
-      assert.deepInclude(closed, {
-        status: "completed",
-        feedbackStatus: "sent",
-        nodeId: card.nodeId,
-      });
+      // The restart replaced the root.
+      assert.notEqual(after.runs[0]?.rootNodeId, before.runs[0]?.rootNodeId);
     }).pipe(Effect.provide(layer));
   }),
 );
@@ -2848,7 +2814,7 @@ it.effect.each(["auto", "deferred", "promote-edited"] as const)(
           const text = `${"x".repeat(80_000)}${citation}`;
           // Context excerpts are not part of the limit, matching the web composer's check.
           const largeContextText =
-            "Read [one](t3-context://v1/terminal/one) and [two](t3-context://v1/terminal/two)";
+            "Read [one](fcode-context://v1/terminal/one) and [two](fcode-context://v1/terminal/two)";
           const context = {
             version: 1 as const,
             records: (["one", "two"] as const).map((id) => ({
@@ -3050,7 +3016,7 @@ it.effect("steers a promoted scheduled delivery with the thread's current select
 
         const projection = yield* orchestrator.getThreadProjection(threadId);
         assert.deepEqual(steered, [
-          '[T3 Code: scheduled task "task:scheduled" sent this prompt, not the user typing in this chat.]\n\nscheduled',
+          '[fcode: scheduled task "task:scheduled" sent this prompt, not the user typing in this chat.]\n\nscheduled',
         ]);
         assert.deepEqual(projection.thread.modelSelection, composerSelection);
       }).pipe(Effect.provide(layer));
@@ -3948,7 +3914,7 @@ it.effect("starts a restart that stops the running turn ahead of an older held q
             "first",
             ...["second", "do this instead"].map(
               (text) =>
-                `[T3 Code: this message came through T3 Code's tools, not from the user typing in this chat.]\n\n${text}`,
+                `[fcode: this message came through fcode's tools, not from the user typing in this chat.]\n\n${text}`,
             ),
           ],
         },
@@ -4072,7 +4038,7 @@ it.effect("replays an accepted steer after its target turn completes", () =>
       assert.equal(fresh._tag, "ThreadManagementNoSteerableRunError");
       yield* worker.drain();
       assert.deepEqual(steered, [
-        `[T3 Code: this message came through T3 Code's tools, not from the user typing in this chat.]\n\n${input.text}`,
+        `[fcode: this message came through fcode's tools, not from the user typing in this chat.]\n\n${input.text}`,
       ]);
       assert.lengthOf(started, 1);
     }).pipe(

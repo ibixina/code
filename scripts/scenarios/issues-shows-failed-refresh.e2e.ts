@@ -1,14 +1,14 @@
 /// <reference lib="dom" />
-import type { IssueDetail, IssueRef } from "@t3tools/contracts";
+import type { IssueDetail, IssueRef } from "@fcode/contracts";
 import { expect } from "e2e";
 
-import { test, WEB } from "./t3.ts";
+import { test, WEB } from "./fcode.ts";
 
 test(
   "A failed issue refresh tells the reader what went wrong",
   WEB,
-  async ({ t3, app, browser, screen }) => {
-    await t3.project("demo");
+  async ({ fcode, app, browser, screen }) => {
+    await fcode.project("demo");
     await browser.addInitScript(() => {
       let rateLimited = false;
       Object.assign(window, {
@@ -102,7 +102,7 @@ test(
       };
     });
 
-    await t3.open("/issues?selectedProjectId=demo&tracker=github&scope=example/demo&key=42");
+    await fcode.open("/issues?selectedProjectId=demo&tracker=github&scope=example/demo&key=42");
     await screen.getByText("Issue before the rate limit", { exact: true }).waitFor();
     await browser.evaluate(() => {
       (window as unknown as { armIssueRefreshFailure: () => void }).armIssueRefreshFailure();

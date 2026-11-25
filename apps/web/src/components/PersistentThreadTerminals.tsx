@@ -4,10 +4,10 @@ import {
   type ResolvedKeybindingsConfig,
   type ScopedThreadRef,
   type ThreadId,
-} from "@t3tools/contracts";
-import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import { projectScriptCwd, projectScriptRuntimeEnv } from "@t3tools/shared/projectScripts";
-import { resolveTerminalSessionLabel } from "@t3tools/shared/terminalLabelsCopy";
+} from "@fcode/contracts";
+import { scopeProjectRef } from "@fcode/client-runtime/environment";
+import { projectScriptCwd, projectScriptRuntimeEnv } from "@fcode/shared/projectScripts";
+import { resolveTerminalSessionLabel } from "@fcode/shared/terminalLabelsCopy";
 import { useMessages } from "gt-react";
 import { memo, useEffect } from "react";
 import { useComposerDraftStore } from "../composerDraftStore";
@@ -129,7 +129,7 @@ export const PersistentThreadTerminalDrawer = memo(function PersistentThreadTerm
   const storeCloseTerminal = useTerminalUiStateStore((state) => state.closeTerminal);
   const reconcileTerminalIds = useTerminalUiStateStore((state) => state.reconcileTerminalIds);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- feeds the server's terminal list into the terminal UI store, which owns how local ids follow it
+  // oxlint-disable-next-line fcode/no-unreasoned-state-sync -- feeds the server's terminal list into the terminal UI store, which owns how local ids follow it
   useEffect(() => {
     if (snapshotId === undefined) return;
     reconcileTerminalIds(threadRef, serverOrderedTerminalIds, snapshotId);

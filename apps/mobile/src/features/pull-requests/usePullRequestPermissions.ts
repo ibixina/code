@@ -3,9 +3,9 @@ import {
   canEditPullRequestChangeRequest,
   canEditPullRequestComment,
   canEditPullRequestMaintainerEdits,
-} from "@t3tools/client-runtime/pull-request-editing";
-import { canReactPullRequestComment } from "@t3tools/client-runtime/pull-request-reactions";
-import type { PullRequestComment, PullRequestDetail } from "@t3tools/contracts";
+} from "@fcode/client-runtime/pull-request-editing";
+import { canReactPullRequestComment } from "@fcode/client-runtime/pull-request-reactions";
+import type { PullRequestComment, PullRequestDetail } from "@fcode/contracts";
 import { usePullRequestConnected } from "./usePullRequestConnected";
 import { composerPullRequests } from "../../state/pull-requests";
 import { pullRequestTarget, type PullRequestParams } from "./usePullRequestDiff";

@@ -1,12 +1,12 @@
-import type { ProviderOptionChoice, ProviderOptionDescriptor } from "@t3tools/contracts";
+import type { ProviderOptionChoice, ProviderOptionDescriptor } from "@fcode/contracts";
 import type * as EffectAcpSchema from "effect-acp/compat";
 
 import type { AcpSessionModeState } from "./runtimeModel.ts";
 
-export const ACP_SESSION_MODE_OPTION_ID = "_t3/session-mode";
+export const ACP_SESSION_MODE_OPTION_ID = "_fcode/session-mode";
 
-/** Encodes a valid empty ACP choice as a non-empty T3 ID; map back before applying. */
-export const ACP_EMPTY_OPTION_VALUE = "_t3/empty";
+/** Encodes a valid empty ACP choice as a non-empty fcode ID; map back before applying. */
+export const ACP_EMPTY_OPTION_VALUE = "_fcode/empty";
 
 const MAX_OPTION_DESCRIPTORS = 16;
 const MAX_OPTION_CHOICES = 64;
@@ -67,7 +67,7 @@ export function acpProviderOptionDescriptors(input: {
   let hasModeCategory = false;
 
   for (const option of input.configOptions ?? []) {
-    // Model and collaboration_mode choices use T3 model and interaction controls.
+    // Model and collaboration_mode choices use fcode model and interaction controls.
     if (option.category === "model" || option.category === "collaboration_mode") {
       continue;
     }

@@ -4,20 +4,20 @@ import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 
 import { run } from "./shell.ts";
-import { runPromise, test, WEB } from "./t3.ts";
+import { runPromise, test, WEB } from "./fcode.ts";
 
 test(
   "A failed commit message stays in the repository it was written for",
   WEB,
-  async ({ t3, app, browser, screen }) => {
-    const first = await t3.project("first-repository");
-    const second = await t3.project("second-repository");
-    const firstThread = await t3.thread({
+  async ({ fcode, app, browser, screen }) => {
+    const first = await fcode.project("first-repository");
+    const second = await fcode.project("second-repository");
+    const firstThread = await fcode.thread({
       project: first,
       title: "First checkout",
       messages: ["First"],
     });
-    await t3.thread({ project: second, title: "Second checkout", messages: ["Second"] });
+    await fcode.thread({ project: second, title: "Second checkout", messages: ["Second"] });
 
     await runPromise(
       Effect.gen(function* () {
@@ -40,7 +40,7 @@ test(
     );
 
     await browser.setViewport({ width: 1920, height: 1000 });
-    await t3.open(firstThread);
+    await fcode.open(firstThread);
     const openCommit = async (file: string) => {
       await screen.getByRole("button", "Git action options").tap();
       await screen.getByRole("menuitem", "Commit", { exact: true }).tap();

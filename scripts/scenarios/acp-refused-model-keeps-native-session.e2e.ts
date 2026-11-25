@@ -6,8 +6,8 @@ import { expect } from "e2e";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import { T3_HOME } from "../e2e.config.ts";
-import { makeState, rpcClient, runPromise, test, WEB } from "./t3.ts";
+import { FCODE_HOME } from "../e2e.config.ts";
+import { makeState, rpcClient, runPromise, test, WEB } from "./fcode.ts";
 
 // The agent drops "model-a" from its model list after its first reply, as an agent that lost its
 // network can, and offers it again once the scenario creates the online flag. Each agent process
@@ -65,11 +65,11 @@ for await (const line of createInterface({ input: process.stdin })) {
 test(
   "An ACP agent that refuses the model keeps its native session for the next message",
   WEB,
-  async ({ t3, app, screen, browser }) => {
-    const project = await t3.project("demo");
+  async ({ fcode, app, screen, browser }) => {
+    const project = await fcode.project("demo");
     const script = NodePath.join(project, "refusing-acp.mjs");
     const onlineFlag = NodePath.join(project, "online.flag");
-    const settingsPath = NodePath.join(T3_HOME, "userdata/settings.json");
+    const settingsPath = NodePath.join(FCODE_HOME, "userdata/settings.json");
     const originalSettings = await NodeFSP.readFile(settingsPath, "utf8");
     const settings = JSON.parse(originalSettings);
     await NodeFSP.writeFile(script, ACP);
@@ -84,7 +84,7 @@ test(
       // The settings watcher registers the agent asynchronously; start once the server lists it.
       await runPromise(
         Effect.gen(function* () {
-          const client = yield* rpcClient(T3_HOME, app.baseUrl ?? "");
+          const client = yield* rpcClient(FCODE_HOME, app.baseUrl ?? "");
           yield* client.subscribeServerConfig({}).pipe(
             Stream.filter((event) =>
               (event.type === "snapshot"
@@ -98,7 +98,7 @@ test(
           );
         }).pipe(Effect.scoped),
       );
-      const { cli } = makeState(T3_HOME);
+      const { cli } = makeState(FCODE_HOME);
       type Run = { threadId: string; status: string; reply: string | null; error: string | null };
       const refusedModel = (run: Run) =>
         run.status === "failed" && (run.error ?? "").includes('did not accept the model "model-a"');
@@ -143,7 +143,7 @@ test(
 
       // The composer names the model only once the server has the agent's model list offering it,
       // which the server publishes after updating the list the next turn start checks.
-      await t3.open({ threadId: first.threadId });
+      await fcode.open({ threadId: first.threadId });
       const modelLabel = browser.locator("[data-chat-provider-model-picker-label]").first();
       await NodeFSP.writeFile(onlineFlag, "online");
       await expect(modelLabel).toHaveText("Model A", { timeout: 30_000 });

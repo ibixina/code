@@ -1,7 +1,7 @@
-import { resolveProviderProbeTimeoutMs } from "@t3tools/provider-core/server/snapshotProbe";
+import { resolveProviderProbeTimeoutMs } from "@fcode/provider-core/server/snapshotProbe";
 import * as NodeURL from "node:url";
 
-import type { ChatAttachment, ModelSelection, ProviderApprovalDecision } from "@t3tools/contracts";
+import type { ChatAttachment, ModelSelection, ProviderApprovalDecision } from "@fcode/contracts";
 import {
   createOpencodeClient,
   type Agent,
@@ -32,19 +32,19 @@ import * as Base64Url from "effect/encoding/Base64Url";
 import * as ChildProcess from "effect/process/ChildProcess";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 
-import { signalProcessGroup } from "@t3tools/provider-core/server/processGroup";
-import { isWindowsCommandNotFound } from "@t3tools/provider-core/server/snapshotProbe";
+import { signalProcessGroup } from "@fcode/provider-core/server/processGroup";
+import { isWindowsCommandNotFound } from "@fcode/provider-core/server/snapshotProbe";
 import * as OpenCodeServerLedger from "./OpenCodeServerLedger.ts";
-import { collectStreamAsString } from "@t3tools/provider-core/server/snapshotProbe";
-import * as NetService from "@t3tools/shared/Net";
-import { AgentScope } from "@t3tools/shared/AgentScope";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { collectStreamAsString } from "@fcode/provider-core/server/snapshotProbe";
+import * as NetService from "@fcode/shared/Net";
+import { AgentScope } from "@fcode/shared/AgentScope";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import {
   DEFAULT_VARIANT_CHOICE_ID,
   getModelSelectionStringOptionValue,
-} from "@t3tools/shared/model";
-import { parseSemver } from "@t3tools/shared/semver";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+} from "@fcode/shared/model";
+import { parseSemver } from "@fcode/shared/semver";
+import { resolveSpawnCommand } from "@fcode/shared/shell";
 const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.fromJsonString(Schema.Unknown));
 const OPENCODE_EMPTY_CONFIG_CONTENT = "{}";
 
@@ -365,7 +365,7 @@ export class OpenCodeRuntime extends Context.Service<
       client: OpencodeClient,
     ) => Effect.Effect<ReadonlyArray<OpenCodeSkill>, OpenCodeRuntimeError>;
   }
->()("@t3tools/provider-opencode/server/OpenCodeRuntime") {}
+>()("@fcode/provider-opencode/server/OpenCodeRuntime") {}
 
 export function parseServerUrlFromOutput(output: string): string | null {
   // The last element is an unfinished line; a chunk can end mid-URL.
@@ -619,7 +619,7 @@ const makeOpenCodeRuntime = Effect.gen(function* () {
       shared: true,
     });
     const spawnCommand = yield* resolveCommand(launch.command, launch.args, input.environment);
-    // A server T3 starts always has a password; without a configured one it is generated and
+    // A server fcode starts always has a password; without a configured one it is generated and
     // kept in memory.
     const serverPassword =
       resolveOpenCodeServerPassword({

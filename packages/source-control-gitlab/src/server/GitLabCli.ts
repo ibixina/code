@@ -15,18 +15,18 @@ import {
   type SourceControlRepositoryVisibility,
   type VcsError,
   type VcsProcessExitFailureKind,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { parseGitRemoteHost } from "@t3tools/source-control-core/shared/definition";
-import * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import { parseGitRemoteHost } from "@fcode/source-control-core/shared/definition";
+import * as SourceControlHost from "@fcode/source-control-core/server/SourceControlHost";
 import {
   decodeGitLabMergeRequestJson,
   decodeGitLabMergeRequestListJson,
   type NormalizedGitLabMergeRequestRecord,
   withSourceProjectPath,
 } from "./gitLabMergeRequests.ts";
-import * as SourceControlProvider from "@t3tools/source-control-core/server/SourceControlProvider";
+import * as SourceControlProvider from "@fcode/source-control-core/server/SourceControlProvider";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const isVcsProcessExitError = Schema.is(VcsProcessExitError);
@@ -360,7 +360,7 @@ export class GitLabCli extends Context.Service<
       readonly force?: boolean;
     }) => Effect.Effect<void, GitLabCliError>;
   }
->()("@t3tools/source-control-gitlab/server/GitLabCli") {}
+>()("@fcode/source-control-gitlab/server/GitLabCli") {}
 
 // The create-MR endpoint has no draft attribute; GitLab reads the draft marker from the title.
 // Same markers and case rule as glab's `EnsureTitlePrefix`.

@@ -7,19 +7,19 @@ import {
   managedRelaySessionAtom,
   readManagedRelaySnapshotState,
   unlinkManagedRelayT3Chat,
-} from "@t3tools/client-runtime/relay";
+} from "@fcode/client-runtime/relay";
 import {
   createAtomCommandScheduler,
   createRuntimeCommand,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@fcode/client-runtime/state/runtime";
 import {
   DEFAULT_MANAGED_TUNNEL_LIMIT,
   T3CHAT_PLAN_TUNNEL_LIMITS,
   type RelayClientDeviceRecord,
   type RelayClientEnvironmentRecord,
   type RelayT3ChatLinkResponse,
-} from "@t3tools/contracts/relay";
-import type { EnvironmentId } from "@t3tools/contracts";
+} from "@fcode/contracts/relay";
+import type { EnvironmentId } from "@fcode/contracts";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -87,7 +87,7 @@ export function useManagedRelayT3ChatLink() {
   const session = useAtomValue(managedRelaySessionAtom);
   const accountId = session?.accountId ?? null;
   const atom = accountId
-    ? managedRelayQueryManager.t3ChatLinkAtom(accountId)
+    ? managedRelayQueryManager.fcodeChatLinkAtom(accountId)
     : EMPTY_T3CHAT_LINK_ATOM;
   const snapshot = readManagedRelaySnapshotState(useAtomValue(atom));
   const refresh = () => {
@@ -151,15 +151,15 @@ export function useManagedRelayDevices() {
 export type ManagedTunnelUpgrade = "link" | "pro" | "premier" | null;
 
 // Mirrors the relay's cap: a manual override is exact, otherwise the T3 Chat plan raises the default.
-function managedTunnelCap(t3Chat: RelayT3ChatLinkResponse): {
+function managedTunnelCap(fcodeChat: RelayT3ChatLinkResponse): {
   readonly limit: number;
   readonly upgrade: ManagedTunnelUpgrade;
 } {
-  if (t3Chat.maxTunnelsOverride !== undefined) {
-    return { limit: t3Chat.maxTunnelsOverride, upgrade: null };
+  if (fcodeChat.maxTunnelsOverride !== undefined) {
+    return { limit: fcodeChat.maxTunnelsOverride, upgrade: null };
   }
-  if (!t3Chat.available) return { limit: DEFAULT_MANAGED_TUNNEL_LIMIT, upgrade: null };
-  switch (t3Chat.link?.plan) {
+  if (!fcodeChat.available) return { limit: DEFAULT_MANAGED_TUNNEL_LIMIT, upgrade: null };
+  switch (fcodeChat.link?.plan) {
     case "premier":
       return { limit: T3CHAT_PLAN_TUNNEL_LIMITS.premier, upgrade: null };
     case "pro":
@@ -182,14 +182,14 @@ export function refreshManagedTunnelUsage() {
 /** Managed tunnels on this account and its cap. Null fields are still loading or failed. */
 export function useManagedTunnelUsage() {
   const environments = useManagedRelayEnvironments();
-  const t3Chat = useManagedRelayT3ChatLink();
+  const fcodeChat = useManagedRelayT3ChatLink();
   const used =
     environments.accountId === null
       ? null
       : (environments.data?.filter(
           (environment) => environment.endpoint.providerKind === "cloudflare_tunnel",
         ).length ?? null);
-  const cap = t3Chat.accountId !== null && t3Chat.data ? managedTunnelCap(t3Chat.data) : null;
+  const cap = fcodeChat.accountId !== null && fcodeChat.data ? managedTunnelCap(fcodeChat.data) : null;
   return {
     used,
     limit: cap?.limit ?? null,

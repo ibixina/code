@@ -1,7 +1,7 @@
 import {
   serializeAssistantCitation,
   expandAssistantCitationsForProvider,
-} from "@t3tools/shared/assistantCitations";
+} from "@fcode/shared/assistantCitations";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it, vi } from "vite-plus/test";
@@ -30,7 +30,7 @@ import {
   PROVIDER_SEND_TURN_MAX_INPUT_CHARS,
   type OrchestrationV2ThreadProjection,
   OrchestrationV2DomainEvent,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -78,15 +78,14 @@ import * as RuntimeRequestService from "./RuntimeRequestService.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import * as ThreadManagementService from "./ThreadManagementService.ts";
 import * as ThreadTitleRegenerationService from "./ThreadTitleRegenerationService.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@fcode/provider-core/server/IdAllocator";
 import { CodexProviderCapabilitiesV2 } from "./Adapters/CodexAdapterV2.ts";
 import * as ProjectionMaintenance from "./ProjectionMaintenance.ts";
 import * as ProjectionStore from "./ProjectionStore.ts";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
 import * as ProviderSessionManager from "./ProviderSessionManager.ts";
 import * as ProviderTurnStart from "./ProviderTurnStartService.ts";
 import * as RunExecutionService from "./RunExecutionService.ts";
-import * as ProviderUsageAnalytics from "../telemetry/ProviderUsageAnalytics.ts";
 import * as RuntimePolicy from "./RuntimePolicy.ts";
 import * as TurnItemPositionStore from "./TurnItemPositionStore.ts";
 
@@ -421,8 +420,8 @@ effectIt.effect("restores into a leftover worktree folder that cannot itself be 
 });
 
 it.each([
-  { label: "directly in the scratch root", folder: "/tmp/t3-home/scratch/notes", recreated: true },
-  { label: "below another folder", folder: "/tmp/t3-home/scratch/notes/deep", recreated: false },
+  { label: "directly in the scratch root", folder: "/tmp/fcode-home/scratch/notes", recreated: true },
+  { label: "below another folder", folder: "/tmp/fcode-home/scratch/notes/deep", recreated: false },
   {
     label: "in another project",
     folder: "/tmp/elsewhere/notes",
@@ -452,7 +451,7 @@ it.each([
             } as never),
             Path.layer,
             Layer.mock(ServerConfig.ServerConfig)({
-              baseDir: "/tmp/t3-home",
+              baseDir: "/tmp/fcode-home",
               worktreesDir: managedWorktreesDir,
             } as ServerConfig.ServerConfig["Service"]),
             ServerSettings.layerTest(),
@@ -460,7 +459,7 @@ it.each([
             Layer.mock(ProjectService.ProjectService)({
               getById: () =>
                 Effect.succeedSome({
-                  workspaceRoot: input.workspaceRoot ?? "/tmp/t3-home/scratch",
+                  workspaceRoot: input.workspaceRoot ?? "/tmp/fcode-home/scratch",
                 } as never),
             }),
           ),
@@ -531,7 +530,6 @@ function makeLocalCommandHarness(input: {
     readonly threadRuntimeMode?: OrchestrationV2ThreadProjection["thread"]["runtimeMode"];
   };
 }) {
-  const settledRuns: Array<string> = [];
   const now = DateTime.makeUnsafe("2026-09-04T12:00:00Z");
   const threadId = ThreadId.make("thread-native-account-command");
   const runId = RunId.make("run-native-account-command");
@@ -1439,11 +1437,6 @@ function makeLocalCommandHarness(input: {
           startRootRun,
           forkBaseline: () => Effect.succeed(Effect.void),
         }),
-        Layer.succeed(ProviderUsageAnalytics.ProviderTurnAnalytics, {
-          runStarted: () => Effect.void,
-          turnCompleted: () => Effect.void,
-          runSettled: (report) => Effect.sync(() => void settledRuns.push(report.status)),
-        }),
         Layer.mock(RuntimePolicy.RuntimePolicyV2)({
           resolve: resolveRuntimePolicy,
         }),
@@ -1453,7 +1446,6 @@ function makeLocalCommandHarness(input: {
   return {
     layer,
     interruptRun,
-    settledRuns,
     getThreadRecords,
     getTurnStartContext,
     getRuntimeRecoveryProjection,
@@ -1592,7 +1584,7 @@ effectIt.effect(
           failure: {
             class: "unknown",
             message:
-              "T3 Code could not start this turn. Send the message again; if it keeps failing, check the server logs.",
+              "fcode could not start this turn. Send the message again; if it keeps failing, check the server logs.",
           },
         },
       ]);
@@ -1957,7 +1949,7 @@ effectIt.effect(
       const path = yield* Path.Path;
       const gitWorkflow = yield* GitWorkflow.GitWorkflowService;
       const driver = yield* GitVcsDriver.GitVcsDriver;
-      const root = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-recreate-repo-" });
+      const root = yield* fileSystem.makeTempDirectoryScoped({ prefix: "fcode-recreate-repo-" });
       const workspaceRoot = path.join(root, "project");
       const originRoot = path.join(root, "origin.git");
       const worktreesDir = path.join(root, "worktrees");
@@ -2083,7 +2075,7 @@ effectIt.effect(
                 yield* git(worktreePath, ["rev-parse", "--symbolic-full-name", "@{upstream}"]),
               ).toBe(expected.upstream);
             }
-            expect(yield* branchConfig("t3-merge-base")).toBe(expected.base);
+            expect(yield* branchConfig("fcode-merge-base")).toBe(expected.base);
             return yield* open();
           }).pipe(Effect.orDie),
         );
@@ -2105,7 +2097,7 @@ effectIt.effect("leaves a managed worktree folder without .git that holds user f
   Effect.gen(function* () {
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-leftover-" });
+    const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "fcode-leftover-" });
     const worktreePath = path.join(worktreesDir, "project", "restore");
     yield* fileSystem.makeDirectory(path.join(worktreePath, "node_modules"), { recursive: true });
     yield* fileSystem.writeFileString(path.join(worktreePath, "notes.md"), "keep me");
@@ -2130,7 +2122,7 @@ effectIt.effect.each([
   Effect.gen(function* () {
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-restore-setup-" });
+    const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "fcode-restore-setup-" });
     const worktreePath = path.join(worktreesDir, "project", "restore");
     const setupStarted = yield* Deferred.make<void>();
     const setupDone = yield* Deferred.make<ProjectSetupScriptRunner.ProjectSetupScriptCompletion>();
@@ -2192,7 +2184,7 @@ effectIt.effect("runs setup for a worktree a send recreated before dispatch", ()
   Effect.gen(function* () {
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-sent-setup-" });
+    const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "fcode-sent-setup-" });
     const worktreePath = path.join(worktreesDir, "project", "restore");
     yield* fileSystem.makeDirectory(path.join(worktreePath, ".git"), { recursive: true });
     const runSetup = vi.fn(() => Effect.succeed({ status: "no-script" as const }));
@@ -2219,7 +2211,7 @@ effectIt.effect(
       const fileSystem = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const worktreesDir = yield* fileSystem.makeTempDirectoryScoped({
-        prefix: "t3-recreate-failure-",
+        prefix: "fcode-recreate-failure-",
       });
       const worktreePath = path.join(worktreesDir, "project", "restore");
       const harness = makeLocalCommandHarness({
@@ -2404,7 +2396,6 @@ effectIt.effect("refuses unsupported resume instead of manufacturing a user prom
     yield* harness.start;
     expect(harness.startTurn).not.toHaveBeenCalled();
     expect(harness.startRootRun).not.toHaveBeenCalled();
-    expect(harness.settledRuns).toEqual(["failed"]);
     expect(harness.projection().turnItems).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -2433,7 +2424,6 @@ effectIt.effect.each([
         sideChat,
       });
       yield* harness.start;
-      expect(harness.settledRuns).toEqual([]);
       expect(harness.startTurn.mock.calls.map(([turn]) => turn.message.text)).toEqual([
         withInlineContext("SIDE_CHAT_CONTEXT", "Continue where you left off."),
       ]);
@@ -2800,7 +2790,6 @@ effectIt.effect.each(["before-start", "during-fork"] as const)(
       expect(harness.projection().providerThreads[0]?.handoffIds).toEqual([
         "side-chat-fork-context",
       ]);
-      expect(harness.settledRuns).toEqual([]);
       expect(
         harness.prepareProviderHandoff.mock.calls[0]?.[0].items.map((item) => item.id),
       ).toEqual([items[0]!.id]);
@@ -2935,7 +2924,7 @@ effectIt.effect.each(["cleanup-first", "startup-first"])(
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const workspaceRoot = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-start-" });
+      const workspaceRoot = yield* fileSystem.makeTempDirectoryScoped({ prefix: "fcode-start-" });
       const worktreePath = path.join(workspaceRoot, "project", "worktree");
       yield* fileSystem.makeDirectory(path.join(worktreePath, ".git"), { recursive: true });
       const release = yield* Deferred.make<void>();
@@ -3262,7 +3251,6 @@ effectIt.effect("terminalizes a starting run when its provider session cannot op
     );
     const projection = harness.projection();
     expect(projection.runs.at(-1)).toMatchObject({ status: "failed", startedAt: null });
-    expect(harness.settledRuns).toEqual(["failed"]);
     expect(projection.attempts[0]).toMatchObject({ status: "failed", startedAt: null });
     expect(projection.nodes[0]).toMatchObject({ status: "failed", startedAt: null });
     expect(projection.turnItems).toMatchObject([
@@ -3386,7 +3374,6 @@ effectIt.effect("does not overwrite a run interrupted while its provider session
     expect(harness.startRootRun).not.toHaveBeenCalled();
     const projection = harness.projection();
     expect(projection.runs.at(-1)?.status).toBe("interrupted");
-    expect(harness.settledRuns).toEqual([]);
     expect(projection.attempts[0]?.status).toBe("pending");
     expect(projection.nodes[0]?.status).toBe("pending");
     expect(projection.turnItems).toEqual([]);

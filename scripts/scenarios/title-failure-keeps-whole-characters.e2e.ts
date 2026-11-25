@@ -3,8 +3,8 @@ import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
 
-import { T3_HOME } from "../e2e.config.ts";
-import { runPromise, test, WEB } from "./t3.ts";
+import { FCODE_HOME } from "../e2e.config.ts";
+import { runPromise, test, WEB } from "./fcode.ts";
 
 const PREFIX = "Codex CLI command failed: ";
 const KEPT = `${PREFIX}${"The title model refused this request. ".repeat(10)}`.slice(0, 298);
@@ -17,15 +17,15 @@ exit 1
 test(
   "A long title regeneration failure ends without a broken character",
   WEB,
-  async ({ t3, app, browser, screen }) => {
+  async ({ fcode, app, browser, screen }) => {
     const { fakeCodex, settingsPath, originalSettings } = await runPromise(
       Effect.gen(function* () {
         const fs = yield* FileSystem.FileSystem;
         const path = yield* Path.Path;
         return {
-          fakeCodex: path.join(T3_HOME, "bin/fake-codex"),
-          settingsPath: path.join(T3_HOME, "userdata/settings.json"),
-          originalSettings: yield* fs.readFileString(path.join(T3_HOME, "userdata/settings.json")),
+          fakeCodex: path.join(FCODE_HOME, "bin/fake-codex"),
+          settingsPath: path.join(FCODE_HOME, "userdata/settings.json"),
+          originalSettings: yield* fs.readFileString(path.join(FCODE_HOME, "userdata/settings.json")),
         };
       }),
     );
@@ -46,9 +46,9 @@ test(
         }),
       );
 
-      const project = await t3.project("demo");
-      const thread = await t3.thread({ project, title: "Earlier work", messages: ["first"] });
-      await t3.open(thread);
+      const project = await fcode.project("demo");
+      const thread = await fcode.thread({ project, title: "Earlier work", messages: ["first"] });
+      await fcode.open(thread);
 
       await screen.getByRole("button", "Thread actions for Earlier work").tap();
       await screen.getByRole("menuitem", "Regenerate title").tap();

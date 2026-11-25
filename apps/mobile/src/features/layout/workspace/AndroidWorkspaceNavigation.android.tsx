@@ -69,7 +69,7 @@ const TAB_TITLES = {
   settings: msg("Settings"),
 };
 
-const NativeNavigation = requireNativeView<NativeNavigationProps>("T3WorkspaceNavigation");
+const NativeNavigation = requireNativeView<NativeNavigationProps>("FcodeWorkspaceNavigation");
 
 function nativeColor(value: string) {
   const color = processColor(value);

@@ -18,14 +18,14 @@ import {
   type VcsCreateWorktreeResult,
   type WorkspaceLayoutCommandsResult,
   type WorktreeLayoutCommandKind,
-  T3_PROJECT_FILE_NAME,
-} from "@t3tools/contracts";
-import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
-import { flattenTemporaryWorktreeBranchName, isTemporaryWorktreeBranch } from "@t3tools/shared/git";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { windowsSystem32Path } from "@t3tools/shared/windowsSystem";
-import * as KeyedLock from "@t3tools/shared/KeyedLock";
-import { parseT3ProjectFile } from "@t3tools/shared/t3ProjectFile";
+  FCODE_PROJECT_FILE_NAME,
+} from "@fcode/contracts";
+import { resolveProjectSettings } from "@fcode/shared/projectSettings";
+import { flattenTemporaryWorktreeBranchName, isTemporaryWorktreeBranch } from "@fcode/shared/git";
+import * as HostProcess from "@fcode/shared/HostProcess";
+import { windowsSystem32Path } from "@fcode/shared/windowsSystem";
+import * as KeyedLock from "@fcode/shared/KeyedLock";
+import { parseFcodeProjectFile } from "@fcode/shared/fcodeProjectFile";
 import * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
 import * as Digest from "effect/crypto/Digest";
@@ -203,12 +203,12 @@ export class TaskFolders extends Context.Service<
       readonly branch: string;
       readonly recreate: (checkout: TaskFolderCheckout) => Effect.Effect<void, E>;
     }) => Effect.Effect<void, TaskFolderError | E>;
-    /** The project's layout commands as its `t3.json` holds them now, and whether each is approved. */
+    /** The project's layout commands as its `fcode.json` holds them now, and whether each is approved. */
     readonly layoutCommands: (
       projectId: ProjectId,
     ) => Effect.Effect<WorkspaceLayoutCommandsResult, TaskFolderError>;
   }
->()("t3/workspace/TaskFolders") {}
+>()("fcode/workspace/TaskFolders") {}
 
 const isTaskFolderError = Schema.is(TaskFolderError);
 
@@ -225,7 +225,7 @@ export type ProjectCommands = "permitted" | "request-not-permitted" | "agent-bel
 export type ProjectCommandsNow = ProjectCommands | Effect.Effect<ProjectCommands>;
 
 /**
- * A layout command is the project owner's own code. A link paired below full access grants T3's
+ * A layout command is the project owner's own code. A link paired below full access grants fcode's
  * tools only (see `mcp/linkOrigin.ts`), so work it started never runs one.
  */
 export const projectCommandsForLink = (
@@ -257,7 +257,7 @@ export const projectCommandsForAgent = (
 };
 
 /** Only `layoutCommand` makes one, so nothing runs that was not checked there. */
-const cleared: unique symbol = Symbol("t3/workspace/TaskFolders/cleared");
+const cleared: unique symbol = Symbol("fcode/workspace/TaskFolders/cleared");
 interface ClearedLayoutCommand {
   readonly [cleared]: true;
   readonly text: string;
@@ -268,7 +268,7 @@ interface ClearedLayoutCommand {
 }
 
 const layoutRefusedDetail = (refusal: string) =>
-  `This project lays out its worktrees with its own command (worktreeLayout in ${T3_PROJECT_FILE_NAME}), ${refusal}`;
+  `This project lays out its worktrees with its own command (worktreeLayout in ${FCODE_PROJECT_FILE_NAME}), ${refusal}`;
 
 const failureDetail = (cause: unknown) =>
   typeof cause === "object" &&
@@ -380,10 +380,10 @@ const make = Effect.gen(function* () {
     (cause: unknown): TaskFolderError =>
       new TaskFolderError({ operation, detail: `${prefix}: ${failureDetail(cause)}`, cause });
 
-  // A project that lays its own thread folder out says so in its `t3.json`.
+  // A project that lays its own thread folder out says so in its `fcode.json`.
   const projectFile = (projectRoot: string) =>
-    fileSystem.readFileString(path.join(projectRoot, T3_PROJECT_FILE_NAME)).pipe(
-      Effect.map(parseT3ProjectFile),
+    fileSystem.readFileString(path.join(projectRoot, FCODE_PROJECT_FILE_NAME)).pipe(
+      Effect.map(parseFcodeProjectFile),
       Effect.orElseSucceed(() => null),
     );
   const worktreeLayout = (projectRoot: string) =>
@@ -486,12 +486,12 @@ const make = Effect.gen(function* () {
               ...hostEnvironment,
               // A `GIT_DIR` the server inherited would point the command's Git at another repository.
               ...VcsProcess.unsetInheritedRepositoryEnv(hostEnvironment, hostPlatform),
-              T3_PROJECT_ROOT: taskFolder.projectRoot,
-              T3_WORKTREE_ROOT: taskFolder.root,
-              T3_WORKTREE_PROJECT_PATH: taskFolder.projectPath,
-              T3_WORKTREE_BRANCH: branch,
-              T3_WORKTREE_BASE: baseBranch ?? "",
-              T3_WORKTREE_REPOSITORIES: repositories.join("\n"),
+              FCODE_PROJECT_ROOT: taskFolder.projectRoot,
+              FCODE_WORKTREE_ROOT: taskFolder.root,
+              FCODE_WORKTREE_PROJECT_PATH: taskFolder.projectPath,
+              FCODE_WORKTREE_BRANCH: branch,
+              FCODE_WORKTREE_BASE: baseBranch ?? "",
+              FCODE_WORKTREE_REPOSITORIES: repositories.join("\n"),
             },
             timeoutMs: LAYOUT_COMMAND_TIMEOUT_MS,
           })

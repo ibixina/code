@@ -28,13 +28,13 @@ config.resolver = {
       : config.resolver?.blockList
         ? [config.resolver.blockList]
         : []),
-    new RegExp(`${escapedWorkspaceRoot}[/\\\\]\\.t3[/\\\\].*`),
+    new RegExp(`${escapedWorkspaceRoot}[/\\\\]\\.fcode[/\\\\].*`),
   ],
   extraNodeModules: {
     ...config.resolver?.extraNodeModules,
-    "@t3tools/mobile-third-party-licenses": generatedLicenseModuleRoot,
-    "@t3tools/mobile-device-stream": generatedDeviceStreamRoot,
-    "@t3tools/mobile-preview-stream": generatedPreviewStreamRoot,
+    "@fcode/mobile-third-party-licenses": generatedLicenseModuleRoot,
+    "@fcode/mobile-device-stream": generatedDeviceStreamRoot,
+    "@fcode/mobile-preview-stream": generatedPreviewStreamRoot,
   },
 };
 

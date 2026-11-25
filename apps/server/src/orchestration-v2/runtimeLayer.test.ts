@@ -1,8 +1,8 @@
-import { PullRequestProviderError } from "@t3tools/source-control-core/server/PullRequestProvider";
-import { PullRequestUnavailableError, SourceControlProviderKind } from "@t3tools/contracts";
+import { PullRequestProviderError } from "@fcode/source-control-core/server/PullRequestProvider";
+import { PullRequestUnavailableError, SourceControlProviderKind } from "@fcode/contracts";
 import { limitRecoveryCommand } from "./UsageLimitRecoveryWorker.ts";
-import { createOrchestrationV2TurnItemVisibility } from "@t3tools/shared/orchestrationV2Timeline";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
+import { createOrchestrationV2TurnItemVisibility } from "@fcode/shared/orchestrationV2Timeline";
+import * as McpProviderSessions from "@fcode/provider-core/server/McpProviderSessions";
 import * as SourceControlProviderRegistry from "../sourceControl/SourceControlProviderRegistry.ts";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
@@ -40,7 +40,7 @@ import {
   RunId,
   ScheduledTaskId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@fcode/contracts";
 import * as Effect from "effect/Effect";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -69,7 +69,7 @@ import * as ServerSettings from "../serverSettings.ts";
 import * as McpSessionRegistryTestkit from "../mcp/McpSessionRegistry.testkit.ts";
 import * as ModelManifest from "../provider/ModelManifest.ts";
 import * as ProviderInstanceRegistry from "../provider/ProviderInstanceRegistry.ts";
-import type { ProviderInstance } from "@t3tools/provider-core/server/driver";
+import type { ProviderInstance } from "@fcode/provider-core/server/driver";
 import * as VcsDriverRegistry from "../vcs/VcsDriverRegistry.ts";
 import * as VcsProcess from "../vcs/VcsProcess.ts";
 import * as WorkspacePaths from "../workspace/WorkspacePaths.ts";
@@ -107,7 +107,7 @@ import * as ResourceCleanupService from "./ResourceCleanupService.ts";
 import * as ThreadLaunchService from "./ThreadLaunchService.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import * as DelegatedTaskQuestionReactor from "./DelegatedTaskQuestionReactor.ts";
-import type * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import type * as ProviderAdapter from "@fcode/provider-core/server/ProviderAdapter";
 
 const layerPlatformTest = Layer.mergeAll(
   Layer.mock(ProjectSetupScriptRunner.ProjectSetupScriptRunner)({
@@ -120,7 +120,7 @@ const layerPlatformTest = Layer.mergeAll(
 );
 
 const layerServerConfig = ServerConfig.layerTest(process.cwd(), {
-  prefix: "t3-orchestration-v2-runtime-layer-",
+  prefix: "fcode-orchestration-v2-runtime-layer-",
 });
 
 const modelSelection = {
@@ -1414,7 +1414,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive", (it) => {
         runtimeMode: "full-access",
         interactionMode: "default",
         branch: null,
-        worktreePath: `/tmp/t3-${name}`,
+        worktreePath: `/tmp/fcode-${name}`,
       });
       yield* orchestrator.dispatch({
         type: "message.dispatch",
@@ -1447,7 +1447,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive", (it) => {
               parentCheckpointId: null,
               ordinalWithinScope: 0,
               appRunOrdinal: null,
-              ref: CheckpointRef.make(`refs/t3/${name}`),
+              ref: CheckpointRef.make(`refs/fcode/${name}`),
               status: "ready",
               files: [],
               capturedAt: now,
@@ -1510,7 +1510,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive", (it) => {
       const worker = yield* EffectWorker.OrchestrationEffectWorkerV2;
       const sessions = yield* ProviderSessionManager.ProviderSessionManagerV2;
       const fileSystem = yield* FileSystem.FileSystem;
-      const cwd = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-non-git-rewind-" });
+      const cwd = yield* fileSystem.makeTempDirectoryScoped({ prefix: "fcode-non-git-rewind-" });
       const threadId = ThreadId.make("runtime-non-git-rewind");
       const rollbackThread = vi.fn(
         ({ providerThread }: ProviderAdapter.ProviderAdapterV2RollbackThreadInput) =>
@@ -1779,7 +1779,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive", (it) => {
                 parentCheckpointId: null,
                 ordinalWithinScope: 0,
                 appRunOrdinal: null,
-                ref: CheckpointRef.make(`refs/t3/runtime-rollback-${status}`),
+                ref: CheckpointRef.make(`refs/fcode/runtime-rollback-${status}`),
                 status,
                 files: [],
                 capturedAt: now,
@@ -3682,7 +3682,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
         threadId,
         title: "Renamed lifecycle thread",
         branch: "feature/v2",
-        worktreePath: "/tmp/t3-v2-worktree",
+        worktreePath: "/tmp/fcode-v2-worktree",
       });
       const staleWorkspaceUpdate = yield* orchestrator
         .dispatch({
@@ -3697,7 +3697,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
       assert.instanceOf(staleWorkspaceUpdate, Orchestrator.OrchestratorDispatchError);
       const projectionAfterStaleWorkspaceUpdate = yield* orchestrator.getThreadProjection(threadId);
       assert.equal(projectionAfterStaleWorkspaceUpdate.thread.branch, "feature/v2");
-      assert.equal(projectionAfterStaleWorkspaceUpdate.thread.worktreePath, "/tmp/t3-v2-worktree");
+      assert.equal(projectionAfterStaleWorkspaceUpdate.thread.worktreePath, "/tmp/fcode-v2-worktree");
       const pullRequestSnapshot = yield* orchestrator.getShellSnapshot();
       const pullRequest = {
         projectId,
@@ -3716,7 +3716,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           expected: {
             workspaceRoot: "/workspace/project",
             branch: "feature/v2",
-            worktreePath: "/tmp/t3-v2-worktree",
+            worktreePath: "/tmp/fcode-v2-worktree",
             linkedPullRequest: null,
             branchPullRequest: null,
           },
@@ -3741,7 +3741,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
         expected: {
           workspaceRoot: "/workspace/project",
           branch: "feature/v2",
-          worktreePath: "/tmp/t3-v2-worktree",
+          worktreePath: "/tmp/fcode-v2-worktree",
           linkedPullRequest: null,
           branchPullRequest: null,
         },
@@ -3761,7 +3761,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           expected: {
             workspaceRoot: "/workspace/project",
             branch: "feature/v2",
-            worktreePath: "/tmp/t3-v2-worktree",
+            worktreePath: "/tmp/fcode-v2-worktree",
             linkedPullRequest: null,
             branchPullRequest: null,
           },
@@ -3779,7 +3779,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           expected: {
             workspaceRoot: "/workspace/project",
             branch: "feature/v2",
-            worktreePath: "/tmp/t3-v2-worktree",
+            worktreePath: "/tmp/fcode-v2-worktree",
             linkedPullRequest: null,
             branchPullRequest: pullRequest,
           },
@@ -3990,7 +3990,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
       const projection = yield* orchestrator.getThreadProjection(threadId);
       assert.equal(projection.thread.title, "Renamed lifecycle thread");
       assert.equal(projection.thread.branch, "feature/v2");
-      assert.equal(projection.thread.worktreePath, "/tmp/t3-v2-worktree");
+      assert.equal(projection.thread.worktreePath, "/tmp/fcode-v2-worktree");
       assert.equal(projection.thread.runtimeMode, "approval-required");
       assert.equal(projection.thread.interactionMode, "plan");
       assert.equal(projection.thread.modelSelection.model, "gpt-5.5");
@@ -7909,7 +7909,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           notification: {
             source: { kind: "system" as const },
             outcome: "updated" as const,
-            summary: "T3 Code restarted and resumed this turn",
+            summary: "fcode restarted and resumed this turn",
             detail: "Continue where you left off.",
           },
           attachments: [],
@@ -7930,7 +7930,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           continuationItems.flatMap((item) =>
             item.type === "notification" ? [[item.summary, item.detail]] : [],
           ),
-          ["T3 Code restarted and resumed this turn", "Continue where you left off."],
+          ["fcode restarted and resumed this turn", "Continue where you left off."],
         );
         yield* orchestrator.dispatch({
           ...command,
@@ -8031,7 +8031,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           commandId: CommandId.make(`restart-${status}-${kind}-continuation`),
           threadId,
           messageId: MessageId.make(`restart-${status}-${kind}-continuation`),
-          text: "Note: the T3 server restarted.",
+          text: "Note: the fcode server restarted.",
           attachments: [],
           modelSelection,
           dispatchMode: { type: "start_immediately" },
@@ -10415,7 +10415,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           creationSource: "web",
         });
       }
-      // What t3_thread_send dispatches: no model of its own.
+      // What fcode_thread_send dispatches: no model of its own.
       yield* orchestrator.dispatch({
         type: "message.dispatch",
         commandId: CommandId.make(`${threadId}:agent`),

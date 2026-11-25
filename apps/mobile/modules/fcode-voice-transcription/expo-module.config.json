@@ -1,0 +1,10 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["FcodeVoiceTranscriptionModule"],
+    "podspecPath": "ios/FcodeVoiceTranscription.podspec"
+  },
+  "android": {
+    "modules": ["expo.modules.t3voicetranscription.FcodeVoiceTranscriptionModule"]
+  }
+}

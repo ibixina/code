@@ -1,4 +1,4 @@
-import { isListedThreadLineage, isWebhookDedupeTemplate } from "@t3tools/contracts";
+import { isListedThreadLineage, isWebhookDedupeTemplate } from "@fcode/contracts";
 import {
   EnvironmentId,
   MAX_WEBHOOK_DELIVERY_AGE_MINUTES,
@@ -14,23 +14,23 @@ import {
   type ProviderInteractionMode,
   type ServerSettings,
   type ThreadId,
-} from "@t3tools/contracts";
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/models";
+} from "@fcode/contracts";
+import type { EnvironmentThreadShell } from "@fcode/client-runtime/state/models";
 import {
   parseMaxDeliveryAge,
   parseWebhookFilterDrafts,
   webhookFilterDrafts,
   webhookFilterDraftsChanged,
   type WebhookFilterDraft,
-} from "@t3tools/client-runtime/scheduled-task-webhook";
-import { scheduleTimeZoneLabel } from "@t3tools/client-runtime/scheduled-task-time-zone";
-import type { TimestampFormat } from "@t3tools/contracts/settings";
+} from "@fcode/client-runtime/scheduled-task-webhook";
+import { scheduleTimeZoneLabel } from "@fcode/client-runtime/scheduled-task-time-zone";
+import type { TimestampFormat } from "@fcode/contracts/settings";
 import { msg } from "gt-react";
 
 import {
   resolveProjectSettings,
   type LegacyProjectSettingsFields,
-} from "@t3tools/shared/projectSettings";
+} from "@fcode/shared/projectSettings";
 import { getActiveLocale, m, type MessageResolver } from "../../i18n/messages";
 import type { ProviderInstanceEntry } from "../../providerInstances";
 import { formatDateTimeTimestamp, formatTimeOfDay } from "../../timestampFormat";

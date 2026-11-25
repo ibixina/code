@@ -2,13 +2,13 @@ import type {
   OrchestrationThreadSearchMatch,
   OrchestrationV2SearchThreadResult,
   ScopedThreadRef,
-} from "@t3tools/contracts";
-import { parseScopedThreadKey, scopedThreadKey } from "@t3tools/client-runtime/environment";
+} from "@fcode/contracts";
+import { parseScopedThreadKey, scopedThreadKey } from "@fcode/client-runtime/environment";
 import {
   findSearchTokenRanges,
   messagePhrase,
   messageSearchTokens,
-} from "@t3tools/shared/paletteSearch";
+} from "@fcode/shared/paletteSearch";
 import { create } from "zustand";
 import type { ThemeAppearance } from "~/themePalette";
 import { rightPanelHostRef } from "../../rightPanelStore";

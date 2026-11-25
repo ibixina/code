@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { SecretProviderId, type SimlockDeviceHostConfig } from "@t3tools/contracts";
-import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { SecretProviderId, type SimlockDeviceHostConfig } from "@fcode/contracts";
+import * as SecretResolver from "@fcode/secret-provider-core/server/SecretResolver";
+import * as HostProcess from "@fcode/shared/HostProcess";
 import * as Effect from "effect/Effect";
 import * as Clock from "effect/Clock";
 import * as Fiber from "effect/Fiber";
@@ -48,7 +48,7 @@ const CATALOG = {
   ],
 };
 
-/** The gateway's HTTP API and T3's agent-device CLI, recording what was asked of them. */
+/** The gateway's HTTP API and fcode's agent-device CLI, recording what was asked of them. */
 const fakePool = (
   options: {
     /** What the agent-device CLI prints before exiting 1 from `open`. */
@@ -171,7 +171,7 @@ const makeSecretResolver = (values: Record<string, string> = {}) =>
 
 const layerWith = (secrets: Layer.Layer<SecretResolver.SecretResolver>) =>
   Layer.mergeAll(
-    ServerConfig.layerTest(process.cwd(), { prefix: "t3-simlock-host-" }),
+    ServerConfig.layerTest(process.cwd(), { prefix: "fcode-simlock-host-" }),
     secrets,
   ).pipe(Layer.provideMerge(NodeServices.layer));
 

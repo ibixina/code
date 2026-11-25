@@ -38,13 +38,13 @@ const offeredRelease = async (
       return JSON.stringify({ tag_name: pointerTag, name: pointerTag, body: "pointer notes" });
     }
     const manifest = /\/releases\/download\/v([^/]+)\/nightly\.yml$/.exec(path ?? "");
-    if (manifest) return `version: ${manifest[1]}\npath: T3-Code.exe\nsha512: abc\n`;
+    if (manifest) return `version: ${manifest[1]}\npath: fcode-Code.exe\nsha512: abc\n`;
     apiScans += 1;
     if (listedTag instanceof Error) throw listedTag;
     return JSON.stringify(listedTag ? [{ tag_name: listedTag, body: "API notes" }] : []);
   };
   const provider = new GitHubProvider(
-    { provider: "github", owner: "pingdotgg", repo: "t3code" },
+    { provider: "github", owner: "pingdotgg", repo: "fcode" },
     // Only the four fields the provider reads; a real AppUpdater needs Electron.
     {
       allowPrerelease: true,

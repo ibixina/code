@@ -1,0 +1,116 @@
+name: Release Linux CLI
+
+# Publishes the self-contained Linux x64 server archive that SSH environments
+# download, without the upstream release pipeline's hosted services. The
+# release tag must match the desktop app's version (`v<version>`).
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish, matching the desktop app (for example 0.1.12)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-linux-cli-${{ inputs.version }}
+
+jobs:
+  linux_x64:
+    name: Build and publish Linux x64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Validate version
+        shell: bash
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must look like 1.2.3, got '$VERSION'."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-ci-deps
+        with:
+          install-args: --filter=fcode... --filter=@fcode/web... --filter=@fcode/desktop... --filter=@fcode/scripts...
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Align package versions to release version
+        run: node scripts/update-release-package-versions.ts "$VERSION"
+
+      - name: Build JS bundle
+        env:
+          FCODE_TELEMETRY_CHANNEL: dev
+        run: vp run build:desktop:bundle
+
+      - name: Apply web client branding
+        run: node scripts/apply-web-brand-assets.ts production apps/server/dist/client
+
+      - name: Build resource monitor
+        run: cargo build --locked --release --manifest-path native/resource-monitor/Cargo.toml --target x86_64-unknown-linux-gnu
+
+      - name: Build CLI single-executable
+        env:
+          FCODE_TELEMETRY_CHANNEL: dev
+        run: node apps/server/scripts/cli.ts build-exe --verbose
+
+      - name: Stage resource monitor for the CLI archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          target_dir="$RUNNER_TEMP/cli-resource-monitor/linux-x64"
+          mkdir -p "$target_dir"
+          cp native/resource-monitor/target/x86_64-unknown-linux-gnu/release/fcode-resource-monitor "$target_dir/"
+
+      # The Linux archive ships libatomic.so.1 and points fcode's RUNPATH at it.
+      - name: Install patchelf
+        run: command -v patchelf || { sudo apt-get update && sudo apt-get install -y patchelf; }
+
+      - name: Build CLI archive
+        run: |
+          node scripts/build-cli-archive.ts \
+            --platform linux \
+            --arch x64 \
+            --version "$VERSION" \
+            --resource-monitor-dir "$RUNNER_TEMP/cli-resource-monitor" \
+            --output-dir release-cli
+
+      - name: Smoke-test CLI archive
+        run: node scripts/smoke-cli-archive.ts --archive release-cli/* --expect-version "$VERSION"
+
+      # SSH launches and installers verify the archive against this file.
+      - name: Write checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-cli
+          sha256sum fcode-*.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v$VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" release-cli/* --clobber
+          else
+            gh release create "$tag" release-cli/* \
+              --target "$GITHUB_SHA" \
+              --title "fcode $VERSION" \
+              --notes "Linux x64 server for fcode $VERSION. SSH environments download this automatically."
+          fi

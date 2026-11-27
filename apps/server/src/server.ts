@@ -120,6 +120,7 @@ import * as EnvironmentTheme from "./environmentTheme.ts";
 import * as Keybindings from "./keybindings.ts";
 import * as ServerRuntimeStartup from "./serverRuntimeStartup.ts";
 import * as ServerOwnership from "./serverOwnership.ts";
+import * as LegacyT3Migration from "./legacyT3Migration.ts";
 import * as AgentAwarenessRelay from "./relay/AgentAwarenessRelay.ts";
 import { hasCloudPublicConfig } from "./cloud/publicConfig.ts";
 import * as ServerSettings from "./serverSettings.ts";
@@ -973,6 +974,12 @@ const layerMakeServer = Layer.unwrap(
     const config = yield* ServerConfig.ServerConfig;
     // Before anything opens the database: one server per fcode home.
     const ownership = yield* ServerOwnership.acquireServerOwnership(config.serverRuntimeStatePath);
+    // A failed import must not keep fcode from starting; the user can rerun `fcode migrate-from-t3`.
+    yield* LegacyT3Migration.migrateOnFirstStart(config).pipe(
+      Effect.catchCause((cause) =>
+        Effect.logWarning("Could not import T3 Code data on first start.", { cause }),
+      ),
+    );
     const activation = yield* Deferred.make<void>();
     const awaitActivation = Deferred.await(activation);
     const layerActivation = Layer.succeed(ServerActivation.ServerActivation, awaitActivation);
@@ -1223,7 +1230,9 @@ const layerMakeServer = Layer.unwrap(
             const recoverManagedTunnel = (config: RelayManagedEndpointRuntimeConfig) =>
               runManagedTunnelRecovery(config).pipe(
                 Effect.tap((recovered) =>
-                  recovered ? Effect.logInfo("fcode Connect managed tunnel recovered") : Effect.void,
+                  recovered
+                    ? Effect.logInfo("fcode Connect managed tunnel recovered")
+                    : Effect.void,
                 ),
                 Effect.catchCause((cause) =>
                   Cause.hasInterrupts(cause)
@@ -1262,9 +1271,9 @@ const layerMakeServer = Layer.unwrap(
             const wantsCliLink = hasCloudPublicConfig
               ? yield* CloudCliState.readCliDesiredCloudLink.pipe(
                   Effect.catch((cause) =>
-                    Effect.logWarning("Failed to read the desired fcode Connect link", { cause }).pipe(
-                      Effect.as(false),
-                    ),
+                    Effect.logWarning("Failed to read the desired fcode Connect link", {
+                      cause,
+                    }).pipe(Effect.as(false)),
                   ),
                 )
               : false;

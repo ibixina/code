@@ -22,14 +22,19 @@ Run `node apps/server/dist/bin.mjs --help` for the command reference. Add `serve
 without opening a browser, or `pair` to connect to an existing server. Pass `--base-dir`
 to run an independent server in a separate data directory.
 
-## Import T3 Code settings
+## Import from T3 Code
 
-Run `fcode migrate-config` before setting up fcode. From a source checkout, run
-`node apps/server/dist/bin.mjs migrate-config` after building. The command copies server settings,
-keybindings, and custom themes from `~/.t3/userdata` to `~/.fcode/userdata`. It skips files
-that already exist in fcode. Use `--from` to specify a different T3 Code home and `--base-dir`
-to specify a different fcode home. The command copies configuration only. Thread history, pairing
-credentials, and logs stay in the original installation.
+The first time fcode starts with no data of its own, it copies your T3 Code threads, projects,
+attachments, saved secrets, and settings from `~/.t3/userdata` (or `T3CODE_HOME`). T3 Code is left
+untouched, and the two stay separate afterwards. Set `FCODE_SKIP_T3_MIGRATION=1` to start empty.
+Pairings, connected devices, and saved remote connections do not carry over: pair other devices
+with fcode again, and re-add SSH machines in **Settings → Environments**. A machine you reach over
+SSH imports its own T3 Code data the first time fcode starts there.
+
+To import again later, quit fcode and run `fcode migrate-from-t3`. It copies only what fcode does
+not have yet. `fcode migrate-from-t3 --replace` replaces fcode's threads and settings with T3 Code's,
+moving fcode's current ones into a `before-t3-import-…` folder inside `~/.fcode/userdata`. Use
+`--from` for a different T3 Code home and `--base-dir` for a different fcode home.
 
 ## Desktop app
 
@@ -101,7 +106,7 @@ computer.
 | Grok Build          | Install [Grok Build CLI](https://x.ai/cli), then run `grok login`.                                                                                        |
 | Kiro                | Install [Kiro CLI](https://kiro.dev/docs/cli/), then run `kiro-cli login`.                                                                                |
 | OpenCode            | Install [OpenCode](https://opencode.ai), then run `opencode auth login`.                                                                                  |
-| Antigravity         | Install and sign in with Google from fcode's provider settings.                                                                                         |
+| Antigravity         | Install and sign in with Google from fcode's provider settings.                                                                                           |
 | Pi                  | Install [Pi](./providers-pi.md#set-up-pi) with Node.js 22.19 or newer, then run `pi` and `/login`.                                                        |
 | Muse Code           | Install [Muse Code](https://dev.meta.ai/docs/muse-code) on the server, run `muse login`, then enable it in Settings → Providers.                          |
 | fx                  | Install [fx](https://fx.sh) with `curl -fsSL https://fx.sh/setup.sh \| bash`, then run `fx login`.                                                        |
@@ -170,8 +175,8 @@ default is already longer keeps its default. Providers with several phases can
 take longer than one deadline in total. Values must be whole milliseconds no
 greater than 2147483647; unset or invalid values keep the defaults.
 
-| Provider            | Environment variable                   |
-| ------------------- | -------------------------------------- |
+| Provider            | Environment variable                  |
+| ------------------- | ------------------------------------- |
 | Codex               | `FCODE_CODEX_PROBE_TIMEOUT_MS`        |
 | Claude              | `FCODE_CLAUDE_PROBE_TIMEOUT_MS`       |
 | Cursor              | `FCODE_CURSOR_PROBE_TIMEOUT_MS`       |

@@ -38,7 +38,7 @@ import { sshHelperCommand } from "./cli/sshHelper.ts";
 import { serviceCommand } from "./cli/service.ts";
 import { servicePreflightCommand } from "./cli/servicePreflight.ts";
 import { themeCommand } from "./cli/theme.ts";
-import { migrateConfigCommand } from "./cli/migrateConfig.ts";
+import { migrateFromT3Command } from "./cli/migrateFromT3.ts";
 import { traceCommand } from "./cli/trace.ts";
 import { triageCommand } from "./cli/triage.ts";
 import { connectCommand, statusCommand, upCommand } from "./cli/up.ts";
@@ -112,7 +112,7 @@ export const makeCli = ({ cloudEnabled = hasCloudPublicConfig } = {}) =>
 
       servicePreflightCommand,
       themeCommand,
-      migrateConfigCommand,
+      migrateFromT3Command,
       traceCommand,
       doctorCommand,
       policyCommand,

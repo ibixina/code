@@ -1,29 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
 
-import { releaseChannelOf, releaseResourceAttributes } from "./releaseResource.ts";
+import { releaseChannelOf } from "./releaseResource.ts";
 
-describe("releaseResourceAttributes", () => {
-  it.each([
-    ["dev", {}, "dev", "development"],
-    ["stable", {}, "stable", "production"],
-    ["nightly", {}, "nightly", "production"],
-    ["preview", {}, "preview", "staging"],
-    [
-      "stable",
-      { "deployment.environment.name": "staging", "fcode.release.channel": "" },
-      "stable",
-      "staging",
-    ],
-  ] as const)(
-    "%s (operator: %o) reports %s in %s",
-    (channel, operatorAttributes, expectedChannel, environment) => {
-      expect(releaseResourceAttributes(channel, operatorAttributes)).toEqual({
-        "fcode.release.channel": expectedChannel,
-        "deployment.environment.name": environment,
-      });
-    },
-  );
-
+describe("releaseChannelOf", () => {
   it.each([
     ["0.1.2", "stable"],
     ["0.1.2-nightly.20261025.1", "nightly"],

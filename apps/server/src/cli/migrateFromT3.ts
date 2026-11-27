@@ -21,6 +21,7 @@ export const migrateFromT3Command = Command.make("migrate-from-t3", {
     Flag.withDescription(
       "Replace fcode's threads and settings with T3 Code's, moving fcode's current ones to a backup folder.",
     ),
+    Flag.withDefault(false),
   ),
 }).pipe(
   Command.withDescription(

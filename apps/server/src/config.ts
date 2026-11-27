@@ -11,15 +11,9 @@ import * as Schema from "effect/Schema";
 import type { OtlpEndpointSource } from "@fcode/contracts";
 import { sweepStalePendingAttachments } from "./attachmentStore.ts";
 import { markNoCopyOnWrite } from "./noCopyOnWrite.ts";
-import {
-  DEFAULT_SIGNAL_EXPORT,
-  nodeProcessRuntimeAttributes,
-  processServiceInstanceId,
-  type SignalExport,
-} from "@fcode/shared/observability";
+import { DEFAULT_SIGNAL_EXPORT, type SignalExport } from "@fcode/shared/observability";
 import * as OtelEnvironment from "@fcode/shared/otelEnvironment";
-import { type ReleaseChannel, releaseResourceAttributes } from "@fcode/shared/releaseResource";
-import packageJson from "../package.json" with { type: "json" };
+import type { ReleaseChannel } from "@fcode/shared/releaseResource";
 
 // Official release workflows set this telemetry channel; other builds report dev.
 // Unlike __FCODE_BUILD_CHANNEL__, this is not the sign-in page's latest/nightly channel.
@@ -120,23 +114,6 @@ export class ServerConfig extends Context.Service<
 }
 
 export const make = (config: ServerConfig["Service"]) => ServerConfig.of(config);
-
-export const otlpResource = (
-  config: Pick<ServerConfig["Service"], "mode" | "otelEnvironment">,
-  hostName: string,
-) => ({
-  serviceName: "fcode-server",
-  serviceVersion: packageJson.version,
-  attributes: {
-    "service.namespace": "fcode",
-    "service.runtime": "fcode-server",
-    "fcode.server.managed_by": config.mode === "desktop" ? "desktop" : "standalone",
-    "service.instance.id": processServiceInstanceId(config.otelEnvironment.resourceAttributes),
-    ...releaseResourceAttributes(telemetryChannel, config.otelEnvironment.resourceAttributes),
-    "host.name": config.otelEnvironment.resourceAttributes["host.name"] || hostName,
-    ...nodeProcessRuntimeAttributes(),
-  },
-});
 
 export const layer = (config: ServerConfig["Service"]) => Layer.succeed(ServerConfig, make(config));
 

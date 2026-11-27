@@ -272,9 +272,10 @@ Host <alias>
   ControlPersist 8h
 ```
 
-If SSH reconnecting fails after an app update, retry the launch once. Removing
-the connection stops a server that fcode launched; a server that was already
-running is left alone.
+If SSH reconnecting fails after an app update, retry the launch once. Quitting the
+app leaves the server on the host running, so agent work there carries on and the
+app reconnects to it next time. Removing the connection stops a server that fcode
+launched; a server that was already running is left alone.
 
 Each desktop app keeps one session on the host for its SSH connection and reuses
 it when it reconnects. Revoke sessions you no longer use in **Settings →
